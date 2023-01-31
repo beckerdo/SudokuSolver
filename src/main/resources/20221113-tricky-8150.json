@@ -1,0 +1,9 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-11-13/tricky",
+"states": ["8.9..4..7\n724...8.3\n...2.....\n3..8.69..\n....1....\n..79.3..1\n.....5...\n2.1...765\n9..6..4.2"],
+"date": "2022-11-13",
+"difficulty":"Tricky",
+"rating": 8150,
+"rules":["Single Position","Single Candidate","Multiple Lines","Naked Pairs","Hidden Pairs"],
+"comment":["none"]
+}

@@ -1,0 +1,9 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-11-20/diabolical",
+"states": [".......3.\n....2467.\n7....1..5\n..24....9\n.76.3.21.\n9....25..\n3..7....6\n.5491....\n.8......."],
+"date": "2022-11-20",
+"difficulty":"Diabolical",
+"rating": 15200,
+"rules":["Single Position","Single Candidate","Candidate Lines","Multiple Lines","Naked Pairs","Hidden Pairs","Hidden Triples","X-Wings"],
+"comment":["X-Wings for 2 at 21/27/61/67,Hidden Pair for {37} in block 6 at 36/58,Hidden Triple for {246} block 1"]
+}

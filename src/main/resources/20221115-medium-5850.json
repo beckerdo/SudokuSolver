@@ -1,0 +1,9 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-11-15/medium",
+"states": [".8.62..1.\n...1..9.8\n1.......3\n.1...48..\n.76...43.\n..38...5.\n6.......1\n5.7..1...\n.4..82.7."],
+"date": "2022-11-15",
+"difficulty":"Medium",
+"rating": 5850,
+"rules":["Single Position","Single Candidate","Candidate Lines"],
+"comment":["none"]
+}

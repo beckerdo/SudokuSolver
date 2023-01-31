@@ -1,0 +1,10 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2023-01-03/diabolical",
+"states": ["...2..6.3-...37.85.-..6.1..4.-..89.....-21.....69-.....12..-.9..8.1..-.51.32...-6.3..5..."],
+"solution": "187254693924376851536819742768923514215748369349561287492687135851432976673195428",
+"date": "2023-01-03",
+"difficulty":"Diabolical",
+"rating": 24250,
+"rules":["Single Position","Single Candidate","Candidate Lines","Double Pairs","Multiple Lines","Naked Pairs","Hidden Pairs","X-Wings","Forcing Chains"],
+"comment":["Needed for more Forcing Chains Testing"]
+}

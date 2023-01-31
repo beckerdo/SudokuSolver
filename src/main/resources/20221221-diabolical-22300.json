@@ -1,0 +1,9 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-12-21/diabolical",
+"states": [".....6...-..9.3....-7..9.26.1-6..52..4.-..2...8..-.5..61..9-5.12.7..4-....4.7..-...3....."],
+"date": "2022-12-21",
+"difficulty":"Diabolical",
+"rating": 22300,
+"rules":["Single Position","Single Candidate","Candidate Lines","Double Pairs","Naked Pairs","X-Wings","Forcing Chains"],
+"comment":["Needed for more Forcing Chains Testing"]
+}

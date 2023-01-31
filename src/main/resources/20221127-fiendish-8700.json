@@ -1,0 +1,9 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-11-20/diabolical",
+"states": [".1...2..7\n....591..\n.4....5..\n...8...23\n.6.....8.\n98...1...\n..5....6.\n..752....\n8..3...7."],
+"date": "2022-11-27",
+"difficulty":"Fiendish",
+"rating": 8700,
+"rules":["Single Position","Single Candidate","Candidate Lines","Multiple Lines","Naked Pairs"],
+"comment":["Lots of multiple lines and X-wings"]
+}

@@ -1,0 +1,10 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-11-18/diabolical",
+"states": ["7...4.8..\n.18...5..\n9..8...3.\n3..4.7..2\n....8....\n1..9.6..3\n.9...4..8\n..2...67.\n..7.2...4"],
+"solution": "763245819218739546945861237386417952579382461124956783691574328432198675857623194",
+"date": "2022-11-18",
+"difficulty":"Diabolical",
+"rating": 17500,
+"rules":["Single Position","Single Candidate","Candidate Lines","Naked Pairs","Hidden Triples","Forcing Chains"],
+"comment":[""]
+}

@@ -1,0 +1,9 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-11-16/fiendish",
+"states": [".8.6..1..\n.3...192.\n.5...3.8.\n......5..\n...278...\n..9......\n.2.8...3.\n.739...5.\n..4..2.1."],
+"date": "2022-11-07",
+"difficulty":"Fiendish",
+"rating": 10300,
+"rules":["Single Position","Single Candidate","Candidate Lines","Multiple Lines","Naked Pairs","Hidden Pairs"],
+"comment":[""]
+}

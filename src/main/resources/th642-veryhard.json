@@ -1,0 +1,9 @@
+{
+"url": "https://www.thonky.com/sudoku/?difficulty=5",
+"states": [".3....95...1.....354.89.7.6..32....8.....9...8..7.1...15...72.............9.2.3.7"],
+"date": "",
+"difficulty":"Very Hard",
+"rating": 0,
+"rules":["Single Position","Single Candidate","Candidate Lines","Double Pairs","Naked Pairs","X-Wings","Forcing Chains"],
+"comment":[""]
+}

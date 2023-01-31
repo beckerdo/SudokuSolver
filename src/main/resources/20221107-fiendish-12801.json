@@ -1,0 +1,9 @@
+{
+"url": "https://www.sudokuoftheday.com/dailypuzzles/2022-11-07/fiendish",
+"states": ["...3....1\n38.....2.\n.2..96..4\n.4...7...\n9.......3\n...4...5.\n5..67..3.\n.3.....79\n8....2..."],
+"date": "2022-11-07",
+"difficulty":"Fiendish",
+"rating": 12800,
+"rules":["Single Position","Single Candidate","Candidate Lines","Multiple Lines","Naked Pairs","Hidden Pairs","X-Wings"],
+"comment":["Puzzle starts with single candidate 8 at 2,7"]
+}

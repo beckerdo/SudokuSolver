@@ -41,9 +41,14 @@ import static java.lang.String.format;
  * 3 by 3 cells. You must put the digits 1 through 9 in each cell so that
  * no row, column, or box has a duplicate digit.
  * <p>
+ * Some solvers call the row, column, and box groups "houses", but here
+ * they are referred to as "units".
+ * <p>
  * This Sudoku solver runs a number of rules which can identify locations
  * of discoveries, and then update the puzzle based on locations.
  * See the Board, Candidate, and rule classes to get more solving info.
+ * <p>
+ * This is a work in progress and has much refactoring and improvement to do.
  * <p>
  * <pre>
  * Example command line "java SudokuSolver 
@@ -54,21 +59,19 @@ import static java.lang.String.format;
  * Puzzles in text contain 81 spaces,containing digits, ( .)(empty space), or (cr,lf,/,-)(end of row)
  * Comments are lines beginning with #   
  * 
- * This is a work in progress and has much refactoring and improvement to do.
- * 
  * TODOs:
  * Verbose command line option for all the printlns, perhaps specify rule, rowCol, digit in command line.
  * For row,cols have a defined object based on record class/immutable
  *    RowCol should contain Box, String, and other location APIs
  * 	  Remove int[] from APIs to simplify, Remove List<rowCol> and rowCol[] duality and replication.
  *    Perhaps use pair as rowcol as shown at https://stackoverflow.com/questions/521171/a-java-collection-of-value-pairs-tuples
- *    Use singleton pattern to have only one RowCol instantiation.
- *    Consider String and list output used on websites such as r1c5, r345c8, r4c89 
- * Update digits to be 0-based everywhere except input parsing and output strings
+ *    Use singleton pattern to have only one RowCol instantiation. Get rid of int[] instatiations.
+ * Consider String and list output used on websites such as r1c5, r345c8, r4c89 
+ * Update digits/rows/cols/boxes to be 0-based everywhere internally and 1-based externally (input parsing and output strings).
+ * Replace location in rules to encoded/decoded/string objects
  * Refactor APIs to use Units and remove APIs that have Row/Col/Box in name.
  * Consider matchers for use with lists of locations. Match by candidate count, combo, etc.
  *    This might cut down on the number of candidate row col box methods.
- * Replace location in rules to encoded/decoded/string objects
  * Move json resources from main to test
  * All rule updates should report occupy and candidate location changes to aid in debugging.
  *    Change int updateCandidates to something that encodes actions occupy/add/remove, digit, and location.
@@ -76,7 +79,6 @@ import static java.lang.String.format;
  *    Should rule perform validation, or the solver
  *    BUG LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
  *    BUG ColorChains 20221118-diabolical-17500.json removed digit 3 from [8,5] {-8}, remaining candidates {-8}
- * Check into GitHub
  * 
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */

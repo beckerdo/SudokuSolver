@@ -2,11 +2,13 @@ package info.danbecker.ss.rules;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static info.danbecker.ss.Utils.DIGITS;
 import static info.danbecker.ss.Utils.BOXES;
 
@@ -22,6 +24,12 @@ public class CandidateLines implements UpdateCandidatesRule {
 	}
 
 	@Override
+	/**
+	 * Update candidates.
+	 * locations of form
+	 * int[] location = new int[]{rowi, -1, boxi, digi};
+	 * int[] location = new int[]{-1, coli, boxi, digi};
+	 */
 	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
 		int updates = 0;
 		if ( null == locations) return updates;
@@ -29,6 +37,7 @@ public class CandidateLines implements UpdateCandidatesRule {
 			int[] loc = locations.get(0);
 			// Just correct item 1.
 			// rowi,coli,boxi,digit
+			// removeCandidateNotInBox(RowCol rowCol, int boxi, int digit)
 			updates += candidates.removeCandidateNotInBox(loc[0],loc[1],loc[2],loc[3]);
 		}
 		return updates;
@@ -47,40 +56,29 @@ public class CandidateLines implements UpdateCandidatesRule {
 	public List<int[]> locations(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		ArrayList<int[]> locations = new ArrayList<int[]>();
+		ArrayList<int[]> locations = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if (!board.digitCompleted(digi)) {
 				for (int boxi = 0; boxi < BOXES; boxi++) {
-					List<int[]> potentials = candidates.candidateBoxLocations(boxi, digi);
-					// Check for row/col match of all potentials
-					if (2 == potentials.size() || 3 == potentials.size()) {
-						boolean rowMatch = Utils.rowsMatch(potentials);
-						if (rowMatch && candidates.candidateRowCount(potentials.get(0)[0], digi) > potentials.size()) {
-							// More candidates not in this box
-							int rowi = potentials.get(1)[0];
-							int[] location = new int[] { rowi, -1, boxi, digi };
-							locations.add(location);
-							// System.out.println(format("Rule %s reports %d item row line potential at
-							// row/col/boxi/digi %s",
-							// ruleName(), potentials.size(), Arrays.toString(location)));
-							// for ( int coli = 0; coli< COLS; coli++ ) {
-							// System.out.println( format("Row%d/col%d candidates:%s", rowi,coli,
-							// candidates.compactCandidates(rowi, coli)));
-							// }
-						}
-						boolean colMatch = Utils.colsMatch(potentials);
-						if (colMatch && candidates.candidateColCount(potentials.get(0)[1], digi) > potentials.size()) {
-							// More candidates not in this box
-							int coli = potentials.get(1)[1];
-							int[] location = new int[] { -1, coli, boxi, digi };
-							locations.add(location);
-							// System.out.println(format("Rule %s reports %d item col line potential at
-							// row/col/boxi/digi %s",
-							// ruleName(), potentials.size(), Arrays.toString(location)));
-							// for ( int rowi = 0; rowi< ROWS; rowi++ ) {
-							// System.out.println( format("Row%d/col%d candidates:%s", rowi,coli,
-							// candidates.compactCandidates(rowi, coli)));
-							// }
+					List<RowCol> potentials = candidates.candidateBoxLocations(boxi, digi);
+					if ( 0 < potentials.size() ) {
+						// Check for row/col match of all potentials
+						RowCol first = potentials.get(0);
+						if (2 == potentials.size() || 3 == potentials.size()) {
+							boolean rowMatch = RowCol.rowsMatch(potentials);
+							if (rowMatch && candidates.candidateRowCount(first.row(), digi) > potentials.size()) {
+								// More candidates not in this box
+								int rowi = potentials.get(1).row();
+								int[] location = new int[]{rowi, -1, boxi, digi};
+								locations.add(location);
+							}
+							boolean colMatch = RowCol.colsMatch(potentials);
+							if (colMatch && candidates.candidateColCount(first.col(), digi) > potentials.size()) {
+								// More candidates not in this box
+								int coli = potentials.get(1).col();
+								int[] location = new int[]{-1, coli, boxi, digi};
+								locations.add(location);
+							}
 						}
 					}
 				}

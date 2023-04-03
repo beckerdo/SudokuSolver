@@ -1,7 +1,10 @@
 package info.danbecker.ss.rules;
 
+import info.danbecker.ss.RowCol;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+
+import static info.danbecker.ss.Board.ROWCOL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,6 +14,7 @@ import info.danbecker.ss.Candidates;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class SwordfishTest {
@@ -68,8 +72,8 @@ public class SwordfishTest {
 		int rowCol = enc[ 1 ];
    		assertEquals(0, rowCol);
    		
-		List<int[]> swLocs = new ArrayList<int[]>();
-		List<int[]> exLocs = new ArrayList<int[]>();
+		List<RowCol> swLocs = new ArrayList<>();
+		List<RowCol> exLocs = new ArrayList<>();
 		
 		Swordfish.decode(enc, swLocs, exLocs);
    		assertEquals(9, swLocs.size());
@@ -110,8 +114,8 @@ public class SwordfishTest {
 		int rowCol = enc[ 1 ];
    		assertEquals(1, rowCol);
    		
-		List<int[]> swLocs = new ArrayList<int[]>();
-		List<int[]> exLocs = new ArrayList<int[]>();
+		List<RowCol> swLocs = new ArrayList<>();
+		List<RowCol> exLocs = new ArrayList<>();
 		
 		Swordfish.decode(enc, swLocs, exLocs);
    		assertEquals(9, swLocs.size());
@@ -131,19 +135,19 @@ public class SwordfishTest {
 		int digit = 1;	
 		int rowCol = 0;
 		
-		List<int[]> swLocs = new ArrayList<int[]>();
-		swLocs.add(new int[]{1, 1});
-		swLocs.add(new int[]{1, 4});
-		swLocs.add(new int[]{1, 7});
-		swLocs.add(new int[]{4, 1});
-		swLocs.add(new int[]{4, 4});
-		swLocs.add(new int[]{4, 7});
-		swLocs.add(new int[]{7, 1});
-		swLocs.add(new int[]{7, 4});
-		swLocs.add(new int[]{7, 7});
-		List<int[]> exLocs = new ArrayList<int[]>();
-		exLocs.add(new int[]{0, 1});
-		exLocs.add(new int[]{8, 7});
+		List<RowCol> swLocs = new LinkedList<>();
+		swLocs.add(ROWCOL[1][1]);
+		swLocs.add(ROWCOL[1][4]);
+		swLocs.add(ROWCOL[1][7]);
+		swLocs.add(ROWCOL[4][1]);
+		swLocs.add(ROWCOL[4][4]);
+		swLocs.add(ROWCOL[4][7]);
+		swLocs.add(ROWCOL[7][1]);
+		swLocs.add(ROWCOL[7][4]);
+		swLocs.add(ROWCOL[7][7]);
+		List<RowCol> exLocs = new LinkedList<>();
+		exLocs.add(ROWCOL[0][1]);
+		exLocs.add(ROWCOL[8][7]);
 		
 		int [] enc = Swordfish.encode(digit, rowCol, swLocs, exLocs);
 		
@@ -152,16 +156,16 @@ public class SwordfishTest {
 		int decRowCol = enc[ 1 ];
    		assertEquals(rowCol, decRowCol);
    		
-		List<int[]> decswLocs = new ArrayList<int[]>();
-		List<int[]> decexLocs = new ArrayList<int[]>();
+		List<RowCol> decswLocs = new ArrayList<>();
+		List<RowCol> decexLocs = new ArrayList<>();
 		
 		Swordfish.decode(enc, decswLocs, decexLocs);
    		assertEquals(swLocs.size(), decswLocs.size());
-   		assertTrue(Arrays.equals(swLocs.get(0), decswLocs.get(0)));
-   		assertTrue(Arrays.equals(swLocs.get(swLocs.size()-1), decswLocs.get(decswLocs.size()-1)));
+   		assertEquals(swLocs.get(0), decswLocs.get(0));
+   		assertEquals(swLocs.get(swLocs.size()-1), decswLocs.get(decswLocs.size()-1));
    		assertEquals(exLocs.size(), decexLocs.size());
-   		assertTrue(Arrays.equals(exLocs.get(0), decexLocs.get(0)));
-   		assertTrue(Arrays.equals(exLocs.get(exLocs.size()-1), decexLocs.get(decexLocs.size()-1)));
+   		assertEquals(exLocs.get(0), decexLocs.get(0));
+   		assertEquals(exLocs.get(exLocs.size()-1), decexLocs.get(decexLocs.size()-1));
 
    		// Test the string
    		String encString = Swordfish.encodingToString(enc);

@@ -2,10 +2,12 @@ package info.danbecker.ss.rules;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static info.danbecker.ss.Utils.ROWS;
 import static info.danbecker.ss.Utils.COLS;
 import static info.danbecker.ss.Utils.BOXES;
@@ -21,8 +23,8 @@ import static info.danbecker.ss.Board.NOT_FOUND;
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
 public class LegalCandidates implements UpdateCandidatesRule {
-	public static ArrayList<int[]> DUMMY = new ArrayList<int[]>();
-	
+	public static ArrayList<int[]> DUMMY = new ArrayList<>();
+
 	public LegalCandidates() {
 	}
 
@@ -41,25 +43,24 @@ public class LegalCandidates implements UpdateCandidatesRule {
 				if ( NOT_FOUND != (index = board.rowLocation( item, digit ))) {
 					for ( int coli = 0; coli < COLS; coli++) {
 						if ( coli != index ) {
-						   if (candidates.removeCandidate( item, coli, digit)) count++;
+						   if (candidates.removeCandidate( ROWCOL[item][coli], digit)) count++;
 						}
 					}						
 				}
 				if ( NOT_FOUND != (index = board.colLocation( item, digit ))) {
 					for ( int rowi = 0; rowi < ROWS; rowi++) {
 						if ( rowi != index ) {
-						   if (candidates.removeCandidate( rowi, item, digit)) count++;
+						   if (candidates.removeCandidate( ROWCOL[rowi][item], digit)) count++;
 						}
 					}						
 				}
-				int rowCol[];
-				if ( null != (rowCol = board.boxLocation( item, digit ))) {	
-					int [][] cells = Board.getBoxRowCols(item);
-					for( int boxi = 0; boxi < BOXES; boxi++ ) {
-						int rowi = cells[boxi][0];
-						int coli = cells[boxi][1];
-						if (( rowi != rowCol[ 0 ]) || coli != rowCol[ 1 ] ) {
-						   if (candidates.removeCandidate( rowi, coli, digit)) count++;							
+				RowCol digitLoc = board.boxLocation(item, digit);
+				if ( null != digitLoc) {
+					RowCol[] cells = Board.getBoxRowCols(item);
+					for( int loci = 0; loci < BOXES; loci++ ) {
+						RowCol loc = cells[loci];
+						if (( loc.row() != digitLoc.row()) || loc.col() != digitLoc.col() ) {
+						   if (candidates.removeCandidate( loc, digit)) count++;
 						}
 					}
 					

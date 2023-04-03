@@ -54,7 +54,7 @@ public class MultipleLinesTest {
 		assertEquals( 1, encoding[ 6 ]); // second ML row
 		assertEquals( 2, encoding[ 7 ]); // keeper row
 
-		// Try a 3 rotations and see if that works
+		// Try 3 rotations and see if that works
 		board = Board.rotateRight(board);
 		assertTrue(board.legal());	
 		candidates = new Candidates(board);

@@ -8,18 +8,17 @@ import java.util.List;
 import info.danbecker.ss.Utils.Unit;
 import info.danbecker.ss.tree.ChangeData;
 
+import static info.danbecker.ss.Board.*;
 import static info.danbecker.ss.Utils.ROWS;
 import static info.danbecker.ss.Utils.COLS;
 import static info.danbecker.ss.Utils.DIGITS;
 import static info.danbecker.ss.Utils.BOXES;
-import static info.danbecker.ss.Board.NOT_OCCUPIED;
-import static info.danbecker.ss.Board.NOT_FOUND;
 import static java.lang.String.format;
 
 /**
  * Sudoku board candidates
  * Can be initialized from a board and applying the LegalCandidates rule.
- * 
+ * <p>
  * An empty board contains all digit candidates in each cell.
  * A filled-in occupied position contains a single negative digit.
  * A not-filled in position contains one or more candidates, which are positive.
@@ -34,10 +33,10 @@ public class Candidates implements Comparable<Candidates> {
     public static boolean NAKED = true;	
     public static boolean NOT_NAKED = false;	
     public static int FULL_COMBI_MATCH = -1;	
-    public static short NOT_CANDIDATE = 0;	
-    public static short ALL_DIGITS = -1;
-    public static short ALL_COUNTS = -1;
-    public static short ALL_UNITS = -1;
+    public static int NOT_CANDIDATE = 0;
+    public static int ALL_DIGITS = -1;
+    public static int ALL_COUNTS = -1;
+    public static int ALL_UNITS = -1;
 
     /** 
      * Action verbs to describe a change made to a Candidates object.
@@ -45,14 +44,14 @@ public class Candidates implements Comparable<Candidates> {
      * -Unoccupy states that the play has been reversed. The occupant is now a candidate.  
      * -Add states that a candidate has been added to a loc (maybe used for undo or setting up a puzzle state).
      * -Remove states that a candidate has been removed from a loc, one step closer to solving.
-     * 
+     * <p>
      * Given two candidates states, one can determine the actions to go from one to the other.
      */
-    public static enum Action { OCCUPY, UNOCCUPY, ADD, REMOVE }; 
+    public enum Action { OCCUPY, UNOCCUPY, ADD, REMOVE }
     
-	// 9 rows, 9 cols, 9 cells. 
-	// Short is negative digit for filled in, 0 for not candidate, digit for candidate
-	private short [][][] candidates;
+	// 9 rows, 9 cols, 9 digits.
+	// Int is negative digit for filled in, 0 for not candidate, digit for candidate
+	private int [][][] candidates;
 
 	public Candidates( Board board )  {
 		init( board );
@@ -61,18 +60,18 @@ public class Candidates implements Comparable<Candidates> {
 	public void init( Board board ) {
 		if ( null == board ) throw new IllegalArgumentException("board cannot be null");
 		
-		candidates = new short[ROWS][COLS][DIGITS];
+		candidates = new int[ROWS][COLS][DIGITS];
 		
 		for( int rowi = 0; rowi < ROWS; rowi++ ) {
 			for ( int coli = 0; coli < COLS; coli++) {
-				if ( NOT_OCCUPIED == board.get(rowi, coli)) {
+				if ( NOT_OCCUPIED == board.get(ROWCOL[rowi][coli])) {
 					// Choice, set all as candidates, or check row/col/block (default rule)
 					// Later we run the Validate rule which removes candidates from occupied.
 					for( int digiti = 0; digiti < DIGITS; digiti++) {
-						addCandidate( rowi, coli, digiti + 1);
+						addCandidate( ROWCOL[rowi][coli], digiti + 1);
 					}
-				} else if ( NOT_OCCUPIED != board.get(rowi, coli)) {
-					setOccupied(rowi, coli, board.get( rowi, coli ));
+				} else if ( NOT_OCCUPIED != board.get(ROWCOL[rowi][coli])) {
+					setOccupied( ROWCOL[rowi][coli], board.get( ROWCOL[rowi][coli] ));
 				}
 			}
 		}
@@ -80,7 +79,7 @@ public class Candidates implements Comparable<Candidates> {
 
 	public Candidates( Candidates that )  {
 		if ( null == that ) throw new IllegalArgumentException("candidates cannot be null");		
-		this.candidates = new short[ROWS][COLS][DIGITS];
+		this.candidates = new int[ROWS][COLS][DIGITS];
 		
 		for( int rowi = 0; rowi < ROWS; rowi++ ) {
 			for ( int coli = 0; coli < COLS; coli++) {
@@ -92,76 +91,58 @@ public class Candidates implements Comparable<Candidates> {
 	}
 	
 	/** Returns NOT_OCCUPIED if the box is empty, a positive digit if filled in. */
-	public short getOccupied( int row, int col ) {
-	   short [] boxCandidates = getCandidates( row, col );
+	public int getOccupied( RowCol rowCol ) {
+	   int [] boxCandidates = getCandidates( rowCol );
 	   for ( int digiti = 0; digiti < DIGITS; digiti++ ) {
 		   if ( boxCandidates[ digiti ] < 0)
-			   return (short) -boxCandidates[ digiti ]; 		   
+			   return -boxCandidates[ digiti ];
 	   }
 	   return NOT_OCCUPIED;
 	}
 	
 	/** Returns false if the box is empty, true if filled in. */
-	public boolean isOccupied( int row, int col ) {
-		return NOT_OCCUPIED != getOccupied( row, col );
+	public boolean isOccupied( RowCol rowCol ) {
+		return NOT_OCCUPIED != getOccupied( rowCol );
 	}
 	
 	/** 
 	 * Sets digit to an occupied board entry.
 	 * Sets all other digits to NOT_CANDIDATE.
 	 * @returns NOT_CANDIDATE if the box is empty, a digit if filled in. */
-	public short setOccupied( int row, int col, int digit ) {
-	   short previous = NOT_CANDIDATE;
-	   // Check for setting a two occupied digits
-	   int alreadyThere = getOccupied( row, col );
+	public int setOccupied( RowCol rowCol, int digit ) {
+	   int previous = NOT_CANDIDATE;
+	   // Check for setting two occupied digits
+	   int alreadyThere = getOccupied( rowCol );
 	   if ( NOT_OCCUPIED != alreadyThere ) {
-		   throw new IllegalArgumentException( format( "Attempting to set digit %d in row/col=%d/%d with previous digit %d already there.", 
-		       digit, row, col, alreadyThere ));
+		   throw new IllegalArgumentException( format( "Attempting to set digit %d in rowCol=%s with previous digit %d already there.",
+		       digit, rowCol, alreadyThere ));
 	   }
 	   for ( int digiti = 0; digiti < DIGITS; digiti++ ) {
 		   if (  digiti == digit - 1 ) {	   
-			  previous = candidates[row][col][ digiti ];
-		      candidates[row][col][ digiti ] = (short) -digit;
+			  previous = candidates[rowCol.row()][rowCol.col()][ digiti ];
+		      candidates[rowCol.row()][rowCol.col()][ digiti ] = -digit;
 		   } else {
-		      candidates[row][col][ digiti ] = NOT_CANDIDATE;
+		      candidates[rowCol.row()][rowCol.col()][ digiti ] = NOT_CANDIDATE;
 		   }
 	   }
 	   return previous;
 	}
 
-	/** 
-	 * Sets digit to an occupied board entry.
-	 * Sets all other digits to NOT_CANDIDATE.
-	 * @returns 0 if the box is empty, a digit if filled in. */
-	public short setOccupied( int [] loc, int digit ) {
-		return setOccupied( loc[0], loc[1], digit );
-	}
-
-	
-	/** 
+	/**
 	 * Sets the occupied location to NOT_OCCUPIED.
 	 * Other digits are left alone.
 	 * Useful for undo or reset actions.
 	 * Will need to perform an ADD action on the digit if you wish to make it a candidate.
 	 * @returns 0 if the box is empty, a digit if filled in. */
-	public short setUnoccupied( int row, int col, int digit ) {
-	   // Check for setting a two occupied digits
-	   short alreadyThere = getOccupied( row, col );
+	public int setUnoccupied( RowCol rowCol, int digit ) {
+	   // Check for setting two occupied digits
+	   int alreadyThere = getOccupied( rowCol );
 	   if ( alreadyThere != digit ) {
-		   throw new IllegalArgumentException( format( "Attempting to unoccupy digit %d in row/col=%d/%d which was already occupied by digit %d.", 
-		       digit, row, col, alreadyThere ));
+		   throw new IllegalArgumentException( format( "Attempting to unoccupy digit %d in rowCol=%s which was already occupied by digit %d.",
+		       digit, rowCol, alreadyThere ));
 	   }
-       candidates[row][col][ digit - 1 ] = NOT_OCCUPIED;
+       candidates[rowCol.row()][rowCol.col()][ digit - 1 ] = NOT_OCCUPIED;
        return alreadyThere;
-	}
-
-	/** 
-	 * Sets digit for an occupied board entry to NOT_OCCUPIED.
-	 * Other digits are left alone.
-	 * Useful for undo or reset actions
-	 * @returns 0 if the box is empty, a digit if filled in. */
-	public short setUnoccupied( int [] rowCol, int digit ) {
-		return ( setUnoccupied( rowCol[0], rowCol[1], digit ));
 	}
 
 	/** Returns number of occupied boxes for the entire board. */
@@ -170,39 +151,34 @@ public class Candidates implements Comparable<Candidates> {
 	   int count = 0;
 	      for( int rowi = 0; rowi < ROWS; rowi++ ) {
 	   	   for ( int coli = 0; coli < COLS; coli++) {
-	   		   if ( isOccupied( rowi, coli )) count++;
+	   		   if ( isOccupied( ROWCOL[rowi][coli] )) count++;
 	   	   }    	   
 	      }
 	   return count;
 	}
 
 	/** Returns all candidates in the given box. */
-	public short [] getCandidates( int row, int col ) {
-		if (( row < 0 ) || (row >= ROWS)) throw new ArrayIndexOutOfBoundsException( "row=" + row); 
-		if (( col < 0 ) || (col >= COLS)) throw new ArrayIndexOutOfBoundsException( "col=" + col);
-		return candidates[ row ][ col ];
+	public int [] getCandidates( RowCol rowCol ) {
+		return candidates[ rowCol.row() ][ rowCol.col() ];
 	}
 
 	/** Returns all candidates in the given box. */
-	public List<Integer> getCandidatesList( int rowi, int coli ) {
-		if (( rowi < 0 ) || (rowi >= ROWS)) throw new ArrayIndexOutOfBoundsException( "row=" + rowi); 
-		if (( coli < 0 ) || (coli >= COLS)) throw new ArrayIndexOutOfBoundsException( "col=" + coli);
+	public List<Integer> getCandidatesList( RowCol rowCol ) {
 		List<Integer> candList = new ArrayList<>();
-
 		for( int digi = 0; digi < DIGITS; digi++) {
-			if ( this.candidates[rowi][coli][digi] > 0)
-				candList.add( (int) this.candidates[rowi][coli][digi] );
+			if ( this.candidates[rowCol.row()][rowCol.col()][digi] > 0)
+				candList.add( this.candidates[rowCol.row()][rowCol.col()][digi] );
 		}
 		return candList;
 	}
 
-	/** Returns all candidates in the given box. */
-	public short [] getRemainingCandidates( int rowi, int coli ) {
-		short [] candidates = new short [ candidateCount(rowi, coli) ];
+	/** Returns all candidates in the given cell. */
+	public int [] getRemainingCandidates( RowCol rowCol ) {
+		int [] candidates = new int[ candidateCount( rowCol ) ];
 		int candi = 0;
 		for( int digi = 0; digi < DIGITS; digi++) {
-			if ( this.candidates[rowi][coli][digi] > 0) 
-				candidates[ candi++ ] =  this.candidates[rowi][coli][digi];
+			if ( this.candidates[rowCol.row()][rowCol.col()][digi] > 0)
+				candidates[ candi++ ] =  this.candidates[rowCol.row()][rowCol.col()][digi];
 		}
 		return candidates;
 	}
@@ -210,58 +186,41 @@ public class Candidates implements Comparable<Candidates> {
 	/** Completely replace the candidate list.
 	 * @return the current candidate list.
 	 */
-	public short [] setCandidates( int row, int col, short [] vals ) {
-		if (( row < 0 ) || (row >= ROWS)) throw new ArrayIndexOutOfBoundsException( "row=" + row); 
-		if (( col < 0 ) || (col >= COLS)) throw new ArrayIndexOutOfBoundsException( "col=" + col);
-		candidates[ row ][ col ] = vals;
-		return candidates[ row ][ col ];
+	public int [] setCandidates( RowCol rowCol, int [] vals ) {
+		candidates[ rowCol.row() ][ rowCol.col() ] = vals;
+		return candidates[ rowCol.row() ][ rowCol.col() ];
 	}
 
 	/** 
 	 * Add a single candidate digit to this location.
 	 * @return digit previously NOT_CANDIDATE, was something added?
 	 */
-	public boolean addCandidate( int rowi, int coli, int digit ) {
-		short previous = candidates[rowi][coli][ digit - 1 ];
-		candidates[rowi][coli][ digit - 1 ] = (short) digit;
+	public boolean addCandidate( RowCol rowCol, int digit ) {
+		int previous = candidates[rowCol.row()][rowCol.col()][ digit - 1 ];
+		candidates[rowCol.row()][rowCol.col()][ digit - 1 ] = digit;
 		return previous == NOT_CANDIDATE;
-	}
-
-	/** 
-	 * Add a single candidate digit to this location.
-	 * @return digit previously NOT_CANDIDATE, was something added?
-	 */
-	public boolean addCandidate( int [] rowCol, int digit ) {
-		return addCandidate( rowCol[ 0 ], rowCol[ 1 ], digit );
 	}
 
 	/** Remove a single one-based candidate digit from this location.
 	 * Ignores deleting a negative item which is a placement.
 	 * @return digit previously there, was something deleted?
 	 */
-	public boolean removeCandidate( int rowi, int coli, int digit ) {
-		short previous = candidates[rowi][coli][ digit - 1 ] ;
+	public boolean removeCandidate( RowCol rowCol, int digit ) {
+		int previous = candidates[rowCol.row()][rowCol.col()][ digit - 1 ] ;
 		if ( previous < 1) return false; // ignore placed items 
-		candidates[rowi][coli][ digit - 1 ] = (short) 0;
+		candidates[rowCol.row()][rowCol.col()][ digit - 1 ] = 0;
 		// if ( previous != NOT_CANDIDATE )
 		//	System.out.println( format( "   Removed candidate %d from row/col %d/%d", digit, rowi, coli ));			
 		return previous != NOT_CANDIDATE;
 	}
 
-	/** Remove a single one-based candidate digit from this location.
-	 * @return digit previously there, was something deleted?
-	 */
-	public boolean removeCandidate( int [] loc, int digit ) {
-		return removeCandidate( loc[0], loc[1], digit );
-	}
-
 	/** Remove one-based candidate digits from this location.
 	 * @return count of digits removed
 	 */
-	public int removeCandidates( int [] loc, int [] digits ) {
+	public int removeCandidates( RowCol rowCol, int [] digits ) {
 		int count = 0;
 		for ( int digi=0; digi < digits.length; digi++) {
-			if( removeCandidate( loc[0], loc[1], digits[ digi ]))
+			if( removeCandidate( rowCol, digits[ digi ]))
 				count++;
 		}
 		return count;
@@ -273,14 +232,14 @@ public class Candidates implements Comparable<Candidates> {
 	 * in the given row, col, box.
 	 * @return number of other candidates removed
 	 */
-	public int removeCandidatesSameUnit(int[] loc, int digit, Unit unit) {
+	public int removeCandidatesSameUnit( RowCol rowCol, int digit, Unit unit) {
 		int candCount = 0;
 		switch (unit) {
 		case ROW: {
 			for (int coli = 0; coli < COLS; coli++) {
 				// Ignore my location
-				if (loc[1] != coli) {
-					if (removeCandidate(loc[0], coli, digit))
+				if (rowCol.col() != coli) {
+					if (removeCandidate(ROWCOL[rowCol.row()][coli], digit))
 						candCount++;
 				}
 			}
@@ -289,20 +248,19 @@ public class Candidates implements Comparable<Candidates> {
 		case COL: {
 			for (int rowi = 0; rowi < ROWS; rowi++) {
 				// Ignore my location
-				if (loc[0] != rowi) {
-					if (removeCandidate(rowi, loc[1], digit))
+				if (rowCol.row() != rowi) {
+					if (removeCandidate(ROWCOL[rowi][rowCol.col()], digit))
 						candCount++;
 				}
 			}
 			break;
 		}
 		case BOX: {
-			int myBox = Board.getBox(loc);
-			int[][] boxLocs = Board.getBoxRowCols(myBox);
+			RowCol[] boxLocs = Board.getBoxRowCols(rowCol.box());
 			for (int loci = 0; loci < boxLocs.length; loci++) {
 				// Ignore my location
-				if (!Arrays.equals(loc, boxLocs[loci])) {
-					if (removeCandidate(boxLocs[loci], digit))
+				if ( rowCol != boxLocs[loci] ) {
+					if (removeCandidate( rowCol, digit))
 						candCount++;
 				}
 			}
@@ -318,15 +276,16 @@ public class Candidates implements Comparable<Candidates> {
 	 * in all given row, col, box.
 	 * @return number of other candidates removed
 	 */
-	public int removeCandidatesSameUnits(int[] loc, int digit) {
+	public int removeCandidatesSameUnits(RowCol rowCol, int digit) {
 		int candCount = 0;
 		for ( Unit unit: Unit.values()) {
-			candCount += removeCandidatesSameUnit( loc, digit, unit );
+			candCount += removeCandidatesSameUnit( rowCol, digit, unit );
 		}
 		return candCount;
 	}
 
 	/** Remove row or col candidates, given digit, not in given box
+	 * Rowi or coli might be -1 (multiple)
 	 * @return count of candidates removed
 	 */
 	public int removeCandidateNotInBox(int rowi, int coli, int boxi, int digit) {
@@ -334,16 +293,17 @@ public class Candidates implements Comparable<Candidates> {
 		if (rowi == -1) {
 			// Row not specified
 			for (rowi = 0; rowi < ROWS; rowi++) {
-				if (boxi != Board.getBox(rowi, coli)) {
-					if (removeCandidate(rowi, coli, digit))
+				if (boxi != ROWCOL[rowi][coli].box()) {
+					if (removeCandidate(ROWCOL[rowi][coli], digit))
 						count++;
 				}
 			}
-		} else if (coli == -1) {
-			// Cow not specified
+		}
+		if (coli == -1) {
+			// Col not specified
 			for (coli = 0; coli < COLS; coli++) {
-				if (boxi != Board.getBox(rowi, coli)) {
-					if (removeCandidate(rowi, coli, digit))
+				if (boxi != ROWCOL[rowi][coli].box()) {
+					if (removeCandidate(ROWCOL[rowi][coli], digit))
 						count++;
 				}
 			}
@@ -354,16 +314,16 @@ public class Candidates implements Comparable<Candidates> {
 	/** Remove row candidate digits in rowi if not in given locations
 	 * @return count of candidates removed
 	 */
-	public int removeRowCandidatesNotIn(int digi, int rowi, int[][] rowCols) {
+	public int removeRowCandidatesNotIn(int digi, int rowi, RowCol[] rowCols) {
 		int count = 0;
 		// List of cols to ignore
 		int[] ignoreCols = new int[rowCols.length];
 		for (int ignorei = 0; ignorei < rowCols.length; ignorei++)
-			ignoreCols[ignorei] = rowCols[ignorei][1];
+			ignoreCols[ignorei] = rowCols[ignorei].col();
 		for (int coli = 0; coli < COLS; coli++) {
 			// Ignore ignore cols
 			if (!containsDigit(ignoreCols, coli)) {
-				if (removeCandidate(rowi, coli, digi))
+				if (removeCandidate(ROWCOL[rowi][coli], digi))
 					count++;
 			}
 		}
@@ -375,12 +335,11 @@ public class Candidates implements Comparable<Candidates> {
 	 */
 	public int removeBoxCandidatesNotInRow(int digi, int boxi, int rowi) {
 		int count = 0;
-		int [][] rowCols = Board.BOXR[boxi];
+		RowCol[] rowCols = Board.BOXR[boxi];
 		for (int loci = 0; loci < rowCols.length; loci++) {
-			int [] rowCol = rowCols[ loci ];
 			// Ignore locations with given row
-			if ( rowi != rowCol[0] ) {
-				if (removeCandidate(rowCol[0], rowCol[1], digi))
+			if ( rowi != rowCols[loci].row()) {
+				if (removeCandidate(rowCols[loci], digi))
 					count++;
 				
 			}
@@ -391,16 +350,16 @@ public class Candidates implements Comparable<Candidates> {
 	/** Remove col candidate digits in coli if not in given locations
 	 * @return count of candidates removed
 	 */
-	public int removeColCandidatesNotIn( int digi, int coli, int[][] rowCols) {
+	public int removeColCandidatesNotIn( int digi, int coli, RowCol[] rowCols) {
 		int count = 0;
 		// List of rows to ignore
 		int[] ignoreRows = new int[rowCols.length];
 		for (int ignorei = 0; ignorei < rowCols.length; ignorei++)
-			ignoreRows[ignorei] = rowCols[ignorei][0];
+			ignoreRows[ignorei] = rowCols[ignorei].row();
 		for (int rowi = 0; rowi < ROWS; rowi++) {
 			// Ignore ignore rows 
 			if (!containsDigit(ignoreRows, rowi)) {
-				if (removeCandidate(rowi, coli, digi))
+				if (removeCandidate( ROWCOL[rowi][coli], digi))
 					count++;
 			}
 		}
@@ -412,14 +371,12 @@ public class Candidates implements Comparable<Candidates> {
 	 */
 	public int removeBoxCandidatesNotInCol(int digi, int boxi, int coli) {
 		int count = 0;
-		int [][] rowCols = Board.BOXR[boxi];
+		RowCol [] rowCols = Board.BOXR[boxi];
 		for (int loci = 0; loci < rowCols.length; loci++) {
-			int [] rowCol = rowCols[ loci ];
 			// Ignore locations with given col
-			if ( coli != rowCol[1] ) {
-				if (removeCandidate(rowCol[0], rowCol[1], digi))
+			if ( coli != rowCols[loci].col() ) {
+				if (removeCandidate(rowCols[loci], digi))
 					count++;
-				
 			}
 		}
 		return count;
@@ -431,47 +388,45 @@ public class Candidates implements Comparable<Candidates> {
 	 * Just corrects items in one row or column
 	 * @return count of candidates removed
 	 */
-	public int removeCandidatesNotInLocations( int [] combo, int[][] rowCols) {
+	public int removeCandidatesNotInLocations( int [] combo, RowCol[] rowCols) {
 		int count = 0;
-		boolean rowsMatch = Utils.rowsMatch(rowCols);
-		boolean colsMatch = Utils.colsMatch(rowCols);
+		boolean rowsMatch = RowCol.rowsMatch(rowCols);
+		boolean colsMatch = RowCol.colsMatch(rowCols);
 		// boolean boxesMatch = Utils.colsMatch(rowCols);
 		
 		if ( rowsMatch ) {
-			int rowi = rowCols[0][0];
+			int rowi = rowCols[0].row();
 			// List of cols to ignore
 			int [] ignore = new int[ rowCols.length ];
 			for( int ignorei = 0; ignorei < rowCols.length; ignorei++)
-				ignore[ignorei] = rowCols[ignorei][1];			
+				ignore[ignorei] = rowCols[ignorei].col();
 			for ( int coli = 0; coli < COLS; coli++ ) {
 				// Ignore cols 1 and 6
 				if ( !containsDigit( ignore, coli )) {
 					for ( int digiti = 0; digiti < combo.length; digiti++) {
 						// System.out.println( format("Removing digit %d from row rowCol=%d/%d", combo[ digiti ] + 1, rowi, coli));
-						if (removeCandidate(rowi, coli, combo[ digiti ] + 1))
+						if (removeCandidate(ROWCOL[rowi][coli], combo[ digiti ] + 1))
 							count++;									
 					}
 				}
 			}
 			
-		}
-		if ( colsMatch ) {
-			int coli = rowCols[0][1];
+		} else if ( colsMatch ) {
+			int coli = rowCols[0].col();
 			// List of cols to ignore
 			int [] ignore = new int[ rowCols.length ];
 			for( int ignorei = 0; ignorei < rowCols.length; ignorei++)
-				ignore[ignorei] = rowCols[ignorei][0];			
+				ignore[ignorei] = rowCols[ignorei].row();
 			for ( int rowi = 0; rowi < COLS; rowi++ ) {
 				// Ignore rows 3 and 7
 				if ( !containsDigit( ignore, rowi )) {
 					for ( int digiti = 0; digiti < combo.length; digiti++) {
 						// System.out.println( format("Removing digit %d from col rowCol=%d/%d", combo[ digiti ] + 1, rowi, coli));
-						if (removeCandidate(rowi, coli, combo[ digiti ] + 1))
+						if (removeCandidate(ROWCOL[rowi][coli], combo[ digiti ] + 1))
 							count++;									
 					}
 				}
 			}
-			
 		}
 		return count;
 	}
@@ -481,20 +436,17 @@ public class Candidates implements Comparable<Candidates> {
 	 * will remove non combo digits in thes locations.
 	 * @return count of candidates removed
 	 */
-	public int removeCandidatesNotInCombo( int [] combo, int[][] rowCols) {
+	public int removeCandidatesNotInCombo( int [] combo, RowCol[] rowCols) {
 		int count = 0;
 		for ( int loci = 0; loci < rowCols.length; loci++) {
-			   int rowi = rowCols[ loci ][0];
-			   int coli = rowCols[ loci ][1];
 			for ( int digiti = 0; digiti < DIGITS; digiti++) {
 				if ( !containsDigit( combo, digiti )) {
-				   if (removeCandidate(rowi, coli, digiti + 1 )) {
+				   if (removeCandidate(rowCols[loci], digiti + 1 )) {
                       // System.out.println( format("Removed digit %d from row rowCol=%d/%d", digiti + 1, rowi, coli));
 				      count++;
 				   }
 				}
 			}
-
 		}
 		return count;
 	}
@@ -509,7 +461,7 @@ public class Candidates implements Comparable<Candidates> {
 	   int count = 0;
 	      for( int rowi = 0; rowi < ROWS; rowi++ ) {
 	   	   for ( int coli = 0; coli < COLS; coli++) {
-	   		   count += removeCandidates( rowi, coli ); 
+	   		   count += removeCandidates( ROWCOL[rowi][coli] );
 	   	   }    	   
 	      }
 	   return count;
@@ -521,11 +473,11 @@ public class Candidates implements Comparable<Candidates> {
 	 * 
 	 * @return count of removed candidates
 	 */
-	public int removeCandidates( int row, int col ) {
+	public int removeCandidates( RowCol rowCol ) {
 	   int count = 0;
 	   for ( int digiti = 0; digiti < DIGITS; digiti++ ) {
-		   if ( candidates[row][col][ digiti ] > 0) {	   
-		      candidates[row][col][ digiti ] = NOT_CANDIDATE;
+		   if ( candidates[rowCol.row()][rowCol.col()][ digiti ] > 0) {
+		      candidates[rowCol.row()][rowCol.col()][ digiti ] = NOT_CANDIDATE;
 		      count++;
 		   }
 	   }
@@ -543,8 +495,8 @@ public class Candidates implements Comparable<Candidates> {
 		int count = 0;
 		for (int rowi = 0; rowi < ROWS; rowi++) {
 			for (int coli = 0; coli < COLS; coli++) {
-				if (NOT_OCCUPIED != getOccupied(rowi, coli)) {
-					count += removeCandidates(rowi, coli);
+				if (NOT_OCCUPIED != getOccupied(ROWCOL[rowi][coli])) {
+					count += removeCandidates(ROWCOL[rowi][coli]);
 				}
 			}
 		}
@@ -554,59 +506,49 @@ public class Candidates implements Comparable<Candidates> {
 	/** Return the first non-zero candidate at the given row, col. 
 	 * @return the digit for the first candidate, or NOT_CANDIDATE if no candidates.
 	 */
-	public int getCandidateDigit(int rowi, int coli) {
+	public int getCandidateDigit(RowCol rowCol) {
 		for (int digi = 0; digi < DIGITS; digi++) {
-			if (candidates[rowi][coli][digi] > 0)
-				return candidates[rowi][coli][digi];
+			if (candidates[rowCol.row()][rowCol.col()][digi] > 0)
+				return candidates[rowCol.row()][rowCol.col()][digi];
 		}
 		return NOT_CANDIDATE;
 	}
 
 	/** Returns if this ones-based digit is a candidate in this cell. */
-	public boolean isCandidate( int rowi, int coli, int digi) {
-		if ( candidates[rowi][coli][digi - 1] == digi ) return true;
+	public boolean isCandidate( RowCol rowCol, int digi) {
+		if ( candidates[rowCol.row()][rowCol.col()][digi - 1] == digi ) return true;
 		return false;
 	}
 	
-	/** Returns if this ones-based digit is a candidate in this cell. */
-	public boolean isCandidate( int [] rowCol, int digi) {
-		return isCandidate( rowCol[0], rowCol[1], digi );
-	}
-
 	/** Returns total of all candidates in all boxes. */
 	public int candidateCount() {
 	   if ( null == candidates) return 0;
 	   int count = 0;
 	      for( int rowi = 0; rowi < ROWS; rowi++ ) {
 	   	   for ( int coli = 0; coli < COLS; coli++) {
-	   		   count += candidateCount( rowi, coli );
+	   		   count += candidateCount( ROWCOL[rowi][coli] );
 	   	   }    	   
 	      }
 	   return count;
 	}
 
 	/** Returns the number of candidates in a single cell. */
-	public int candidateCount(int rowi, int coli) {
+	public int candidateCount(RowCol rowCol) {
 	   int count = 0;
 	   for( int digi = 0; digi < DIGITS; digi++) {
-		   if ( candidates[rowi][coli][digi] > 0) count++;
+		   if ( candidates[rowCol.row()][rowCol.col()][digi] > 0) count++;
 	   }
 	   return count;
 	}
 
-	/** Returns the number of candidates in a single cell. */
-	public int candidateCount( int [] rowCol ) {
-		return candidateCount( rowCol[0], rowCol[1] );
-	}
-
 	/** Returns total of all candidates in the given locations. */
-	public int candidateLocationCount(List<int[]> locs) {
+	public int candidateLocationCount(List<RowCol> locs) {
 		if (null == candidates)	return 0;
 		if (null == locs) return 0;
 		int count = 0;
 		for (int loci = 0; loci < locs.size(); loci++) {
-			int[] loc = locs.get(loci);
-			count += candidateCount(loc[0], loc[1]);
+			RowCol rowCol = locs.get(loci);
+			count += candidateCount(rowCol);
 		}
 		return count;
 	}
@@ -615,12 +557,12 @@ public class Candidates implements Comparable<Candidates> {
 	 * and not occupied, a sign of an error condition.
 	 * @return
 	 */
-	public List<int[]> emptyLocations() {
-		List<int[]> locs = new ArrayList<>();
+	public List<RowCol> emptyLocations() {
+		List<RowCol> locs = new ArrayList<>();
 		for (int rowi = 0; rowi < ROWS; rowi++) {
 			for (int coli = 0; coli < ROWS; coli++) {
-				if ( !isOccupied( rowi, coli ) && 0 == candidateCount( rowi, coli ) ) {
-					locs.add( new int[] {rowi,coli} );
+				if ( !isOccupied( ROWCOL[rowi][coli] ) && 0 == candidateCount( ROWCOL[rowi][coli] ) ) {
+					locs.add( ROWCOL[rowi][coli] );
 				}
 			}
 		}
@@ -628,7 +570,7 @@ public class Candidates implements Comparable<Candidates> {
 	}
 	
 	/** Returns a count of this digit in the given locations. */
-	public int candidateLocationCount(int digit, List<int[]> locs) {
+	public int candidateLocationCount(int digit, List<RowCol> locs) {
 		if (null == candidates)	return 0;
 		if (null == locs) return 0;
 		int count = 0;
@@ -641,22 +583,20 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the number of candidates in multiple boxes for this row. */
 	public int candidateRowLocCount( int rowi, int [] cols) {
 	   int count = 0;
-	   for( int digi = 0; digi < DIGITS; digi++) {
-		   for ( int coli = 0; coli < cols.length; coli++ ) {
-			   count += candidateCount( rowi, cols[ coli ]);
-		   }
+	   for ( int coli = 0; coli < cols.length; coli++ ) {
+		   count += candidateCount( ROWCOL[rowi][cols[ coli ]]);
 	   }
 	   return count;
 	}
 
 	/** Returns the number of candidates in multiple box locations. */
-	public int candidateRowColCount( List<int[]> rowCols) {
+	public int candidateRowColCount( List<RowCol> rowCols) {
 	   if ( null == rowCols || 0 == rowCols.size())
 		   return 0;
 	   int count = 0;
 	   for( int loci = 0; loci < rowCols.size(); loci++) {
-		   int [] rowCol = rowCols.get(loci);
-		   count += candidateCount( rowCol[ 0 ], rowCol[ 1 ]);
+		   RowCol rowCol = rowCols.get(loci);
+		   count += candidateCount( rowCol );
 	   }
 	   return count;
 	}
@@ -668,13 +608,13 @@ public class Candidates implements Comparable<Candidates> {
 	 *     - can have a row or col of 3 in a given box
 	 *     - can inefficiently have all digits in all boxes. 
 	 * */
-	public int candidateDigitRowColCount( int digi, int[][] rowCols) {
+	public int candidateDigitRowColCount( int digi, RowCol[] rowCols) {
 	   if ( null == rowCols || 0 == rowCols.length)
 		   return 0;
 	   int count = 0;
 	   for( int loci = 0; loci < rowCols.length; loci++) {
-		   int [] rowCol = rowCols[loci];
-		   if ( candidates[rowCol[0]][rowCol[1]][digi - 1] > 0) count++;
+		   RowCol rowCol = rowCols[loci];
+		   if ( candidates[rowCol.row()][rowCol.col()][digi - 1] > 0) count++;
 	   }
 	   return count;
 	}
@@ -682,10 +622,8 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the number of candidates in multiple boxes for this col. */
 	public int candidateColLocCount( int coli, int [] rows ) {
 	   int count = 0;
-	   for( int digi = 0; digi < DIGITS; digi++) {
-		   for ( int rowi = 0; rowi < rows.length; rowi++ ) {
-			   count += candidateCount( rows[ rowi ], coli );
-		   }
+	   for ( int rowi = 0; rowi < rows.length; rowi++ ) {
+		   count += candidateCount( ROWCOL[rows[ rowi ]][coli] );
 	   }
 	   return count;
 	}
@@ -694,7 +632,7 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateRowCount( int rowi, int digi) {
 	   int count = 0;
 	   for( int coli = 0; coli < COLS; coli++) {
-		   if ( isCandidate( rowi, coli, digi )) count++;
+		   if ( isCandidate( ROWCOL[rowi][coli], digi )) count++;
 	   }
 	   return count;
 	}
@@ -703,23 +641,23 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateRowGroupCount( int rowi, int digi, int groupSize) {
 	   int count = 0;
 	   for( int coli = 0; coli < COLS; coli++) {
-		   if ( isCandidate( rowi, coli, digi ) && ( ALL_COUNTS == groupSize || candidateCount( rowi, coli ) == groupSize)) count++;
+		   if ( isCandidate( ROWCOL[rowi][coli], digi ) && ( ALL_COUNTS == groupSize || candidateCount( ROWCOL[rowi][coli] ) == groupSize)) count++;
 	   }
 	   return count;
 	}
 
 	/** Returns the locations of groups of this size with this candidate ones-based digit in this row. */
-	public List<int[]> candidateRowGroupLocs( int rowi, int digi, int groupSize) {
-	   List<int[]> locations = new LinkedList<>();		
+	public List<RowCol> candidateRowGroupLocs( int rowi, int digi, int groupSize) {
+	   List<RowCol> locations = new LinkedList<>();
 	   for( int coli = 0; coli < COLS; coli++) {
-		   if ( isCandidate( rowi, coli, digi ) && ( ALL_COUNTS == groupSize || candidateCount( rowi, coli ) == groupSize)) 
-			   locations.add(new int[] {rowi, coli} );
+		   if ( isCandidate( ROWCOL[rowi][coli], digi ) && ( ALL_COUNTS == groupSize || candidateCount( ROWCOL[rowi][coli] ) == groupSize))
+			   locations.add(ROWCOL[rowi][coli] );
 	   }
 	   return locations;
 	}
 
 	/** Returns the locations of groups of this size with this candidate ones-based digit in this row. */
-	public List<int[]> candidateUnitGroupLocs( Unit unit, int uniti, int digi, int groupSize) {
+	public List<RowCol> candidateUnitGroupLocs( Unit unit, int uniti, int digi, int groupSize) {
 		return switch ( unit ) {
 		case ROW -> candidateRowGroupLocs( uniti, digi, groupSize);
 		case COL -> candidateColGroupLocs( uniti, digi, groupSize);
@@ -731,7 +669,7 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateRowGroupFind( int rowi, int digi, int groupSize, int groupi) {
 	   int count = 0;
 	   for( int coli = 0; coli < COLS; coli++) {
-		   if ( isCandidate( rowi, coli, digi ) && (ALL_COUNTS == groupSize || candidateCount( rowi, coli ) == groupSize)) {
+		   if ( isCandidate( ROWCOL[rowi][coli], digi ) && (ALL_COUNTS == groupSize || candidateCount( ROWCOL[rowi][coli] ) == groupSize)) {
 			   if ( count == groupi ) {
 				   return coli;
 			   }
@@ -799,7 +737,7 @@ public class Candidates implements Comparable<Candidates> {
 		return digitPairCounts;
 	}
 	
-	/** Returns the nth group with this number of candidates for this digit in this unit,.
+	/** Returns the nth group with this number of candidates for this digit in this unit.
 	 *  For example a groupSize of 2 will return the nth count of pairs in this unit with this candidate. */
 	public int candidateGroupFind( Utils.Unit unit, int uniti, int digi, int groupSize, int groupi) {
 		switch (unit) {
@@ -836,7 +774,7 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateColCount( int coli, int digi) {
 	   int count = 0;
 	   for( int rowi = 0; rowi < ROWS; rowi++) {
-		   if ( isCandidate( rowi, coli, digi )) count++;
+		   if ( isCandidate( ROWCOL[rowi][coli], digi )) count++;
 	   }
 	   return count;
 	}
@@ -845,17 +783,17 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateColGroupCount( int coli, int digi, int groupSize) {
 	   int count = 0;
 	   for( int rowi = 0; rowi < ROWS; rowi++) {
-		   if ( isCandidate( rowi, coli, digi ) && (ALL_COUNTS == groupSize || candidateCount( rowi, coli ) == groupSize)) count++;
+		   if ( isCandidate( ROWCOL[rowi][coli], digi ) && (ALL_COUNTS == groupSize || candidateCount( ROWCOL[rowi][coli] ) == groupSize)) count++;
 	   }
 	   return count;
 	}
 
 	/** Returns the locations of groups of this size with this candidate ones-based digit in this row. */
-	public List<int[]> candidateColGroupLocs( int coli, int digi, int groupSize) {
-	   List<int[]> locations = new LinkedList<>();		
+	public List<RowCol> candidateColGroupLocs( int coli, int digi, int groupSize) {
+	   List<RowCol> locations = new LinkedList<>();
 	   for( int rowi = 0; rowi < ROWS; rowi++) {
-		   if ( isCandidate( rowi, coli, digi ) && ( ALL_COUNTS == groupSize || candidateCount( rowi, coli ) == groupSize)) 
-			   locations.add(new int[] {rowi, coli} );
+		   if ( isCandidate( ROWCOL[rowi][coli], digi ) && ( ALL_COUNTS == groupSize || candidateCount( ROWCOL[rowi][coli] ) == groupSize))
+			   locations.add(ROWCOL[rowi][coli] );
 	   }
 	   return locations;
 	}
@@ -864,7 +802,7 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateColGroupFind( int coli, int digi, int groupSize, int groupi) {
 	   int count = 0;
 	   for( int rowi = 0; rowi < ROWS; rowi++) {
-		   if ( isCandidate( coli, rowi, digi ) && (ALL_COUNTS == groupSize || candidateCount( coli, rowi ) == groupSize)) {
+		   if ( isCandidate( ROWCOL[coli][rowi], digi ) && (ALL_COUNTS == groupSize || candidateCount( ROWCOL[coli][rowi] ) == groupSize)) {
 			   if ( count == groupi ) {
 				   return rowi;
 			   }
@@ -877,7 +815,7 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the first row number of the candidates digit in this col. */
 	public int candidateColLocation(int coli, int digi) {
 		for (int rowi = 0; rowi < ROWS; rowi++) {
-			if (isCandidate( rowi, coli, digi ))
+			if (isCandidate( ROWCOL[rowi][coli], digi ))
 				return rowi;
 		}
 		return NOT_FOUND;
@@ -899,10 +837,10 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the number of candidates for this digit in this box. */
 	public int candidateBoxCount( int boxi, int digi) {
 	   int count = 0;
-	   int [][] locs = Board.BOXR[ boxi ];
-	   for( int i = 0; i < BOXES; i++) {
-		   int[] rowcol = locs[ i ];
-		   if ( candidates[rowcol[0]][rowcol[1]][digi - 1] == digi) count++;
+	   RowCol[] locs = Board.BOXR[ boxi ];
+	   for( int loci = 0; loci < BOXES; loci++) {
+		   RowCol rowCol = locs[ loci ];
+		   if ( candidates[rowCol.row()][rowCol.col()][digi - 1] == digi) count++;
 	   }
 	   return count;
 	}
@@ -910,10 +848,9 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the number of groups with this one-based candidate digit in this box. */
 	public int candidateBoxGroupCount( int boxi, int digi, int groupSize) {
 	   int count = 0;
-	   int [][] locs = Board.BOXR[ boxi ];
-	   for( int i = 0; i < BOXES; i++) {
-		   int[] rowcol = locs[ i ];
-		   if (isCandidate(rowcol[0],rowcol[1],digi) && (ALL_COUNTS == groupSize || groupSize == candidateCount(rowcol[0],rowcol[1]))) {
+	   RowCol[] locs = Board.BOXR[ boxi ];
+	   for( int loci = 0; loci < BOXES; loci++) {
+		   if (isCandidate(locs[loci],digi) && (ALL_COUNTS == groupSize || groupSize == candidateCount(locs[loci]))) {
 			 count++;
 		   }
 	   }
@@ -921,13 +858,12 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	/** Returns the number of groups with this one-based candidate digit in this box. */
-	public List<int[]>  candidateBoxGroupLocs( int boxi, int digi, int groupSize) {
-	   List<int[]> locations = new LinkedList<>();		
-	   int [][] locs = Board.BOXR[ boxi ];
-	   for( int i = 0; i < BOXES; i++) {
-		   int[] rowCol = locs[ i ];
-		   if (isCandidate(rowCol[0],rowCol[1],digi) && (ALL_COUNTS == groupSize || groupSize == candidateCount(rowCol[0],rowCol[1]))) {
-			 locations.add( rowCol );
+	public List<RowCol>  candidateBoxGroupLocs( int boxi, int digi, int groupSize) {
+	   List<RowCol> locations = new LinkedList<>();
+	   RowCol[] locs = Board.BOXR[ boxi ];
+	   for( int loci = 0; loci < BOXES; loci++) {
+		   if (isCandidate(locs[loci],digi) && (ALL_COUNTS == groupSize || groupSize == candidateCount(locs[loci]))) {
+			 locations.add( locs[loci] );
 		   }
 	   }
 	   return locations;
@@ -936,10 +872,9 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the nth group of this size with this candidate ones-based digit in this box. */
 	public int candidateBoxGroupFind( int boxi, int digi, int groupSize, int groupi) {
 	   int count = 0;
-	   int [][] locs = Board.BOXR[ boxi ];
-	   for( int i = 0; i < BOXES; i++) {
-		   int[] rowcol = locs[ i ];
-		   if (isCandidate(rowcol[0],rowcol[1],digi - 1) && (ALL_COUNTS == groupSize || candidateCount(rowcol[0],rowcol[1]) == groupSize)) {
+	   RowCol[] locs = Board.BOXR[ boxi ];
+	   for( int loci = 0; loci < BOXES; loci++) {
+		   if (isCandidate(locs[loci],digi - 1) && (ALL_COUNTS == groupSize || candidateCount(locs[loci]) == groupSize)) {
 			   if ( count == groupi )
 				   return boxi;
 			   count++;
@@ -949,24 +884,24 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	/** Returns the first rowCol of the candidate digit in this box. */
-	public int [] candidateBoxLocation( int boxi, int digi) {
-	   int [][] locs = Board.BOXR[ boxi ];
-	   for( int i = 0; i < BOXES; i++) {
-		   int[] rowcol = locs[ i ];
-		   if ( candidates[rowcol[0]][rowcol[1]][digi - 1] == digi) 
-			   return rowcol;
+	public RowCol candidateBoxLocation( int boxi, int digi) {
+	   RowCol[] locs = Board.BOXR[ boxi ];
+	   for( int loci = 0; loci < BOXES; loci++) {
+		   RowCol rowCol = locs[loci];
+		   if ( candidates[rowCol.row()][rowCol.col()][digi - 1] == digi)
+			   return rowCol;
 	   }
 	   return null;
 	}
 
 	/** Returns the locations of candidates for this digit in this box. */
-	public List<int[]> candidateBoxLocations( int boxi, int digi) {
-	   List<int[]> locations = new ArrayList<>();
-	   int [][] locs = Board.BOXR[ boxi ];
+	public List<RowCol> candidateBoxLocations( int boxi, int digi) {
+	   List<RowCol> locations = new ArrayList<>();
+	   RowCol[] locs = Board.BOXR[ boxi ];
 	   for( int loci = 0; loci < BOXES; loci++) {
-		   int[] rowcol = locs[ loci ];
-		   if ( candidates[rowcol[0]][rowcol[1]][digi - 1] == digi) {
-			   locations.add(new int[] { rowcol[0], rowcol[1] });
+		   RowCol rowCol = locs[ loci ];
+		   if ( candidates[rowCol.row()][rowCol.col()][digi - 1] == digi) {
+			   locations.add(rowCol);
 		   }
 	   }
 	   return locations;
@@ -975,19 +910,19 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns a String showing all candidates for this box */
 	public String candidateBoxLocationsString(int blocki) {
 		StringBuilder sb = new StringBuilder("Candidates for block " + blocki + ":\n");
-		int[][] locations = Board.BOXR[blocki];
+		RowCol[] locs = Board.BOXR[blocki];
 		
-		for (int loci = 0; loci < locations.length; loci = loci + 3) {
-			int[] rowcol1 = locations[loci];
-			int[] rowcol2 = locations[loci+1];
-			int[] rowcol3 = locations[loci+2];
+		for (int loci = 0; loci < locs.length; loci = loci + 3) {
+			RowCol rowcol1 = locs[loci];
+			RowCol rowcol2 = locs[loci+1];
+			RowCol rowcol3 = locs[loci+2];
 			sb.append(format("Row/cols %d/%d,%d,%d: %s%s%s", 
-				rowcol1[0], rowcol1[1],rowcol2[1],rowcol3[1],
-				getCandidatesString(rowcol1[0], rowcol1[1]),
-				getCandidatesString(rowcol2[0], rowcol2[1]),
-				getCandidatesString(rowcol3[0], rowcol3[1])
+				rowcol1.row(), rowcol1.col(),rowcol2.col(),rowcol3.col(),
+				getCandidatesString(rowcol1),
+				getCandidatesString(rowcol2),
+				getCandidatesString(rowcol3)
 				));
-			if (loci < locations.length - 1) sb.append("\n");
+			if (loci < locs.length - 1) sb.append("\n");
 		}
 		return sb.toString();
 	}
@@ -998,18 +933,18 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param count - particular count or ALL_COUNTS
 	 * @return
 	 */
-	public List<int[]> getGroupLocations( int digi, int count ){
-	   List<int[]> locations = new LinkedList<>();
+	public List<RowCol> getGroupLocations( int digi, int count ){
+	   List<RowCol> locs = new LinkedList<>();
 	   for ( int rowi = 0; rowi < ROWS; rowi++ ) {
 		   for ( int coli = 0; coli < COLS; coli++ ) {
-			   if (( ALL_DIGITS == digi ) || isCandidate(rowi,coli,digi)) {
-				   if (( ALL_COUNTS == count ) || (count == candidateCount( rowi, coli ))) {
-					   locations.add( new int [] {rowi, coli } );
+			   if (( ALL_DIGITS == digi ) || isCandidate(ROWCOL[rowi][coli],digi)) {
+				   if (( ALL_COUNTS == count ) || (count == candidateCount( ROWCOL[rowi][coli] ))) {
+					   locs.add( ROWCOL[rowi][coli] );
 				   }					   
 			   }			   
 		   }		   
 	   }
-	   return locations;		
+	   return locs;
 	}
 	
 	/** Returns a list of locations in same unit having these particulars
@@ -1019,18 +954,18 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param firstRowCol - starting location
 	 * @return
 	 */
-	public List<int[]> getGroupSameUnitLocations( Unit unit, int digi, int count, int [] firstRowCol ){
-	   List<int[]> locations = new ArrayList<>();
+	public List<RowCol> getGroupSameUnitLocations( Unit unit, int digi, int count, RowCol firstRowCol ){
+	   List<RowCol> locations = new ArrayList<>();
        int uniti = switch ( unit ) {
-       		case ROW -> firstRowCol[0];
-			case COL -> firstRowCol[1];
-			case BOX -> Board.getBox(firstRowCol[0], firstRowCol[1]);
+       		case ROW -> firstRowCol.row();
+			case COL -> firstRowCol.col();
+			case BOX -> firstRowCol.box();
 	   };
 	   
-	   List<int[]> groupLocations = getGroupLocations( unit, uniti, digi, count );
+	   List<RowCol> groupLocations = getGroupLocations( unit, uniti, digi, count );
 	   // Remove the first location
-	   for( int [] loc : groupLocations ) {
-		   if ( !Arrays.equals( loc, firstRowCol)) {
+	   for( RowCol loc : groupLocations ) {
+		   if ( loc.equals( firstRowCol) ) {
 			   locations.add(loc);
 		   }
 	   }
@@ -1043,8 +978,8 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param firstRowCol - starting location
 	 * @return
 	 */
-	public List<int[]> getGroupAllUnitLocations( int digi, int count, int [] firstRowCol ){
-	   List<int[]> locations = new ArrayList<>();
+	public List<RowCol> getGroupAllUnitLocations( int digi, int count, RowCol firstRowCol ){
+	   List<RowCol> locations = new ArrayList<>();
 	   for ( Unit unit : Unit.values()) {
 		   locations.addAll( getGroupSameUnitLocations( unit, digi, count, firstRowCol ) );
 	   }
@@ -1059,30 +994,30 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param count - particular count or ALL_COUNTS
 	 * @return
 	 */
-	public List<int[]> getGroupLocations( Utils.Unit unit, int uniti, int digi, int count ){
-	   List<int[]> locations = new ArrayList<>();
+	public List<RowCol> getGroupLocations( Utils.Unit unit, int uniti, int digi, int count ){
+	   List<RowCol> locations = new ArrayList<>();
 	   if ( Utils.Unit.ROW == unit) {
 		   for ( int coli = 0; coli < COLS; coli++ ) {			   
-			   if (( ALL_DIGITS == digi ) || isCandidate(uniti,coli,digi)) {
-				   if (( ALL_COUNTS == count ) || (count == candidateCount( uniti, coli ))) {
-					   locations.add( new int [] {uniti,coli} );
+			   if (( ALL_DIGITS == digi ) || isCandidate( ROWCOL[uniti][coli],digi)) {
+				   if (( ALL_COUNTS == count ) || (count == candidateCount( ROWCOL[uniti][coli] ))) {
+					   locations.add( ROWCOL[uniti][coli] );
 				   }					   
 			   }			   
 		   }		   
 	   } else if ( Utils.Unit.COL == unit) {
 		   for ( int rowi = 0; rowi < ROWS; rowi++ ) {			   
-			   if (( ALL_DIGITS == digi ) || isCandidate(rowi,uniti,digi)) {
-				   if (( ALL_COUNTS == count ) || (count == candidateCount( rowi,uniti ))) {
-					   locations.add( new int [] {rowi,uniti} );
+			   if (( ALL_DIGITS == digi ) || isCandidate(ROWCOL[rowi][uniti],digi)) {
+				   if (( ALL_COUNTS == count ) || (count == candidateCount( ROWCOL[rowi][uniti] ))) {
+					   locations.add( ROWCOL[rowi][uniti] );
 				   }					   
 			   }			   
 		   }		   
 	   } else if ( Utils.Unit.BOX == unit) {
-		   int[][] locs = Board.getBoxRowCols(uniti);
+		   RowCol[] locs = Board.getBoxRowCols(uniti);
 		   for ( int loci = 0; loci < locs.length; loci++ ) {
-			   int [] rowCol = locs[ loci ];
-			   if (( ALL_DIGITS == digi ) || isCandidate(rowCol[0],rowCol[1],digi)) {
-				   if (( ALL_COUNTS == count ) || (count == candidateCount( rowCol[0],rowCol[1] ))) {
+			   RowCol rowCol = locs[ loci ];
+			   if (( ALL_DIGITS == digi ) || isCandidate(rowCol,digi)) {
+				   if (( ALL_COUNTS == count ) || (count == candidateCount( rowCol ))) {
 					   locations.add( rowCol );
 				   }					   
 			   }			   			   
@@ -1102,9 +1037,9 @@ public class Candidates implements Comparable<Candidates> {
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
 	 * @return zero based array of rowCol
 	 */
-	public boolean candidatesMatch(int rowi, int coli, int[] combi, boolean naked, int partialCount) {
-		if (NOT_OCCUPIED == getOccupied(rowi, coli)) {
-			short[] cellCandidates = candidates[rowi][coli]; // 9 digits long
+	public boolean candidatesMatch(RowCol rowCol, int[] combi, boolean naked, int partialCount) {
+		if (NOT_OCCUPIED == getOccupied(rowCol)) {
+			int[] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 			int matchCount = 0;
 			for (int candi = 0; candi < DIGITS; candi++) {
 			    // Combi contains candidate digit?
@@ -1148,11 +1083,11 @@ public class Candidates implements Comparable<Candidates> {
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
 	 * @return zero based array of rowCol
 	 */
-	public List<int[]> candidateComboRowLocations( int rowi, int [] combi, boolean naked, int partialCount ) {
-	   List<int[]> locations = new ArrayList<>();
+	public List<RowCol> candidateComboRowLocations( int rowi, int [] combi, boolean naked, int partialCount ) {
+	   List<RowCol> locations = new ArrayList<>();
 		for (int coli = 0; coli < COLS; coli++) {
-			if (candidatesMatch( rowi, coli, combi, naked, partialCount )) {
-				locations.add(new int[] { rowi, coli });
+			if (candidatesMatch( ROWCOL[rowi][coli], combi, naked, partialCount )) {
+				locations.add(ROWCOL[rowi][coli]);
 			}
 		}
 		return locations;
@@ -1166,7 +1101,7 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateComboRowCount( int rowi, int [] combi ) {
 	   int count = 0;
 	   for( int coli = 0; coli < COLS; coli++) {
-		   short [] cellCandidates = candidates[rowi][coli]; // 9 digits long
+		   int[] cellCandidates = candidates[rowi][coli]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
 			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
 				   count++;
@@ -1188,11 +1123,11 @@ public class Candidates implements Comparable<Candidates> {
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
 	 * @return zero based array of rowCol
 	 */
-	public List<int[]> candidateComboColLocations(int coli, int[] combi, boolean naked, int partialCount) {
-		List<int[]> locations = new ArrayList<>();
+	public List<RowCol> candidateComboColLocations(int coli, int[] combi, boolean naked, int partialCount) {
+		List<RowCol> locations = new ArrayList<>();
 		for (int rowi = 0; rowi < ROWS; rowi++) {
-			if (candidatesMatch(rowi, coli, combi, naked, partialCount)) {
-				locations.add(new int[] { rowi, coli });
+			if (candidatesMatch(ROWCOL[rowi][coli], combi, naked, partialCount)) {
+				locations.add(ROWCOL[rowi][coli]);
 			}
 		}
 		return locations;
@@ -1206,7 +1141,7 @@ public class Candidates implements Comparable<Candidates> {
 	public int candidateComboColCount( int coli, int [] combi ) {
 	   int count = 0;
 	   for( int rowi = 0; rowi < ROWS; rowi++) {
-		   short [] cellCandidates = candidates[rowi][coli]; // 9 digits long
+		   int [] cellCandidates = candidates[rowi][coli]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
 			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
 				   count++;
@@ -1225,13 +1160,13 @@ public class Candidates implements Comparable<Candidates> {
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
 	 * @return zero based array of rowCol
 	 */
-	public List<int[]> candidateComboBoxLocations(int boxi, int[] combi, boolean naked, int partialCount) {
-		List<int[]> locations = new ArrayList<>();
-		int [][] locs = Board.getBoxRowCols(boxi);
+	public List<RowCol> candidateComboBoxLocations(int boxi, int[] combi, boolean naked, int partialCount) {
+		List<RowCol> locations = new ArrayList<>();
+		RowCol[] locs = Board.getBoxRowCols(boxi);
 		for (int loci = 0; loci < locs.length; loci++) {
-			int [] rowCol = locs[ loci ];
-			if (candidatesMatch(rowCol[0], rowCol[1], combi, naked, partialCount)) {
-				locations.add(new int[] { rowCol[0], rowCol[1] });
+			RowCol rowCol = locs[ loci ];
+			if (candidatesMatch(rowCol, combi, naked, partialCount)) {
+				locations.add(rowCol);
 			}
 		}
 		return locations;
@@ -1252,11 +1187,11 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param combi array of zero based digits
 	 * @return zero based array of rowCol
 	 */
-	public int candidateComboLocCount( int [] combi, int [][] locs ) {
+	public int candidateComboLocCount( int [] combi, RowCol[] locs ) {
 	   int count = 0;
 	   for( int loci = 0; loci < locs.length; loci++) {
-			int [] rowCol = locs[ loci ];
-			short [] cellCandidates = candidates[rowCol[0]][rowCol[1]]; // 9 digits long
+		   RowCol rowCol = locs[ loci ];
+		   int[] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
 			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
 				   count++;
@@ -1271,10 +1206,10 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param combi array of zero based digits
 	 * @return zero based array of rowCol
 	 */
-	public int candidateComboLocCount( int [] combi, List<int []> locs ) {
+	public int candidateComboLocCount( int [] combi, List<RowCol> locs ) {
 	   int count = 0;
-	   for( int[] rowCol : locs) {
-			short [] cellCandidates = candidates[rowCol[0]][rowCol[1]]; // 9 digits long
+	   for( RowCol rowCol : locs) {
+		   int [] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
 			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
 				   count++;
@@ -1289,12 +1224,12 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param combi array of zero based digits
 	 * @return zero based array of rowCol
 	 */
-	public int digitLocCount(int[] combi, int [][] locs ) {
+	public int digitLocCount(int[] combi, RowCol[] locs ) {
 	   int count = 0;
 	   boolean [] counted = new boolean [] {false,false,false,false,false,false,false,false,false};
 	   for( int loci = 0; loci < locs.length; loci++) {
-		   int [] rowCol = locs[ loci ];
-		   short [] cellCandidates = candidates[rowCol[0]][rowCol[1]]; // 9 digits long
+		   RowCol rowCol = locs[ loci ];
+		   int [] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
 			   if (!counted[candi] && cellCandidates[ candi ] > 0 && containsDigit( combi, candi )) {
 				   count++;
@@ -1311,12 +1246,12 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param combi array of zero based digits
 	 * @return zero based array of rowCol
 	 */
-	public int digitLocCount( int[] combi, List<int []> locs ) {
+	public int digitLocCount( int[] combi, List<RowCol> locs ) {
 	   int count = 0;
 	   boolean [] counted = new boolean [] {false,false,false,false,false,false,false,false,false};
 	   for( int loci = 0; loci < locs.size(); loci++) {
-		   int [] rowCol = locs.get(loci);
-		   short [] cellCandidates = candidates[rowCol[0]][rowCol[1]]; // 9 digits long
+		   RowCol rowCol = locs.get(loci);
+		   int [] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
 			   if (!counted[candi] && cellCandidates[ candi ] > 0 && containsDigit( combi, candi )) {
 				   count++;
@@ -1333,13 +1268,13 @@ public class Candidates implements Comparable<Candidates> {
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
 	 * @return
 	 */
-	public List<int[]> candidateComboAllLocations(int[] combi, int partialCount) {
-		List<int[]> locations = new ArrayList<>();
+	public List<RowCol> candidateComboAllLocations(int[] combi, int partialCount) {
+		List<RowCol> locations = new ArrayList<>();
 
 		// Only go through rows
 		for (int rowi = 0; rowi < ROWS; rowi++) {
-			List<int[]> rowFound = candidateComboRowLocations(rowi, combi, NAKED, partialCount );
-			locations.addAll(rowFound);
+			List<RowCol> rowFinds = candidateComboRowLocations(rowi, combi, NAKED, partialCount );
+			locations.addAll(rowFinds);
 		}
 		return locations;
 	}
@@ -1368,39 +1303,39 @@ public class Candidates implements Comparable<Candidates> {
 	 *	   TODO - Consider the discussion of weak and strong links at Thonky XCycles - https://www.thonky.com/sudoku/x-cycles
 	 *		    Thonky considers both of these conjugates, but more candidates in the units make a weak link, zero makes a strong link
 	 */
-	public boolean isConjugate( int digit, int groupSize, int [] firstRowCol, int [] secondRowCol ) {
-		if ( Arrays.equals( firstRowCol , secondRowCol ))
+	public boolean isConjugate( int digit, int groupSize, RowCol firstRowCol, RowCol secondRowCol ) {
+		if ( firstRowCol.equals( secondRowCol ))
 			return false; // same rowCols		
-		if ( !isCandidate(firstRowCol[0], firstRowCol[1], digit) || !isCandidate(secondRowCol[0], secondRowCol[1], digit ))
+		if ( !isCandidate(firstRowCol, digit) || !isCandidate(secondRowCol, digit ))
 			return false;
 		if ( ALL_COUNTS != groupSize &&
-			 (groupSize != candidateCount(firstRowCol[0], firstRowCol[1] ) || 
-			  groupSize != candidateCount(secondRowCol[0], secondRowCol[1] )))
+			 (groupSize != candidateCount(firstRowCol ) ||
+			  groupSize != candidateCount(secondRowCol )))
 			return false;
 
 		// 3,7, 3,7 is a conjugate even with other 3,7s not in this unit. (NakedPair should knock these others out.)
 		// 3,7, 3,9 is not a conjugate pair if other 3s in this unit.		
-		short [] firstCandidates = getRemainingCandidates(firstRowCol[0], firstRowCol[1]);
-		short [] secondCandidates = getRemainingCandidates(secondRowCol[0], secondRowCol[1]);
+		int [] firstCandidates = getRemainingCandidates(firstRowCol);
+		int [] secondCandidates = getRemainingCandidates(secondRowCol);
 		if ( Arrays.equals(firstCandidates, secondCandidates))
 			return true;
 		
-		if (firstRowCol[0] == secondRowCol[0]) {
+		if (firstRowCol.row() == secondRowCol.row()) {
 			// sameRow
 			// check that unit has none of these candidates in other positions.
-			if ( 2 < candidateRowCount( firstRowCol[0], digit))
+			if ( 2 < candidateRowCount( firstRowCol.row(), digit))
 			   return false;
 		}
-		if (firstRowCol[1] == secondRowCol[1]) {
+		if (firstRowCol.col() == secondRowCol.col()) {
 			// sameCol
 			// check that unit has none of these candidates in other positions.
-			if ( 2 < candidateColCount( firstRowCol[1], digit))
+			if ( 2 < candidateColCount( firstRowCol.col(), digit))
 			   return false;
 		}
-		if (Board.getBox(firstRowCol) == Board.getBox(secondRowCol)) {
+		if (firstRowCol.box() == secondRowCol.box()) {
 			// sameBox
 			// check that unit has none of these candidates in other positions.
-			if ( 2 < candidateBoxCount( Board.getBox(firstRowCol), digit))
+			if ( 2 < candidateBoxCount( firstRowCol.box(), digit))
 			   return false;
 		}
 		return true;
@@ -1415,56 +1350,57 @@ public class Candidates implements Comparable<Candidates> {
 	 *     - no additional candidate locations in each unit 
 	 *		    // 3,7, 3,9 is not a conjugate pair if other 3s in this unit. It is a 3 conjugate if these are the only 3s.
 	 */
-	public List<int[]> isConjugateExtraLocations( int digit, int groupSize, int [] firstRowCol, int [] secondRowCol ) {
-		List<int[]> locs = new LinkedList<int[]>();
-		if ( Arrays.equals( firstRowCol , secondRowCol ))
+	public List<RowCol> isConjugateExtraLocations( int digit, int groupSize, RowCol firstRowCol, RowCol secondRowCol ) {
+		List<RowCol> locs = new LinkedList<RowCol>();
+		if ( firstRowCol.equals( secondRowCol ))
 			return locs; // same rowCols		
-		if ( !isCandidate(firstRowCol[0], firstRowCol[1], digit) || !isCandidate(secondRowCol[0], secondRowCol[1], digit ))
+		if ( !isCandidate(firstRowCol, digit) || !isCandidate(secondRowCol, digit ))
 			return locs;
 		if ( ALL_COUNTS != groupSize &&
-			 (groupSize != candidateCount(firstRowCol[0], firstRowCol[1] ) || 
-			  groupSize != candidateCount(secondRowCol[0], secondRowCol[1] )))
+			 (groupSize != candidateCount(firstRowCol ) ||
+			  groupSize != candidateCount(secondRowCol )))
 			return locs;
 
 		// 3,7, 3,7 is a conjugate even with other 3,7s not in this unit. (NakedPair should knock these others out.)
 		// 3,7, 3,9 is not a conjugate pair if other 3s in this unit.		
-		short [] firstCandidates = getRemainingCandidates(firstRowCol[0], firstRowCol[1]);
-		short [] secondCandidates = getRemainingCandidates(secondRowCol[0], secondRowCol[1]);
+		int [] firstCandidates = getRemainingCandidates(firstRowCol);
+		int [] secondCandidates = getRemainingCandidates(secondRowCol);
 		if ( Arrays.equals(firstCandidates, secondCandidates))
 			return locs;
 		
-		if (firstRowCol[0] == secondRowCol[0]) {
+		if (firstRowCol.row() == secondRowCol.row()) {
 			// sameRow
-			// list unit candidates in other positions.
-			List<int[]> rowLocs = candidateRowGroupLocs(firstRowCol[0], digit, ALL_COUNTS);
+			// list unit candidates
+			// in other positions.
+			List<RowCol> rowLocs = candidateRowGroupLocs(firstRowCol.row(), digit, ALL_COUNTS);
 			if ( rowLocs.size() > 2 ) {
-				for ( int[] rowLoc : rowLocs) {
-					if ( !Arrays.equals( rowLoc, firstRowCol ) && !Arrays.equals( rowLoc, secondRowCol )) {
-					  locs.add( rowLoc );	
+				for ( RowCol rowCol : rowLocs) {
+					if ( !rowCol.equals( firstRowCol ) && !rowCol.equals( secondRowCol )) {
+					  locs.add( rowCol );
 					}
 				}					
 			}
 		}
-		if (firstRowCol[1] == secondRowCol[1]) {
+		if (firstRowCol.col() == secondRowCol.col()) {
 			// sameCol
 			// list unit candidates in other positions.
-			List<int[]> colLocs = candidateColGroupLocs(firstRowCol[1], digit, ALL_COUNTS);
+			List<RowCol> colLocs = candidateColGroupLocs(firstRowCol.col(), digit, ALL_COUNTS);
 			if ( colLocs.size() > 2 ) {
-				for ( int[] colLoc : colLocs) {
-					if ( !Arrays.equals( colLoc, firstRowCol ) && !Arrays.equals( colLoc, secondRowCol )) {
-					  locs.add( colLoc );	
+				for ( RowCol rowCol : colLocs) {
+					if ( !rowCol.equals( firstRowCol ) && !rowCol.equals( secondRowCol )) {
+					  locs.add( rowCol );
 					}
 				}					
 			}
 		}
-		if (Board.getBox(firstRowCol) == Board.getBox(secondRowCol)) {
+		if (firstRowCol.box() == secondRowCol.box()) {
 			// sameBox
 			// list unit candidates in other positions.
-			List<int[]> boxLocs = candidateBoxGroupLocs(Board.getBox(firstRowCol), digit, ALL_COUNTS);
+			List<RowCol> boxLocs = candidateBoxGroupLocs(Board.getBox(firstRowCol), digit, ALL_COUNTS);
 			if ( boxLocs.size() > 2 ) {
-				for ( int[] boxLoc : boxLocs) {
-					if ( !Arrays.equals( boxLoc, firstRowCol ) && !Arrays.equals( boxLoc, secondRowCol )) {
-					  locs.add( boxLoc );	
+				for ( RowCol rowCol : boxLocs) {
+					if ( !rowCol.equals( firstRowCol ) && !rowCol.equals( secondRowCol )) {
+					  locs.add( rowCol );
 					}
 				}					
 			}			
@@ -1487,19 +1423,19 @@ public class Candidates implements Comparable<Candidates> {
 					// candidates = new short[ROWS][COLS][DIGITS];
 					if (cTo.candidates[rowi][coli][digi] < 0) {
 						if ( cFrom.candidates[rowi][coli][digi] >= 0 ) {
-							locs.add(new ChangeData(digi+1, new int[]{ rowi,coli}, Action.OCCUPY, 1 ));
+							locs.add(new ChangeData(digi+1, ROWCOL[rowi][coli], Action.OCCUPY, 1 ));
 						}
 					} else if (cTo.candidates[rowi][coli][digi] > 0) {
 						if ( cFrom.candidates[rowi][coli][digi] == 0 ) {
-							locs.add(new ChangeData(digi+1, new int[]{ rowi,coli}, Action.ADD, 1 ));
+							locs.add(new ChangeData(digi+1, ROWCOL[rowi][coli], Action.ADD, 1 ));
 						} else if ( cFrom.candidates[rowi][coli][digi] < 0 ) {
-							locs.add(new ChangeData(digi+1, new int[]{ rowi,coli}, Action.UNOCCUPY, 1 ));							
+							locs.add(new ChangeData(digi+1, ROWCOL[rowi][coli], Action.UNOCCUPY, 1 ));
 						}
 					} else { // cTo.candidates[rowi][coli][digi] == 0
 						if ( cFrom.candidates[rowi][coli][digi] > 0 ) {
-							locs.add(new ChangeData(digi+1, new int[]{ rowi,coli}, Action.REMOVE, 1 ));
+							locs.add(new ChangeData(digi+1, ROWCOL[rowi][coli], Action.REMOVE, 1 ));
 						} else if ( cFrom.candidates[rowi][coli][digi] < 0 ) {
-							locs.add(new ChangeData(digi+1, new int[]{ rowi,coli}, Action.UNOCCUPY, 1 ));							
+							locs.add(new ChangeData(digi+1, ROWCOL[rowi][coli], Action.UNOCCUPY, 1 ));
 						} 						
 					}
 				}			
@@ -1522,10 +1458,10 @@ public class Candidates implements Comparable<Candidates> {
 				cTo.setOccupied( change.rowCol, change.digit); break;
 			}
 			case UNOCCUPY: {
-				cTo.candidates[ change.rowCol[0] ][ change.rowCol[1] ][ change.digit - 1 ] = NOT_OCCUPIED; break;
+				cTo.candidates[ change.rowCol.row() ][ change.rowCol.col() ][ change.digit - 1 ] = NOT_OCCUPIED; break;
 			}
 			case ADD: {
-				cTo.addCandidate( change.rowCol[0], change.rowCol[1], change.digit ); break;
+				cTo.addCandidate( change.rowCol, change.digit ); break;
 			}
 			case REMOVE: {
 				cTo.removeCandidate( change.rowCol, change.digit ); break;
@@ -1545,10 +1481,11 @@ public class Candidates implements Comparable<Candidates> {
 			for ( int coli = 0; coli < COLS; coli++) {
 				if ( null != candidates[ rowi ][ coli ] && null == that.candidates[ rowi ][ coli ]) return 1;
 				if ( null == candidates[ rowi ][ coli ] && null != that.candidates[ rowi ][ coli ]) return -1;
-				if ( this.getOccupied( rowi,  coli) > 0 && that.getOccupied( rowi, coli ) == 0 ) return 1;
-				if ( this.getOccupied( rowi,  coli) == 0 && that.getOccupied( rowi, coli ) > 0 ) return -1;
-				if ( this.getOccupied( rowi,  coli) > 0 && that.getOccupied( rowi, coli ) > 0 ) 
-				   return this.getOccupied( rowi,  coli) - that.getOccupied( rowi, coli );
+				RowCol rowCol = ROWCOL[rowi][coli];
+				if ( this.getOccupied(rowCol) > 0 && that.getOccupied(rowCol) == 0 ) return 1;
+				if ( this.getOccupied(rowCol) == 0 && that.getOccupied(rowCol) > 0 ) return -1;
+				if ( this.getOccupied(rowCol) > 0 && that.getOccupied(rowCol) > 0 )
+				   return this.getOccupied(rowCol) - that.getOccupied(rowCol);
 			
 				// Same length of candidates
 				for ( int i = 0; i < candidates[ rowi ][ coli ].length; i++) {
@@ -1581,7 +1518,7 @@ public class Candidates implements Comparable<Candidates> {
        for( int rowi = 0; rowi < ROWS; rowi++ ) {
     	   if ( rowi > 0 ) sb.append( "\n" );
     	   for ( int coli = 0; coli < COLS; coli++) {
-    		   sb.append( getCandidatesString( rowi, coli ));				
+    		   sb.append( getCandidatesString(ROWCOL[rowi][coli]));
     	   }
     	   
        }
@@ -1597,7 +1534,7 @@ public class Candidates implements Comparable<Candidates> {
 			if (rowi > 0)
 				sb.append("\n");
 			for (int coli = 0; coli < COLS; coli++) {
-				sb.append(getCandidatesStringCompact(rowi, coli));
+				sb.append(getCandidatesStringCompact(ROWCOL[rowi][coli]));
 			}
 
 		}
@@ -1615,7 +1552,7 @@ public class Candidates implements Comparable<Candidates> {
 	    	   for ( int coli = 0; coli < COLS - 3; coli++) {
 	    		   if ( coli % 3 == 0 )
 	    			   boxLength = 0;
-	    		   String rcCandidates = getCandidatesStringCompact( rowi, coli );
+	    		   String rcCandidates = getCandidatesStringCompact(ROWCOL[rowi][coli] );
 	    		   boxLength += rcCandidates.length();
 	    		   if ( boxLength > longestBox[coli / 3] ) {
 	    			   longestBox[coli / 3] = boxLength;
@@ -1631,7 +1568,7 @@ public class Candidates implements Comparable<Candidates> {
 	    	   if ( rowi > 0 ) sb.append( "\n" );
 	    	   int boxLength = 0;
 	    	   for ( int coli = 0; coli < COLS; coli++) {
-	    		   String rcCandidates = getCandidatesStringCompact( rowi, coli );
+	    		   String rcCandidates = getCandidatesStringCompact(ROWCOL[rowi][coli] );
 	    		   sb.append( rcCandidates );
 	    		   boxLength += rcCandidates.length();
 		    	   if ( coli % 3 == 2  && coli / 3 < 2) {
@@ -1648,12 +1585,12 @@ public class Candidates implements Comparable<Candidates> {
 		
 	/** Returns a compact list of candidates. 
 	 * Like an Arrays.toString, but less space. */
-	public String getCandidatesString(int rowi, int coli) {
+	public String getCandidatesString( RowCol rowCol ) {
 		StringBuilder compact = new StringBuilder();
 		compact.append("{");
 		for (int digi = 0; digi < DIGITS; digi++) {
 			if (digi > 0) compact.append(",");
-			compact.append(candidates[rowi][coli][digi]);
+			compact.append(candidates[rowCol.row()][rowCol.col()][digi]);
 		}
 		compact.append("}");
 		return compact.toString();
@@ -1662,21 +1599,17 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns a compact list of candidates. Ignores non-candidates. 
 	 * For example, candidates {0,1,-2} returns {1,-2}.
 	 * Like an Arrays.toString, but 0 entries are ignored. */
-	public String getCandidatesStringCompact( int rowi, int coli ) {
+	public String getCandidatesStringCompact( RowCol rowCol ) {
  	   StringBuilder compact = new StringBuilder();
  	   compact.append( "{" );
  	   for ( int digi = 0; digi < DIGITS; digi++) {
  		   // if (( digi > 0 ) && (0 != candidates[rowi][coli][digi - 1]))
  		   // compact.append( ",");
- 		   if ( 0 != candidates[rowi][coli][ digi ]) {
-		   		compact.append( candidates[rowi][coli][ digi ]);
+ 		   if ( 0 != candidates[rowCol.row()][rowCol.col()][ digi ]) {
+		   		compact.append( candidates[rowCol.row()][rowCol.col()][ digi ]);
  		   }
  	   }
  	   compact.append( "}" );
        return compact.toString();    		   
 	}
-	public String getCandidatesStringCompact( int [] rowCol ) {
-		return getCandidatesStringCompact( rowCol[0], rowCol[1]);
-	}
-
 }

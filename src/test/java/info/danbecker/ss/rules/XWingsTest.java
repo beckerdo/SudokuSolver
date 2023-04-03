@@ -3,6 +3,7 @@ package info.danbecker.ss.rules;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -291,18 +292,18 @@ public class XWingsTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
 		// Need to update candidates to get it into the proper state
-   	    candidates.removeCandidates( new int[]{0,4}, new int[]{1,6});
-   	    candidates.removeCandidates( new int[]{0,5}, new int[]{6});
-   	    candidates.removeCandidates( new int[]{1,1}, new int[]{9});
-   	    candidates.removeCandidates( new int[]{1,5}, new int[]{6});
-   	    candidates.removeCandidates( new int[]{1,7}, new int[]{1});
-   	    candidates.removeCandidates( new int[]{2,4}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{2,7}, new int[]{1,6});
-   	    candidates.removeCandidates( new int[]{2,8}, new int[]{1});
-   	    candidates.removeCandidates( new int[]{4,0}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{4,1}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{5,1}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{8,4}, new int[]{1,6});
+   	    candidates.removeCandidates( ROWCOL[0][4], new int[]{1,6});
+   	    candidates.removeCandidates( ROWCOL[0][5], new int[]{6});
+   	    candidates.removeCandidates( ROWCOL[1][1], new int[]{9});
+   	    candidates.removeCandidates( ROWCOL[1][5], new int[]{6});
+   	    candidates.removeCandidates( ROWCOL[1][7], new int[]{1});
+   	    candidates.removeCandidates( ROWCOL[2][4], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[2][7], new int[]{1,6});
+   	    candidates.removeCandidates( ROWCOL[2][8], new int[]{1});
+   	    candidates.removeCandidates( ROWCOL[4][0], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[4][1], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[5][1], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[8][4], new int[]{1,6});
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		
 		XWings rule = new XWings();

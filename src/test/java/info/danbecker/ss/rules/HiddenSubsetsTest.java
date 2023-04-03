@@ -1,16 +1,17 @@
 package info.danbecker.ss.rules;
 
+import info.danbecker.ss.RowCol;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import static info.danbecker.ss.Candidates.NOT_NAKED;
 import static info.danbecker.ss.Candidates.FULL_COMBI_MATCH;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class HiddenSubsetsTest {
 	// Puzzle from https://www.sudokuoftheday.com/techniques/hidden-pairs-triples
-	// Web site has additional candidates knocked out. 
+	// Website has additional candidates knocked out.
 // Row 2, combo [0, 2], has 2 hidden locations, 4 candidates with 2 extra
 //    rowCol=2/5, candidates=[1, 0, 3, 4, 0, 0, 0, 0, 0]
 //    rowCol=2/8, candidates=[1, 2, 3, 0, 0, 0, 0, 0, 0]
@@ -65,17 +66,17 @@ public class HiddenSubsetsTest {
 
 		int [] combo13 = new int [] {0, 2};
 		// Row test
-		List<int[]> hiddenPairs = candidates.candidateComboRowLocations( 2, combo13, NOT_NAKED, 2 );
+		List<RowCol> hiddenPairs = candidates.candidateComboRowLocations( 2, combo13, NOT_NAKED, 2 );
      	assertEquals(2, hiddenPairs.size());
-  		assertTrue( Arrays.equals( new int [] {2, 5}, hiddenPairs.get( 0 )) );
-  		assertTrue( Arrays.equals( new int [] {2, 8}, hiddenPairs.get( 1 )) );
+  		assertEquals( ROWCOL[2][5], hiddenPairs.get( 0 ));
+  		assertEquals( ROWCOL[2][8], hiddenPairs.get( 1 ));
 
 		int [] combo12 = new int [] {0, 1};
 		// Col test
 		hiddenPairs = candidates.candidateComboColLocations( 8, combo12, NOT_NAKED, FULL_COMBI_MATCH );
      	assertEquals(2, hiddenPairs.size());
-  		assertTrue( Arrays.equals( new int [] {1, 8}, hiddenPairs.get( 0 )) );
-  		assertTrue( Arrays.equals( new int [] {2, 8}, hiddenPairs.get( 1 )) );
+  		assertEquals( ROWCOL[1][8], hiddenPairs.get( 0 ));
+  		assertEquals( ROWCOL[2][8], hiddenPairs.get( 1 ));
 
 		board = new Board(HIDDENPAIRSCOL4);
 		// Col 3, combo [7, 8], has 2 hiddens with 5 candidates
@@ -89,8 +90,8 @@ public class HiddenSubsetsTest {
 		// Col test
 		hiddenPairs = candidates.candidateComboColLocations( 4, combo25, NOT_NAKED, FULL_COMBI_MATCH );
      	assertEquals(2, hiddenPairs.size());
-  		assertTrue( Arrays.equals( new int [] {3, 4}, hiddenPairs.get( 0 )) );
-  		assertTrue( Arrays.equals( new int [] {4, 4}, hiddenPairs.get( 1 )) );
+  		assertEquals( ROWCOL[3][4], hiddenPairs.get( 0 ));
+  		assertEquals( ROWCOL[4][4], hiddenPairs.get( 1 ));
   		
 		// Run rule
 		board = new Board(HIDDENTRIPLE_347_COL4);
@@ -105,11 +106,11 @@ public class HiddenSubsetsTest {
 
 		int [] combo236 = new int [] {2, 3, 6};
 		// Col test
-		List<int[]> hiddenTriples = candidates.candidateComboColLocations( 4, combo236, NOT_NAKED, 2 );
+		List<RowCol> hiddenTriples = candidates.candidateComboColLocations( 4, combo236, NOT_NAKED, 2 );
      	assertEquals(3, hiddenTriples.size());
-  		assertTrue( Arrays.equals( new int [] {0, 4}, hiddenTriples.get( 0 )) );
-  		assertTrue( Arrays.equals( new int [] {3, 4}, hiddenTriples.get( 1 )) );
-  		assertTrue( Arrays.equals( new int [] {5, 4}, hiddenTriples.get( 2 )) );
+  		assertEquals( ROWCOL[0][4], hiddenTriples.get( 0 ));
+  		assertEquals( ROWCOL[3][4], hiddenTriples.get( 1 ));
+  		assertEquals( ROWCOL[5][4], hiddenTriples.get( 2 ));
 	}
 
   	@Test
@@ -131,14 +132,14 @@ public class HiddenSubsetsTest {
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
-		System.out.println( "Candidates=" + candidates.toStringCompact());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		UpdateCandidatesRule rule = new HiddenSubsets(2);
 		assertEquals(rule.ruleName(), "HiddenSubsets2" );
 
 		// Locations test
 		List<int[]> locations = rule.locations(board, candidates);
-		assertTrue(null != locations);
+		assertNotNull( locations);
 		// System.out.println(format("Rule %s reports %d finds", rule.ruleName(), locations.size()));
 		// int [] encoded = locations.get( 0 );
 		// Encoded location=[13, 36, 39]
@@ -169,14 +170,14 @@ public class HiddenSubsetsTest {
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
-		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Run rule
 		UpdateCandidatesRule rule = new HiddenSubsets( 3 );
 		assertEquals(rule.ruleName(), "HiddenSubsets3" );
 		// Locations test
 		List<int[]> locs = rule.locations(board, candidates);
-		assertTrue(null != locs);
+		assertNotNull( locs);
 		assertEquals( 1, locs.size());
 		// Update test
 		int prevEntries = candidates.entryCount();
@@ -204,7 +205,7 @@ public class HiddenSubsetsTest {
 		assertEquals(rule.ruleName(), "HiddenSubsets2" );
 		// Locations test
 		List<int[]> locs = rule.locations(board, candidates);
-		assertTrue(null != locs);
+		assertNotNull(locs);
 		assertEquals( 2, locs.size());
 		// Update test
 		int prevEntries = candidates.entryCount();

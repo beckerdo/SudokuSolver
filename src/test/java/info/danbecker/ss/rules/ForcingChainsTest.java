@@ -1,9 +1,11 @@
 package info.danbecker.ss.rules;
 
+import info.danbecker.ss.RowCol;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static info.danbecker.ss.Board.ROWCOL;
+import static org.junit.jupiter.api.Assertions.*;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
@@ -28,20 +30,20 @@ public class ForcingChainsTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
 		// Need to update candidates to get it into the proper state
-		candidates.removeCandidates( new int[]{0,0}, new int[]{4,9});
-		candidates.removeCandidates( new int[]{0,1}, new int[]{4});
-		candidates.removeCandidates( new int[]{0,2}, new int[]{4,9});
-		candidates.removeCandidates( new int[]{3,0}, new int[]{3});
-		candidates.removeCandidates( new int[]{3,6}, new int[]{4,7});
-		candidates.removeCandidates( new int[]{4,6}, new int[]{4,7});
-		candidates.removeCandidates( new int[]{5,3}, new int[]{8});
-		candidates.removeCandidates( new int[]{8,8}, new int[]{4});
+		candidates.removeCandidates( ROWCOL[0][0], new int[]{4,9});
+		candidates.removeCandidates( ROWCOL[0][1], new int[]{4});
+		candidates.removeCandidates( ROWCOL[0][2], new int[]{4,9});
+		candidates.removeCandidates( ROWCOL[3][0], new int[]{3});
+		candidates.removeCandidates( ROWCOL[3][6], new int[]{4,7});
+		candidates.removeCandidates( ROWCOL[4][6], new int[]{4,7});
+		candidates.removeCandidates( ROWCOL[5][3], new int[]{8});
+		candidates.removeCandidates( ROWCOL[8][8], new int[]{4});
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		
 		ForcingChains rule = new ForcingChains();
 		// Locations test
 		List<int[]> encs = rule.locations(board, candidates);
-		assertTrue(null != encs);
+		assertNotNull( encs);
 		assertEquals(2, encs.size());
 
         // Update test
@@ -58,8 +60,8 @@ public class ForcingChainsTest {
 	public void testEncodeDecode() {
 		// Middle box double pair
 		int digit = 5;	
-		int [] origRowCol = new int [] { 0, 1 };
-		int [] destRowCol = new int [] { 7, 8 };
+		RowCol origRowCol = ROWCOL[0][1];
+		RowCol destRowCol = ROWCOL[7][8];
 		
 		int [] enc = ForcingChains.encode( origRowCol, digit, destRowCol, 4, 5 );
 
@@ -74,10 +76,10 @@ public class ForcingChainsTest {
    		// Test the string
    		String encString = ForcingChains.encodingToString(enc);
    		// System.out.println( "Enc=" +encString);
-   		assertTrue(null != encString);
+   		assertNotNull(encString);
    		assertTrue(encString.contains("digit=" + digit));
-   		assertTrue(encString.contains("[" + origRowCol[0] + "," + origRowCol[1] + "]"));
-   		assertTrue(encString.contains("[" + destRowCol[0] + "," + destRowCol[1] + "]"));
+   		assertTrue(encString.contains( origRowCol.toString() ));
+   		assertTrue(encString.contains( destRowCol.toString() ));
 	}
 
 	public static String P20230108_FORCINGCHAIN_51797 =
@@ -90,25 +92,25 @@ public class ForcingChainsTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
 		// Need to update candidates to get it into the proper state
-   	    candidates.removeCandidates( new int[]{0,4}, new int[]{1,6});
-   	    candidates.removeCandidates( new int[]{0,5}, new int[]{6});
-   	    candidates.removeCandidates( new int[]{1,1}, new int[]{9});
-   	    candidates.removeCandidates( new int[]{1,5}, new int[]{6});
-   	    candidates.removeCandidates( new int[]{1,7}, new int[]{1});
-   	    candidates.removeCandidates( new int[]{2,4}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{2,7}, new int[]{1,6});
-   	    candidates.removeCandidates( new int[]{2,8}, new int[]{1});
-   	    candidates.removeCandidates( new int[]{4,0}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{4,1}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{5,1}, new int[]{2});
-   	    candidates.removeCandidates( new int[]{8,4}, new int[]{1,6});
+   	    candidates.removeCandidates( ROWCOL[0][4], new int[]{1,6});
+   	    candidates.removeCandidates( ROWCOL[0][5], new int[]{6});
+   	    candidates.removeCandidates( ROWCOL[1][1], new int[]{9});
+   	    candidates.removeCandidates( ROWCOL[1][5], new int[]{6});
+   	    candidates.removeCandidates( ROWCOL[1][7], new int[]{1});
+   	    candidates.removeCandidates( ROWCOL[2][4], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[2][7], new int[]{1,6});
+   	    candidates.removeCandidates( ROWCOL[2][8], new int[]{1});
+   	    candidates.removeCandidates( ROWCOL[4][0], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[4][1], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[5][1], new int[]{2});
+   	    candidates.removeCandidates( ROWCOL[8][4], new int[]{1,6});
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		
 		ForcingChains rule = new ForcingChains();
 		// Locations test
 		List<int[]> encs = rule.locations(board, candidates);
-		assertTrue(null != encs);
+		assertNotNull(encs);
 		assertEquals(6, encs.size());
 
         // Update test

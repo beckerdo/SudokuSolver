@@ -13,11 +13,11 @@ import java.util.List;
  * The implementation can be a general tree 0* number of children,
  * or an N-ary tree with exactly N children which can be null.
  * See TreeIter for iteration, TreeNodeTest for searching.
- *  
+ * <p>
  * Implementation largely taken from 
  * https://stackoverflow.com/questions/3522454/how-to-implement-a-tree-data-structure-in-java
  * https://github.com/gt4dev/yet-another-tree-structure
- * 
+ * <p>
  * Original implementation had an index on every node for search , but
  * this implementation removes that and has tree traversal.
  */
@@ -34,7 +34,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		// Creates the general tree with linked list.
 		this.data = data;
 		this.nAry = 0;
-		this.children = new LinkedList<TreeNode<T>>();
+		this.children = new LinkedList<>();
 	}
 	
 	public TreeNode(T data, int nAry) {
@@ -43,7 +43,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		if (nAry < 1)
 			throw new IllegalArgumentException( "TreeNode with nAry=" + nAry );
 		this.nAry = nAry;
-		this.children = new ArrayList<TreeNode<T>>( nAry );
+		this.children = new ArrayList<>( nAry );
 	}
 	
 	public boolean isRoot() {
@@ -77,7 +77,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	}
 
 	/** For general tree, this equals this node self and all children.
-	 * For nAry tree, this include self, children, and null child nodes.
+	 * For nAry tree, this includes self, children, and null child nodes.
 	 * @return
 	 */
 	public int nodeCount() {
@@ -89,7 +89,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	}
 
 	/** For general tree, this equals this node self and all children.
-	 * For nAry tree, this include self, children, and null child nodes.
+	 * For nAry tree, this includes self, children, and null child nodes.
 	 * @return
 	 */
 	public int deepestLevel() {
@@ -108,11 +108,8 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		int startLevel = this.getLevel();
 		for (TreeNode<T> node : this) {
 			int nodeLevel = node.getLevel();
-			StringBuilder indent = new StringBuilder();
-			for (int i = startLevel; i < nodeLevel; i++) {
-				indent.append("   ");
-			}
-			System.out.println(format("%s%d-%d-%s", indent.toString(), nodeLevel, nodeCount++, node.data));
+			String indent = "   ".repeat(Math.max(0, nodeLevel - startLevel));
+			System.out.println(format("%s%d-%d-%s", indent, nodeLevel, nodeCount++, node.data));
 		}
 	}
 	
@@ -150,7 +147,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		// Populate null children
 		if ( nAry > 0 && 0 == children.size()) {
 			for ( int childi = 0; childi < nAry; childi++ ) {
-				TreeNode<T> childNode = new TreeNode<T>(null, nAry);
+				TreeNode<T> childNode = new TreeNode<>(null, nAry);
 				childNode.parent = this;
 				children.add(childi, childNode);
 				// this.registerChildForSearch(childNode);
@@ -181,7 +178,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		// Populate null children
 		if ( nAry > 0 && 0 == children.size()) {
 			for ( int childi = 0; childi < nAry; childi++ ) {
-				TreeNode<T> childNode = new TreeNode<T>(null, nAry);
+				TreeNode<T> childNode = new TreeNode<>(null, nAry);
 				childNode.parent = this;
 				children.add(childi, childNode);
 				// this.registerChildForSearch(childNode);
@@ -195,7 +192,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	public TreeNode<T> addChild(T childData) {
 		if (nAry > 0) 
 			throw new IllegalArgumentException( "Use setChild for n-Ary tree");
-		TreeNode<T> childNode = new TreeNode<T>(childData);
+		TreeNode<T> childNode = new TreeNode<>(childData);
 		childNode.parent = this;
 		this.children.add(childNode);
 		return childNode;
@@ -210,13 +207,13 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		// Populate null children
 		if ( nAry > 0 && 0 == children.size()) {
 			for ( int childi = 0; childi < nAry; childi++ ) {
-				TreeNode<T> childNode = new TreeNode<T>(null, nAry);
+				TreeNode<T> childNode = new TreeNode<>(null, nAry);
 				childNode.parent = this;
 				children.add(childi, childNode);
 				// this.registerChildForSearch(childNode);
 			}
 		}
-		TreeNode<T> childNode = new TreeNode<T>(childData, nAry);
+		TreeNode<T> childNode = new TreeNode<>(childData, nAry);
 		childNode.parent = this;
 		if ( !children.contains(childNode) ) {
 			children.set(i, childNode);
@@ -225,7 +222,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	}
 
 	/** This searches the given node and below,
-	 * and returns the first non-null non-null node with matching data. 
+	 * and returns the first non-null node with matching data.
 	 * If this is a node in the middle of the tree,
 	 * it will not find the higher nodes. 
 	 * Use root to search entire tree. 
@@ -253,7 +250,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	 * and returns a list of all non-null nodes with matching data.
 	 */ 
 	public List<TreeNode<T>> findTreeNodes(Comparable<T> cmp) {
-		List<TreeNode<T>> list = new LinkedList<TreeNode<T>> ();
+		List<TreeNode<T>> list = new LinkedList<> ();
 		if (cmp.compareTo(this.data) == 0) {
 			list.add(this);
 		}
@@ -272,7 +269,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	public String toString( List<TreeNode<T>> tree ) {
 		if ( null == tree )
 			return "null tree";
-		StringBuffer sb = new StringBuffer( "(" + tree.size() + " nodes)");
+		StringBuilder sb = new StringBuilder( "(" + tree.size() + " nodes)");
 		for ( int i = 0; i < tree.size(); i++ ) {
 			if ( i > 0 ) sb.append(",");
 			TreeNode<T> item = tree.get( i );
@@ -288,6 +285,6 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 
 	@Override
 	public Iterator<TreeNode<T>> iterator() {
-		return new TreeNodeIter<T>(this);
+		return new TreeNodeIter<>(this);
 	}
 }

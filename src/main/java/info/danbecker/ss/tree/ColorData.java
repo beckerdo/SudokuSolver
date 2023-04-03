@@ -1,6 +1,6 @@
 package info.danbecker.ss.tree;
 
-import java.util.Arrays;
+import info.danbecker.ss.RowCol;
 
 /**
  * ColorData - useful for ColorChains where locations
@@ -11,10 +11,10 @@ import java.util.Arrays;
  */
 public class ColorData implements Comparable<ColorData>{
 	public int digit; // ones-based digit
-	public int [] rowCol;
+	public RowCol rowCol;
 	public int color; // -1 for no color, 0,1,... for other colors
 	
-	public ColorData ( int digit, int[] rowCol, int color ) {
+	public ColorData ( int digit, RowCol rowCol, int color ) {
 		this.digit = digit;
 		this.rowCol = rowCol;
 		this.color = color;		
@@ -28,7 +28,7 @@ public class ColorData implements Comparable<ColorData>{
 			if (null == that.rowCol )
 				return 1;
 
-			return Arrays.compare( rowCol, that.rowCol );
+			return rowCol.compareTo(that.rowCol );
 		}
 	};
 	
@@ -39,10 +39,10 @@ public class ColorData implements Comparable<ColorData>{
 		if ( this.digit < that.digit) return -1;
 		if ( this.digit > that.digit) return 1;
 		
-		if ( this.rowCol[0] < that.rowCol[0]) return -1;
-		if ( this.rowCol[0] > that.rowCol[0]) return 1;
-		if ( this.rowCol[1] < that.rowCol[1]) return -1;
-		if ( this.rowCol[1] > that.rowCol[1]) return 1;
+		if ( this.rowCol.row() < that.rowCol.row()) return -1;
+		if ( this.rowCol.row() > that.rowCol.row()) return 1;
+		if ( this.rowCol.col() < that.rowCol.col()) return -1;
+		if ( this.rowCol.col() > that.rowCol.col()) return 1;
 
 		if ( this.color < that.color) return -1;
 		if ( this.color > that.color) return 1;
@@ -55,16 +55,15 @@ public class ColorData implements Comparable<ColorData>{
         if (obj == this) return true; 
   
         // Compare with class type
-        if (!(obj instanceof ColorData)) return false; 
+        if (!(obj instanceof ColorData that)) return false;
 
-        // Cast to same type  
-        ColorData that = (ColorData) obj; 
+        // Cast to same type, using pattern matching
 		return 0 == this.compareTo( that );
 	}
 	
 	@Override
 	public String toString() {
-		return java.lang.String.format( "Digi=%d, rowCol=[%d,%d], color=%d",
-			digit, rowCol[0],rowCol[1],color);
+		return java.lang.String.format( "Digi=%d, rowCol=%s, color=%d",
+			digit, rowCol, color);
 	}
 }

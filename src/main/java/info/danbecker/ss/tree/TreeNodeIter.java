@@ -13,7 +13,7 @@ public class TreeNodeIter<T> implements Iterator<TreeNode<T>> {
 		ProcessParent, ProcessChildCurNode, ProcessChildSubNode
 	}
 
-	private TreeNode<T> treeNode;
+	private final TreeNode<T> treeNode;
 
 	public TreeNodeIter(TreeNode<T> treeNode) {
 		this.treeNode = treeNode;
@@ -23,7 +23,7 @@ public class TreeNodeIter<T> implements Iterator<TreeNode<T>> {
 
 	private ProcessStages doNext;
 	private TreeNode<T> next;
-	private Iterator<TreeNode<T>> childrenCurNodeIter;
+	private final Iterator<TreeNode<T>> childrenCurNodeIter;
 	private Iterator<TreeNode<T>> childrenSubNodeIter;
 
 	@Override

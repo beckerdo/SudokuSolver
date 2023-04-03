@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
@@ -80,7 +81,7 @@ public class DoublePairsTest {
 		
 		// Locations test
 		List<int[]> locations = rule.locations(board, candidates);
-		assertTrue(null != locations);
+		assertNotNull(locations);
 		assertEquals(2, locations.size());
 		// double pair for digit 3 at row/col=2/4,2/5 and row/col=7/4,7/5
 		// double pair for digit 4 at row/col=4/1,4/6 and row/col=5/1,5/6

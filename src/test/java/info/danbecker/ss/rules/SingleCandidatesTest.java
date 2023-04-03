@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
@@ -34,15 +34,16 @@ public class SingleCandidatesTest {
 		Board board = new Board( SINGLECANDIDATE );
 		Candidates candidates = new Candidates( board );
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
-		
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+
 		UpdateCandidatesRule rule = new SingleCandidates();
 		assertEquals( rule.ruleName(), rule.getClass().getSimpleName() );
-		
+
 		List<int[]> locations = rule.locations(board, candidates);
-		assertTrue( null != locations  );
+		assertNotNull( locations  );
 		assertEquals( 1, locations.size() );
 		int [] location = locations.get( 0 );
-		assertTrue( null != location  );
+		assertNotNull( location  );
 		assertEquals( 2, location[ 0 ] );
 		assertEquals( 7, location[ 1 ] );
     }

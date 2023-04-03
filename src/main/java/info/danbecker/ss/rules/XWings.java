@@ -2,7 +2,9 @@ package info.danbecker.ss.rules;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
@@ -58,14 +60,14 @@ public class XWings implements UpdateCandidatesRule {
 			// Perform only removal according to rowCol orientation
 			if ( rowCol == 0 ) {
 				// if rows match, remove col candidates not in these rows
-				updates += candidates.removeColCandidatesNotIn(digit, colA, new int[][] {new int[] {rowA,colA}, new int[] {rowB,colA} });
-				updates += candidates.removeColCandidatesNotIn(digit, colB, new int[][] {new int[] {rowA,colB}, new int[] {rowB,colB} });
+				updates += candidates.removeColCandidatesNotIn(digit, colA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowB][colA] });
+				updates += candidates.removeColCandidatesNotIn(digit, colB, new RowCol[] {ROWCOL[rowA][colB], ROWCOL[rowB][colB] });
 				System.out.println( format("%s removed %d digit %d %s candidates not in rowCols [%d,%d] [%d,%d]", 
 					ruleName(), updates, digit, (rowCol==0)?"row":"col",rowA, colA, rowB, colB ) );
 			} else {
 				// if cols match, remove row candidates not in these cols.
-				updates += candidates.removeRowCandidatesNotIn(digit, rowA, new int[][] {new int[] {rowA,colA}, new int[] {rowA,colB} });
-				updates += candidates.removeRowCandidatesNotIn(digit, rowB, new int[][] {new int[] {rowB,colA}, new int[] {rowB,colB} });
+				updates += candidates.removeRowCandidatesNotIn(digit, rowA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowA][colB] });
+				updates += candidates.removeRowCandidatesNotIn(digit, rowB, new RowCol[] {ROWCOL[rowB][colA], ROWCOL[rowB][colB] });
 				System.out.println( format("%s removed %d digit %d %s candidates not in rowCols [%d,%d] [%d,%d]", 
 						ruleName(), updates, digit, (rowCol==0)?"row":"col",rowA, colA, rowB, colB ) );
 			}

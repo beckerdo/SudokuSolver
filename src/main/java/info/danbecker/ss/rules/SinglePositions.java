@@ -2,7 +2,9 @@ package info.danbecker.ss.rules;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
@@ -34,8 +36,8 @@ public class SinglePositions implements UpdateCandidatesRule {
 			int digit = location[ 3 ];
 
 			System.out.println(format("Rule %s places digit %d at rowCol [%d,%d]", ruleName(), digit, rowi, coli));
-			board.set(rowi, coli, digit); // simply puts a digit in the board
-			candidates.setOccupied(rowi, coli, digit); // places entry, removes candidates
+			board.set(ROWCOL[rowi][coli], digit); // simply puts a digit in the board
+			candidates.setOccupied(ROWCOL[rowi][coli], digit); // places entry, removes candidates
 			return 1;
 		}
 		return 0;
@@ -45,7 +47,7 @@ public class SinglePositions implements UpdateCandidatesRule {
 	public List<int[]> locations(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		ArrayList<int[]> locations = new ArrayList<int[]>();
+		ArrayList<int[]> locations = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if (!board.digitCompleted(digi)) {
 				for (int rowi = 0; rowi < ROWS; rowi++) {
@@ -64,8 +66,8 @@ public class SinglePositions implements UpdateCandidatesRule {
 				for (int boxi = 0; boxi < BOXES; boxi++) {
 					if (1 == candidates.candidateBoxCount(boxi, digi)) {
 						// Add this digit, boxi
-						int[] rowcol = candidates.candidateBoxLocation(boxi, digi);
-						locations.add(new int[] { rowcol[0], rowcol[1], boxi, digi });
+						RowCol rowCol = candidates.candidateBoxLocation(boxi, digi);
+						locations.add(new int[] { rowCol.row(), rowCol.col(), boxi, digi });
 					}
 				}
 			}

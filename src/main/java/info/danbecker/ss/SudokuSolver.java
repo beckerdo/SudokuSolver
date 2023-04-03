@@ -1,44 +1,27 @@
 package info.danbecker.ss;
 
+import info.danbecker.ss.rules.*;
+import org.apache.commons.cli.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.json.JSONObject;
-import org.json.JSONArray;
-
-import info.danbecker.ss.rules.CandidateLines;
-import info.danbecker.ss.rules.DoublePairs;
-import info.danbecker.ss.rules.NakedSubsets;
-import info.danbecker.ss.rules.HiddenSubsets;
-import info.danbecker.ss.rules.ForcingChains;
-import info.danbecker.ss.rules.SingleCandidates;
-import info.danbecker.ss.rules.SinglePositions;
-import info.danbecker.ss.rules.Swordfish;
-import info.danbecker.ss.rules.UpdateCandidatesRule;
-import info.danbecker.ss.rules.XWings;
-import info.danbecker.ss.rules.LegalCandidates;
-import info.danbecker.ss.rules.MultipleLines;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
 import static java.lang.String.format;
 
 /**
  * SudokuSolver
  * <p>
  * Sudoku is a popular number puzzle in which the board is a 9 by 9 square
- * of 81 cells (or blocks). There are 9 rows, 9 columns, and 9 boxes of
- * 3 by 3 cells. You must put the digits 1 through 9 in each cell so that
+ * of 81 cells (or blocks). There are 9 rows, 9 columns, and 9 boxes of 9 cells.
+ * You must put the digits 1 through 9 in each cell so that
  * no row, column, or box has a duplicate digit.
  * <p>
  * Some solvers call the row, column, and box groups "houses", but here
@@ -58,23 +41,19 @@ import static java.lang.String.format;
  * <p>
  * Puzzles in text contain 81 spaces,containing digits, ( .)(empty space), or (cr,lf,/,-)(end of row)
  * Comments are lines beginning with #   
- * 
+ * <p>
  * TODOs:
  * Verbose command line option for all the printlns, perhaps specify rule, rowCol, digit in command line.
- * For row,cols have a defined object based on record class/immutable
- *    RowCol should contain Box, String, and other location APIs
- * 	  Remove int[] from APIs to simplify, Remove List<rowCol> and rowCol[] duality and replication.
- *    Perhaps use pair as rowcol as shown at https://stackoverflow.com/questions/521171/a-java-collection-of-value-pairs-tuples
- *    Use singleton pattern to have only one RowCol instantiation. Get rid of int[] instatiations.
- * Consider String and list output used on websites such as r1c5, r345c8, r4c89 
+ * Consider RowCol String and list output used on websites such as r1c5, r345c8, r4c89
  * Update digits/rows/cols/boxes to be 0-based everywhere internally and 1-based externally (input parsing and output strings).
- * Replace location in rules to encoded/decoded/string objects
+ * Update UpdateCandidatesRule interface
+ *    Replace location in rules to encoded/decoded/string objects
+ *    All rule updates should report occupy and candidate location changes to aid in debugging.
+ *    Change int updateCandidates to something that encodes actions occupy/add/remove, digit, and location.
  * Refactor APIs to use Units and remove APIs that have Row/Col/Box in name.
  * Consider matchers for use with lists of locations. Match by candidate count, combo, etc.
  *    This might cut down on the number of candidate row col box methods.
  * Move json resources from main to test
- * All rule updates should report occupy and candidate location changes to aid in debugging.
- *    Change int updateCandidates to something that encodes actions occupy/add/remove, digit, and location.
  * For puzzles with known solutions (all of them), validate every location/update action (OCCUPY,REMOVE)
  *    Should rule perform validation, or the solver
  *    BUG LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
@@ -88,10 +67,6 @@ public class SudokuSolver {
 	protected static String inputPuzzleFile;
 	protected static List<String> statedPuzzleRules;
 
-	/**
-	 * Gather program options, read input flight plans, read and append comments, write outputs. 
-	 * @param args
-	 */
 	public static void main(String[] args) throws Exception {
 		Logger.getGlobal().info( "SudokuSolver by Dan Becker" );
 		System.out.println("SudokuSolver by Dan Becker");
@@ -99,7 +74,7 @@ public class SudokuSolver {
 		parseGatherOptions(args);
 
 		if ( null != inputPuzzleFile ) {
-			// Logger.getGlobal().info( format( "Input puzzle file=%s", inputPuzzleFile ));
+			Logger.getGlobal().info( format( "Input puzzle file=%s", inputPuzzleFile ));
 			
 			// From https://stackoverflow.com/questions/6164448/convert-url-to-normal-windows-filename-java
 			// The current recommendation (with JDK 1.7+) is to convert URL → URI → Path/File/String. 
@@ -119,7 +94,7 @@ public class SudokuSolver {
 	            inputPuzzleSolution = jsonPuzzle.getString("solution");
 	            JSONArray jsonArray = jsonPuzzle.getJSONArray("rules");
 	            if ( null != jsonArray && jsonArray.length() > 0) {
-	            	statedPuzzleRules = new ArrayList<String>( jsonArray.length());
+	            	statedPuzzleRules = new ArrayList<>( jsonArray.length());
 	            	for(int i = 0; i < jsonArray.length(); i++){
 	            	    statedPuzzleRules.add(jsonArray.getString(i));
 	            	}		            	
@@ -127,7 +102,7 @@ public class SudokuSolver {
 	        }
 
 		} else if ( null != inputPuzzleText ) {
-			// Logger.getGlobal().info( format( "Input puzzle text=%s",inputPuzzleText ));
+			Logger.getGlobal().info( format( "Input puzzle text=%s",inputPuzzleText ));
 		}
 		
 		if ( null != inputPuzzleText ) {
@@ -195,9 +170,9 @@ public class SudokuSolver {
 			new HiddenSubsets(2), // HiddenPairs
 			new HiddenSubsets(3), // HiddenTriples
 			new XWings(),
-			// new ColorChains(),
 			new Swordfish(),
-			new ForcingChains(),
+			// new ColorChains(),		// bugs
+			// new ForcingChains(),		// bugs
 		};
 		
 		// Number of possibles/updates/timings reported
@@ -232,7 +207,6 @@ public class SudokuSolver {
 				   } else {
 					   System.out.println();
 				   }
-
 			   }
 		       // System.out.println("Candidates=" + candidates.toString());
 			   int changes = rule.updateCandidates( board, solution, candidates, locations);
@@ -255,10 +229,10 @@ public class SudokuSolver {
 			   // Do some validation checks.
 			   if ( !board.legal())
 				   throw new IllegalStateException( "***Warning, rule=" + rule.ruleName() + " illegal board");
-			   List<int[]> emptyLocs = candidates.emptyLocations();
+			   List<RowCol> emptyLocs = candidates.emptyLocations();
 			   if ( 0 < emptyLocs.size()) {
 				   System.out.println( format("***Warning, rule=%s, %d empty locations at %s", 
-					rule.ruleName(), emptyLocs.size(), Utils.locationsString(candidates.emptyLocations()) ));
+					rule.ruleName(), emptyLocs.size(), RowCol.toString(candidates.emptyLocations()) ));
 				   // No need to iterate through rules.
 				   break;
 			   }		   
@@ -285,10 +259,10 @@ public class SudokuSolver {
 		System.out.println("Board=" + board.toSudokuString("-"));
 		if (!solved) {
 			System.out.println("Remaining candidates=\n" + candidates.toStringBoxed());
-			List<int[]> emptyLocs = candidates.emptyLocations();
+			List<RowCol> emptyLocs = candidates.emptyLocations();
 			if (0 < emptyLocs.size()) {
 				System.out.println(format("***Warning, %d empty locations at %s", 
-						emptyLocs.size(), Utils.locationsString(candidates.emptyLocations())));
+						emptyLocs.size(), RowCol.toString(candidates.emptyLocations())));
 			}
 		}
 		if ( null != statedPuzzleRules ) {

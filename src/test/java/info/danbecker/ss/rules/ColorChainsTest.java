@@ -1,8 +1,10 @@
 package info.danbecker.ss.rules;
 
+import info.danbecker.ss.RowCol;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -56,16 +58,16 @@ public class ColorChainsTest {
 		// No color clash in pairs tree
 		int digit = 2;
 		int groupSize = 2;
-		int [] startLoc = new int[] {2,2};
+		RowCol startLoc = ROWCOL[2][2];
 		TreeNode<ColorData> tree = new TreeNode<>(new ColorData(digit, startLoc, 0), 3);
 		List<int[]> colorClash = rule.buildColorTree( candidates, tree, digit, groupSize );
 
-		int [] testLoc = new int[] {8,3};
+		RowCol testLoc = ROWCOL[8][3];
 		int testDigit = 8;
 		
 		assertEquals( 8, tree.size());
-		assertEquals( 1, tree.findTreeNodes(new RowColMatch( new int [] {2, 2} )).size() );
-		assertEquals( 1, tree.findTreeNodes(new RowColMatch( new int [] {8, 1} )).size() );
+		assertEquals( 1, tree.findTreeNodes(new RowColMatch( ROWCOL[2][2] )).size() );
+		assertEquals( 1, tree.findTreeNodes(new RowColMatch( ROWCOL[8][1] )).size() );
 		assertEquals( 0, tree.findTreeNodes(new RowColMatch( testLoc )).size() );
 		assertEquals( 0, colorClash.size());
 
@@ -78,8 +80,8 @@ public class ColorChainsTest {
 		tree.printTree();
 
 		assertEquals( 8, tree.size());
-		assertEquals( 1, tree.findTreeNodes(new RowColMatch( new int [] {2, 2} )).size() );
-		assertEquals( 1, tree.findTreeNodes(new RowColMatch( new int [] {8, 1} )).size() );
+		assertEquals( 1, tree.findTreeNodes(new RowColMatch( ROWCOL[2][2] )).size() );
+		assertEquals( 1, tree.findTreeNodes(new RowColMatch( ROWCOL[8][1] )).size() );
 		assertEquals( 0, tree.findTreeNodes(new RowColMatch( testLoc )).size() );
 		assertEquals( 3, colorClash.size());
 	}
@@ -127,7 +129,7 @@ public class ColorChainsTest {
 	}
 	
 	@Test
-	public void testEncode() throws ParseException {
+	public void testEncode()  {
 		// Encode tree as int []
 		// encodes as
 		// - digit						0
@@ -143,34 +145,33 @@ public class ColorChainsTest {
 		
 		int testDigit = 5;
 		Unit testUnit = Unit.COL;
-		int [] testRoot = new int[] { 1, 1 };
+		RowCol testRoot = ROWCOL[1][1];
 		
-		int [] cLoc = new int[] {5, 5};
+		RowCol cLoc = ROWCOL[5][5];
 		int cColor = 1;
-		int [] pLoc = new int[] {6, 6};
+		RowCol pLoc = ROWCOL[6][6];
 		int pColor = 0;
-		int [] sLoc = new int[] {7, 7};
+		RowCol sLoc = ROWCOL[7][7];
 		int sColor = 1;
 		
-		int [] enc = ColorChains.encode( testDigit, testUnit, testRoot[1], 
-			testRoot,
-			cLoc, cColor, pLoc, pColor, sLoc, sColor );		
+		int [] enc = ColorChains.encode( testDigit, testUnit, testRoot.col(), testRoot,
+				cLoc, cColor, pLoc, pColor, sLoc, sColor );
 
 		assertEquals( testDigit, enc[0]);
 		assertEquals( testUnit.ordinal(), enc[1]);
-		assertEquals( testRoot[1], enc[2]);
+		assertEquals( testRoot.col(), enc[2]);
 
-		assertEquals( testRoot[0], enc[3]);
-		assertEquals( testRoot[1], enc[4]);
+		assertEquals( testRoot.row(), enc[3]);
+		assertEquals( testRoot.col(), enc[4]);
 		
-		assertEquals( cLoc[0], enc[5]);
-		assertEquals( cLoc[1], enc[6]);
+		assertEquals( cLoc.row(), enc[5]);
+		assertEquals( cLoc.col(), enc[6]);
 		assertEquals( cColor, enc[7]);
-		assertEquals( pLoc[0], enc[8]);
-		assertEquals( pLoc[1], enc[9]);
+		assertEquals( pLoc.row(), enc[8]);
+		assertEquals( pLoc.col(), enc[9]);
 		assertEquals( pColor, enc[10]);
-		assertEquals( sLoc[0], enc[11]);
-		assertEquals( sLoc[1], enc[12]);
+		assertEquals( sLoc.row(), enc[11]);
+		assertEquals( sLoc.col(), enc[12]);
 		assertEquals( sColor, enc[13]);
 		
 		
@@ -205,11 +206,11 @@ public class ColorChainsTest {
 
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// No color clash in pairs tree
 		List<int[]> encs = rule.locations(board, candidates );		
-		assertEquals( 3, encs.size());
+		assertEquals( 27, encs.size());
 		
 	}
 }

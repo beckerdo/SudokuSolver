@@ -2,7 +2,9 @@ package info.danbecker.ss.rules;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
@@ -19,7 +21,7 @@ import static info.danbecker.ss.Board.NOT_FOUND;
  * a candidate digit twice in a rowCol and that rowCol is repeated on a different rowCol.
  * The candidate digits should be the only one in the cell.
  * If these form a rectangle, the other digits inside or out can be removed.
- * (Notice one rowCol direction will be a Candidate line, the other rowCol direction will be a Double Pair line. 
+ * (Notice one rowCol direction will be a Candidate line, the other rowCol direction will be a Double Pair line.)
  * 
  * Info based on clues given at
  * https://www.sudokuoftheday.com/techniques/double-pairs
@@ -41,17 +43,17 @@ public class DoublePairs implements UpdateCandidatesRule {
 		int updates = 0;
 		if ( null == locations) return updates;
 		if (locations.size() > 0) {
-			// Just correct 1 location (which might update multiple candidates.
+			// Just correct 1 location (which might update multiple candidates.)
 			int[] loc = locations.get(0);
 			int digit = loc[ 0 ];
 			int rowA = loc[ 1 ]; int rowB = loc[ 5 ];
 			int colA = loc[ 2 ]; int colB = loc[ 8 ];
 			// if rows match, remove row candidates not in these cols
-			updates += candidates.removeRowCandidatesNotIn(digit, rowA, new int[][] {new int[] {rowA,colA}, new int[] {rowA,colB} });
-			updates += candidates.removeRowCandidatesNotIn(digit, rowB, new int[][] {new int[] {rowB,colA}, new int[] {rowB,colB} });
+			updates += candidates.removeRowCandidatesNotIn(digit, rowA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowA][colB] });
+			updates += candidates.removeRowCandidatesNotIn(digit, rowB, new RowCol[] {ROWCOL[rowB][colA], ROWCOL[rowB][colB] });
 			// if cols match, remove col candidates not in these rows.
-			updates += candidates.removeColCandidatesNotIn(digit, colA, new int[][] {new int[] {rowA,colA}, new int[] {rowB,colB} });
-			updates += candidates.removeColCandidatesNotIn(digit, colB, new int[][] {new int[] {rowA,colA}, new int[] {rowB,colB} });
+			updates += candidates.removeColCandidatesNotIn(digit, colA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowB][colB] });
+			updates += candidates.removeColCandidatesNotIn(digit, colB, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowB][colB] });
 			// CandidateLines does similar, but just for one row or col pair, not double pair box
 			System.out.println( format("%s removed %d digit %d candidates not in rowCols [%d,%d],[%d,%d]", 
 				ruleName(), updates, digit, rowA, colA, rowB, colB ) );
@@ -72,7 +74,7 @@ public class DoublePairs implements UpdateCandidatesRule {
 	public List<int[]> locations(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		ArrayList<int[]> locations = new ArrayList<int[]>();
+		ArrayList<int[]> locations = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if ( !board.digitCompleted( digi )) {
 				// If found, record int[]{ digit, firstRow, firstCol, secondRow, secondCol
@@ -84,7 +86,7 @@ public class DoublePairs implements UpdateCandidatesRule {
 				   if ((firstRow[ 0 ] == NOT_FOUND && 2 == colLocs.length ) || 
 					   (firstRow[ 0 ] != NOT_FOUND && contains( colLocs, firstRow[2] ) && contains( colLocs, firstRow[ 4 ]))) {
 					   // Box candidates for first row OR a second row with these candidates
-				       int boxi = (firstRow[ 0 ] == NOT_FOUND) ?  Board.getBox(rowi, colLocs[0]) : Board.getBox(rowi, firstRow[2]) ;
+				       int boxi = (firstRow[ 0 ] == NOT_FOUND) ?  ROWCOL[rowi][colLocs[0]].box() : ROWCOL[rowi][firstRow[2]].box() ;
 				       if ( 2 == candidates.candidateBoxCount(boxi, digi)) {
 				          if ( NOT_FOUND == firstRow[0] ) {
 				             firstRow[0] = digi; 

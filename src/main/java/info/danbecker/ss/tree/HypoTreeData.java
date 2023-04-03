@@ -1,10 +1,10 @@
 package info.danbecker.ss.tree;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 
 /**
  * HypoTreeData represents 
@@ -14,12 +14,12 @@ import info.danbecker.ss.Candidates;
 public class HypoTreeData implements Comparable<HypoTreeData>{
 
 	public int digit; // ones-based digit
-	public int [] rowCol;
+	public RowCol rowCol;
 	public Candidates beforeCandidates;
 	public Candidates candidates;
 	public List<ChangeData> actions;
 	
-	public HypoTreeData( int digit, int[] rowCol, Candidates candidates ) {
+	public HypoTreeData( int digit, RowCol rowCol, Candidates candidates ) {
 		this.digit = digit;
 		this.rowCol = rowCol;
 		this.actions = new LinkedList<ChangeData>();
@@ -36,7 +36,7 @@ public class HypoTreeData implements Comparable<HypoTreeData>{
 			if (null == that.rowCol )
 				return 1;
 
-			return Arrays.compare( rowCol, that.rowCol );
+			return rowCol.compareTo( that.rowCol );
 		}
 	};
 	
@@ -47,10 +47,10 @@ public class HypoTreeData implements Comparable<HypoTreeData>{
 		if ( this.digit < that.digit) return -1;
 		if ( this.digit > that.digit) return 1;
 		
-		if ( this.rowCol[0] < that.rowCol[0]) return -1;
-		if ( this.rowCol[0] > that.rowCol[0]) return 1;
-		if ( this.rowCol[1] < that.rowCol[1]) return -1;
-		if ( this.rowCol[1] > that.rowCol[1]) return 1;
+		if ( this.rowCol.row() < that.rowCol.row()) return -1;
+		if ( this.rowCol.row() > that.rowCol.row()) return 1;
+		if ( this.rowCol.col() < that.rowCol.col()) return -1;
+		if ( this.rowCol.col() > that.rowCol.col()) return 1;
 
 		// Comparing by size might actually cause similars to be equal
 		// Might want to fully compare items.
@@ -78,9 +78,9 @@ public class HypoTreeData implements Comparable<HypoTreeData>{
 	
 	@Override
 	public String toString() {
-		return java.lang.String.format( "Digit=%d,rowCol=[%d,%d],cands=%s,actions=%d,afterCands=%s",
-			digit, rowCol[0],rowCol[1], 
-			beforeCandidates.getCandidatesStringCompact(rowCol[0],rowCol[1]), actions.size(),
-			candidates.getCandidatesStringCompact(rowCol[0],rowCol[1]));
+		return java.lang.String.format( "Digit=%d,rowCol=%s,cands=%s,actions=%d,afterCands=%s",
+			digit, rowCol,
+			beforeCandidates.getCandidatesStringCompact(rowCol), actions.size(),
+			candidates.getCandidatesStringCompact(rowCol));
 	}
 }

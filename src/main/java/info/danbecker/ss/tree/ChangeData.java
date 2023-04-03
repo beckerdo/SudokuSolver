@@ -3,6 +3,7 @@ package info.danbecker.ss.tree;
 import java.util.Arrays;
 
 import info.danbecker.ss.Candidates.Action;
+import info.danbecker.ss.RowCol;
 
 /**
  * ChangeData represents an action (OCCUPY,ADD,REMOVE)
@@ -18,11 +19,11 @@ import info.danbecker.ss.Candidates.Action;
 public class ChangeData implements Comparable<ChangeData>{
 
 	public int digit; // ones-based digit
-	public int [] rowCol;
+	public RowCol rowCol;
 	public Action action;
 	int updateCount;
 	
-	public ChangeData( int digit, int[] rowCol, Action action, int updateCount ) {
+	public ChangeData( int digit, RowCol rowCol, Action action, int updateCount ) {
 		this.digit = digit;
 		this.rowCol = rowCol;
 		this.action = action;
@@ -37,7 +38,7 @@ public class ChangeData implements Comparable<ChangeData>{
 			if (null == that.rowCol )
 				return 1;
 
-			return Arrays.compare( rowCol, that.rowCol );
+			return rowCol.compareTo(that.rowCol);
 		}
 	};
 	
@@ -48,10 +49,10 @@ public class ChangeData implements Comparable<ChangeData>{
 		if ( this.digit < that.digit) return -1;
 		if ( this.digit > that.digit) return 1;
 		
-		if ( this.rowCol[0] < that.rowCol[0]) return -1;
-		if ( this.rowCol[0] > that.rowCol[0]) return 1;
-		if ( this.rowCol[1] < that.rowCol[1]) return -1;
-		if ( this.rowCol[1] > that.rowCol[1]) return 1;
+		if ( this.rowCol.row() < that.rowCol.row()) return -1;
+		if ( this.rowCol.row() > that.rowCol.col()) return 1;
+		if ( this.rowCol.col() < that.rowCol.col()) return -1;
+		if ( this.rowCol.col() > that.rowCol.col()) return 1;
 
 		if ( this.action.ordinal() < that.action.ordinal()) return -1;
 		if ( this.action.ordinal() > that.action.ordinal()) return 1;
@@ -75,6 +76,6 @@ public class ChangeData implements Comparable<ChangeData>{
 	@Override
 	public String toString() {
 		return java.lang.String.format( "Action=%s,digit=%d,rowCol=[%d,%d], updates=%d",
-			action.name(),digit, rowCol[0],rowCol[1], updateCount);
+			action.name(),digit, rowCol.row(),rowCol.col(), updateCount);
 	}
 }

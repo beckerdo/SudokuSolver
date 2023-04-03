@@ -4,12 +4,13 @@ import info.danbecker.ss.Board;
 
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.Candidates.Action;
-import info.danbecker.ss.Utils;
+import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils.Unit;
 import info.danbecker.ss.tree.ChangeData;
 import info.danbecker.ss.tree.HypoTreeData;
 import info.danbecker.ss.tree.TreeNode;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 
 import java.util.LinkedList;
@@ -65,23 +66,24 @@ public class ForcingChains implements UpdateCandidatesRule {
 		if ( -1 != minEnci ) {
 			   int[] enc = encs.get( minEnci );
 			   int digit = enc[2];
-			   int [] loc = new int [] { enc[3], enc[4] };			   
-			   String cStr = candidates.getCandidatesStringCompact( loc[0],loc[1] );
+			   int [] loc = new int [] { enc[3], enc[4] };
+			   RowCol rowCol = ROWCOL[loc[0]][loc[1]];
+			   String cStr = candidates.getCandidatesStringCompact( rowCol );
 			   
 			   // Validation, if available
 			   if ( null != solution ) {
-				   int cellStatus = solution.get(loc[0], loc[1]);
+				   int cellStatus = solution.get(rowCol);
 				   if ( cellStatus != digit ) {
 			    	throw new IllegalArgumentException( format("Rule %s would like set digit %d (solution=%d) at loc %s.",
-			    		ruleName(), digit, cellStatus, Utils.locationString(loc[0],loc[1])));		    		
+			    		ruleName(), digit, cellStatus, rowCol));
 				   }
 			   }
 			    
-			   board.set( loc[0],loc[1], digit );
-			   candidates.setOccupied( loc[0], loc[1], digit );
+			   board.set( rowCol, digit );
+			   candidates.setOccupied( rowCol, digit );
 			   updates += 1; 
 	     	   System.out.println( format("%s occupied digit %d at rowCol %s, previous candidates %s", 
-	     			 this.ruleName(), digit, Utils.locationString(loc), cStr));
+	     			 this.ruleName(), digit, rowCol, cStr));
 		}
 		return updates;
 	}
@@ -92,23 +94,23 @@ public class ForcingChains implements UpdateCandidatesRule {
      * The starting digit location is given to help with testability. 
 	 */
 	public List<int[]> locations(Board board, Candidates candidates) {
-		List<int[]> matched = new LinkedList<int[]>();
+		List<int[]> matched = new LinkedList<>();
 		
-		List<int[]> digitPairs = candidates.getGroupLocations(Candidates.ALL_DIGITS, 2);
+		List<RowCol> digitPairs = candidates.getGroupLocations(Candidates.ALL_DIGITS, 2);
 		// if (digitPairs.size() > 5) { // artificial threshhold, consider removing.	
 		while ( 0 < digitPairs.size()) {
 			// System.out.println( format("Digit pair count %d %s", digitPairs.size(), Utils.locationsString(digitPairs)));
-		int [] loc = digitPairs.get(0);
+		RowCol loc = digitPairs.get(0);
 		boolean pairAdded = false;
 		// int [] loc = new int [] { 0, 4 };
 		// boolean verbose = (0 == loc[0] && 0 == loc[1]); 
 		boolean verbose = false; // help debug location
-		List<Integer> locCandidates = candidates.getCandidatesList(loc[0], loc[1]);
+		List<Integer> locCandidates = candidates.getCandidatesList(loc);
 		if (2 == locCandidates.size()) {	
 			if ( verbose ) {
-				System.out.println( format( "%s testing digit pair %d/%d, rowCol [%d,%d], candidates %s",
+				System.out.println( format( "%s testing rowCol %s, candidates %s",
 				ruleName(),
-			 	loc[0],loc[1], candidates.getCandidatesStringCompact(loc[0],loc[1])));
+			 	loc, candidates.getCandidatesStringCompact(loc)));
 			}
 			int firstDigit = locCandidates.get(0);
 			TreeNode<HypoTreeData> firstChoice = new TreeNode<>( new HypoTreeData( firstDigit, loc, candidates ), 3 );
@@ -138,18 +140,16 @@ public class ForcingChains implements UpdateCandidatesRule {
 					TreeNode<HypoTreeData> foundNode = longerTree.findTreeNode(new RowColMatch(node.data.rowCol));
 					List<TreeNode<HypoTreeData>> foundNodes = longerTree.findTreeNodes(new RowColMatch(node.data.rowCol));
 					if (1 < foundNodes.size()) {
-						System.out.println(format("Warning found %d nodes matching loc [%d,%d]", foundNodes.size(),
-							node.data.rowCol[0], node.data.rowCol[1]));
+						System.out.println(format("Warning found %d nodes matching loc %s", foundNodes.size(), node.data.rowCol));
 					}
 					// If both trees have the location
 					if (null != foundNode) {
 						// Test if the two nodes produce the same outcome.
 						if (node.data.digit == foundNode.data.digit) {
-							System.out.println(format("%s rowCol [%d,%d] both candidates %s lead to digit %d at [%d,%d], tree depths=%d,%d",
+							System.out.println(format("%s rowCol %s both candidates %s lead to digit %d at loc %s, tree depths=%d,%d",
 								ruleName(),
-							 	loc[0], loc[1], candidates.getCandidatesStringCompact(loc[0],loc[1]), foundNode.data.digit,
-							 	foundNode.data.rowCol[0], foundNode.data.rowCol[1],
-							 	node.getLevel(),foundNode.getLevel()));
+							 	loc, candidates.getCandidatesStringCompact(loc), foundNode.data.digit,
+							 	foundNode.data.rowCol,node.getLevel(),foundNode.getLevel()));
 							matched.add( encode( loc, foundNode.data.digit, foundNode.data.rowCol, node.getLevel(),foundNode.getLevel() ) );
 							System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 							
@@ -184,7 +184,7 @@ public class ForcingChains implements UpdateCandidatesRule {
 			Candidates candidates = nodeData.candidates;
 			if ( 0 == candidates.candidateCount()) return;
 			int digit = nodeData.digit;
-			int [] rowCol = nodeData.rowCol;
+			RowCol rowCol = nodeData.rowCol;
 			List<ChangeData> actions = nodeData.actions;
 			// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 			if ( candidates.isCandidate(rowCol, digit)) {
@@ -198,21 +198,21 @@ public class ForcingChains implements UpdateCandidatesRule {
 
 				TreeNode<HypoTreeData> root = node.getRoot();
 				for( Unit unit : Unit.values() ) {
-					List<int[]> sameUnit = candidates.getGroupSameUnitLocations( unit, ALL_DIGITS, 1, rowCol );
+					List<RowCol> sameUnit = candidates.getGroupSameUnitLocations( unit, ALL_DIGITS, 1, rowCol );
 					for ( int uniti = 0; uniti < sameUnit.size(); uniti++ ) {
-						int [] candLoc = sameUnit.get(uniti);
+						RowCol candLoc = sameUnit.get(uniti);
 						TreeNode<HypoTreeData> foundNode = root.findTreeNode(new RowColMatch( candLoc ));
 						if ( null == foundNode ) {
 							// Location does not exist in tree
 							// System.out.println( format("%sDigit %d at [%d,%d] has new same %s single at [%d,%d] with digit %s",
 							// 	Utils.createIndent(node.getLevel()+1), digit,rowCol[0],rowCol[1], unit.name(), 
 							// 	candLoc[0],candLoc[1], candidates.getCandidatesStringCompact(candLoc[0],candLoc[1]) ));
-							int candDigit = candidates.getCandidateDigit(candLoc[0],candLoc[1]);
+							int candDigit = candidates.getCandidateDigit(candLoc);
 							// Child node
 							HypoTreeData childData = new HypoTreeData(candDigit,candLoc,candidates);
 							TreeNode<HypoTreeData> child = node.setChild(childData, unit.ordinal());
 							fillNode( child );
-						} else {
+						// } else {
 							// Location exists in tree.
 							// No need to set children of existing node. Might lead to endless recursion.
 						}						
@@ -225,10 +225,10 @@ public class ForcingChains implements UpdateCandidatesRule {
 	
 	/** Returns a list of locations minus the locations in the given tree.
 	 */
-	public List<int[]> removeLocations( List<int[]> locs, TreeNode<HypoTreeData> nodes ) {
-		List<int[]> modified = new LinkedList<>();
+	public List<RowCol> removeLocations( List<RowCol> locs, TreeNode<HypoTreeData> nodes ) {
+		List<RowCol> modified = new LinkedList<>();
 
-		for ( int[] loc: locs ) {
+		for ( RowCol loc: locs ) {
 			TreeNode<HypoTreeData> node = nodes.findTreeNode( new RowColMatch(loc) );
 			if ( null == node)
 				modified.add( loc );
@@ -242,13 +242,13 @@ public class ForcingChains implements UpdateCandidatesRule {
 	// - destination digit
 	// - destination rowCol
 	// - tree depths, first and second tree (might not equal candidate order)
-	public static int [] encode( int [] origRowCol, int destDigit, int [] destRowCol, int td1, int td2 ){
+	public static int [] encode( RowCol origRowCol, int destDigit, RowCol destRowCol, int td1, int td2 ){
 		int [] enc = new int[ 7 ];
-		enc[0] = origRowCol[0];
-		enc[1] = origRowCol[1];
+		enc[0] = origRowCol.row();
+		enc[1] = origRowCol.col();
 		enc[2] = destDigit;
-		enc[3] = destRowCol[0];
-		enc[4] = destRowCol[1];
+		enc[3] = destRowCol.row();
+		enc[4] = destRowCol.col();
 		enc[5] = td1;
 		enc[6] = td2;
 		return enc;
@@ -265,21 +265,17 @@ public class ForcingChains implements UpdateCandidatesRule {
 	}
 
 	
-	class RowColMatch implements Comparable<HypoTreeData> {
-		int [] rowCol;
+	static class RowColMatch implements Comparable<HypoTreeData> {
+		RowCol rowCol;
 		
-		public RowColMatch( int [] rowCol ) {
+		public RowColMatch( RowCol rowCol ) {
 			this.rowCol = rowCol;
 		}
 
 		@Override
 		public int compareTo(HypoTreeData that) {
 			if (null == that) return 1;
-			if ( this.rowCol[0] < that.rowCol[0]) return -1;
-			if ( this.rowCol[0] > that.rowCol[0]) return 1;
-			if ( this.rowCol[1] < that.rowCol[1]) return -1;
-			if ( this.rowCol[1] > that.rowCol[1]) return 1;
-			return 0;
+			return this.rowCol.compareTo(that.rowCol);
 		}
-	};
+	}
 }

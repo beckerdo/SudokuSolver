@@ -4,11 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TreeNodeTest {
 	@BeforeEach
@@ -17,7 +15,7 @@ public class TreeNodeTest {
 		
 	// 12 nodes, 1 null, 1 ""
 	public static TreeNode<String> getGeneralTree() {
-		TreeNode<String> root = new TreeNode<String>("root");
+		TreeNode<String> root = new TreeNode<>("root");
 		{
 			root.addChild("node0");
 			root.addChild("node1");
@@ -43,7 +41,7 @@ public class TreeNodeTest {
 
 	// 8 non-null nodes, 1 null data, 1 "", null children
 	public static TreeNode<String> getNaryTree() {
-		TreeNode<String> root = new TreeNode<String>("root", 3);
+		TreeNode<String> root = new TreeNode<>("root", 3);
 		{
 			root.setChild("node0", 0);
 			root.setChild("node1", 1);
@@ -112,7 +110,7 @@ public class TreeNodeTest {
 
 	@Test
 	public void testSearch() {
-		Comparable<String> searchCriteria = new Comparable<String>() {
+		Comparable<String> searchCriteria = new Comparable<>() {
 			@Override
 			public int compareTo(String treeData) {
 				if (treeData == null)
@@ -126,27 +124,27 @@ public class TreeNodeTest {
 		// treeRoot.printTree();
 		TreeNode<String> found = treeRoot.findTreeNode(searchCriteria);
 		found.printTree(); // leave on for code coverage
-		assertTrue( null != found );
+		assertNotNull( found );
 		assertEquals( "node210", found.data );
 		assertTrue( found.data.contains("210") );
 		assertFalse( found.isLeaf() ); // has a child
 		
 		List<TreeNode<String>> list = treeRoot.findTreeNodes(searchCriteria);
-		assertTrue( null != list );
+		assertNotNull( list );
 		assertEquals( 2, list.size());
 		assertTrue( list.contains(found) );
 
 		list = treeRoot.findTreeNodes(new MatchAll());
-		assertTrue( null != list );
+		assertNotNull(list);
 		assertEquals( 11, list.size());
 		
 		list = treeRoot.findTreeNodes(new MatchNullNode());
-		assertTrue( null != list );
+		assertNotNull(list);
 		assertEquals( 0, list.size());
 
 		// Will not find null or "" nodes
 		list = treeRoot.findTreeNodes(new MatchNonZeroLength());
-		assertTrue( null != list );
+		assertNotNull(list);
 		assertEquals( 10, list.size());
 		
 		TreeNode<String> naryTreeRoot = getNaryTree();
@@ -159,44 +157,44 @@ public class TreeNodeTest {
 		
 		// nAry does not count null nodes as children can be nulls
 		list = naryTreeRoot.findTreeNodes(new MatchAll());
-		assertTrue( null != list );
+		assertNotNull(list);
 		assertEquals( 8, list.size());
 		
 		list = naryTreeRoot.findTreeNodes(new MatchNullNode());
-		assertTrue( null != list );
+		assertNotNull(list);
 		assertEquals( 0, list.size());
 
 		// Will not find null or "" nodes
 		list = naryTreeRoot.findTreeNodes(new MatchNonZeroLength());
-		assertTrue( null != list );
+		assertNotNull( list );
 		assertEquals( 7, list.size());		
 	}
 
 	/** Finds all nodes in the tree, even if they contain null data. */
-	class MatchAll implements Comparable<String> {
+	static class MatchAll implements Comparable<String> {
 		@Override
 		public int compareTo(String that) {
 			return 0;
 		}
-	};
+	}
 	
 	/** Finds all nodes in the tree that are nulls. */
-	class MatchNullNode implements Comparable<String> {
+	static class MatchNullNode implements Comparable<String> {
 		@Override
 		public int compareTo(String that) {
 			//System.out.println( "compareTo");
 			if (null == that) return 0;
 			return 1;
 		}
-	};
+	}
 	
 	/** Finds all nodes in the tree that are nulls. */
-	class MatchNonZeroLength implements Comparable<String> {
+	static class MatchNonZeroLength implements Comparable<String> {
 		@Override
 		public int compareTo(String that) {
 			//System.out.println( "compareTo");
 			if (null != that && that.length() > 0) return 0;
 			return 1;
 		}
-	};	
+	}
 }

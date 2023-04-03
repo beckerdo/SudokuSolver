@@ -2,6 +2,7 @@ package info.danbecker.ss.rules;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
 
 import java.util.ArrayList;
@@ -89,12 +90,11 @@ public class MultipleLines implements UpdateCandidatesRule {
 						}
 						
 						// Sum candidate count for each row of each block
-						int[][] locs = rowOrientation ? 
-								Board.getBoxRowCols(boxi) : Board.getBoxRowColsC(boxi);
+						RowCol[] locs = rowOrientation ? Board.getBoxRowCols(boxi) : Board.getBoxRowColsC(boxi);
 						for (int segi = 0; segi < 3; segi++) {
 							// Take first, middle, or last 3 locations - Make a first set, middle, last API							
 							counts[tupi][segi] += candidates.candidateDigitRowColCount(digi,
-									new int[][] { locs[segi * 3], locs[segi * 3 + 1], locs[segi * 3 + 2] });
+									new RowCol[] { locs[segi * 3], locs[segi * 3 + 1], locs[segi * 3 + 2] });
 						}
 						
 						// If last block of rowCol, see if any locations can be encoded

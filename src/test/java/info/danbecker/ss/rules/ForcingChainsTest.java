@@ -53,7 +53,7 @@ public class ForcingChainsTest {
 		// Destination gains entry, loses 2 candidates.
 		// Will likely knock out more same-unit candidates after LegalCandidate update.
 		assertEquals( prevEntries, candidates.entryCount() - updates);
-		assertEquals( prevCandidates,candidates.candidateCount() + 2);		
+		assertEquals( prevCandidates,candidates.candidateCount() + 2);
 	}
 	
 	@Test
@@ -120,7 +120,7 @@ public class ForcingChainsTest {
 		// Destination gains entry, loses 2 candidates.
 		// Will likely knock out more same-unit candidates after LegalCandidate update.
 		assertEquals( prevEntries, candidates.entryCount() - updates);
-		assertEquals( prevCandidates, candidates.candidateCount() + 2);		
+		assertEquals( prevCandidates, candidates.candidateCount() + 2);
 	}
 	
 	public static String P20230103 =

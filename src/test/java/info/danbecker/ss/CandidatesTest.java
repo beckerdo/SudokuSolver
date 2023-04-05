@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import info.danbecker.ss.Utils.Unit;
 import info.danbecker.ss.rules.LegalCandidates;
 import info.danbecker.ss.tree.ChangeData;
 
@@ -163,8 +162,8 @@ public class CandidatesTest {
 		// Fresh new board
 		assertEquals( 20, candidates.entryCount() );
 		assertEquals( 549, candidates.candidateCount() );
-		assertEquals( 9, candidates.candidateCount( ROWCOL[0][0] ));
-		assertEquals( 9, candidates.candidateCount( ROWCOL[8][8] ));
+		assertEquals( 9, candidates.candidateCellCount( ROWCOL[0][0] ));
+		assertEquals( 9, candidates.candidateCellCount( ROWCOL[8][8] ));
 		assertTrue( Arrays.equals( new int[]{ 1,2,3,4,5,6,7,8,9}, candidates.getRemainingCandidates( ROWCOL[8][8] )));
 
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
@@ -172,8 +171,8 @@ public class CandidatesTest {
 
 		// After removing legal moves
 		assertEquals( 307, candidates.candidateCount() );
-		assertEquals( 6, candidates.candidateCount( ROWCOL[0][0] ));
-		assertEquals( 2, candidates.candidateCount( ROWCOL[8][8] ));
+		assertEquals( 6, candidates.candidateCellCount( ROWCOL[0][0] ));
+		assertEquals( 2, candidates.candidateCellCount( ROWCOL[8][8] ));
 		
 		// int [] locations
 		int[] rowLocations = candidates.candidateRowLocations(0, 1);
@@ -201,14 +200,21 @@ public class CandidatesTest {
 		assertEquals( ROWCOL[7][6], boxLocations.get(2) );
 
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		List<RowCol> rowCols = candidates.digitLocs( 1 );
+		assertNotNull( rowCols );
+		// System.out.println( "Locs=" + RowCol.toString(rowCols));
+		assertEquals( 36, rowCols.size() );
+		assertEquals( ROWCOL[1][3], rowCols.get(0) );
+		assertEquals( ROWCOL[8][7], rowCols.get( rowCols.size() - 1 ));
+
 		assertEquals( 22, candidates.candidateLocationCount( RowCol.toList(Board.getBoxRowCols(8 ))));
 		assertEquals( 3, candidates.candidateLocationCount( 2, RowCol.toList(Board.getBoxRowCols(8 ))));
 		assertEquals( 5, candidates.candidateRowLocCount( 8, new int[]{7,8}));
 		assertEquals( 22, candidates.candidateRowColCount( RowCol.toList(Board.getBoxRowCols(8 ))));
 
-		assertEquals( 5, candidates.candidateCount( ROW, 8, 6 ));
-		assertEquals( 4, candidates.candidateCount( COL, 8, 6 ));
-		assertEquals( 3, candidates.candidateCount( BOX, 8, 8 ));
+		assertEquals( 5, candidates.candidateUnitCount( ROW, 8, 6 ));
+		assertEquals( 4, candidates.candidateUnitCount( COL, 8, 6 ));
+		assertEquals( 3, candidates.candidateUnitCount( BOX, 8, 8 ));
 		assertEquals( 1, candidates.candidateGroupCount( ROW, 8, 6, 2 ));
 		assertEquals( 1, candidates.candidateGroupCount( COL, 8, 6, 2 ));
 		assertEquals( 1, candidates.candidateGroupCount( BOX, 8, 8, 3 ));

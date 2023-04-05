@@ -186,10 +186,10 @@ public class Swordfish implements UpdateCandidatesRule {
 	 */
 	public boolean eligible( Unit unit, List<RowCol> locs, Candidates candidates ) {
 		if ( 2 == locs.size() ) {
-			if ( 2 == candidates.candidateCount( locs.get( 0 )) ||
-			     3 == candidates.candidateCount( locs.get( 0 )) ) {
-				return 2 == candidates.candidateCount(locs.get(1)) ||
-						3 == candidates.candidateCount(locs.get(1));
+			if ( 2 == candidates.candidateCellCount( locs.get( 0 )) ||
+			     3 == candidates.candidateCellCount( locs.get( 0 )) ) {
+				return 2 == candidates.candidateCellCount(locs.get(1)) ||
+						3 == candidates.candidateCellCount(locs.get(1));
 			}
 		}
 		return false;
@@ -249,7 +249,7 @@ public class Swordfish implements UpdateCandidatesRule {
 		List<RowCol> matched = new LinkedList<>();
 		for ( int uniti = 0; uniti < ROWS; uniti++) {
 			if ( 2 == unitLocCounts[ uniti ] || 3 == unitLocCounts[ uniti ] ) {
-				int unitCount = candidates.candidateCount( unit, uniti, digi);
+				int unitCount = candidates.candidateUnitCount( unit, uniti, digi);
 				if ( unitCount > unitLocCounts[ uniti ] ) {
 					// We know this uniti has more candidates than just the swordfish locations. Now enumerate them.
 					for( int extrai = 0; extrai < ROWS; extrai++) {

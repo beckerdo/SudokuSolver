@@ -35,8 +35,8 @@ import static java.lang.String.format;
  * <p>
  * <pre>
  * Example command line "java SudokuSolver 
- *    -t text of puzzle 
  *    -i input file puzzle
+ *    -s text string of puzzle
  * </pre>
  * <p>
  * Puzzles in text contain 81 spaces,containing digits, ( .)(empty space), or (cr,lf,/,-)(end of row)
@@ -91,7 +91,7 @@ public class SudokuSolver {
 	            System.out.println( "JSON puzzle=" + jsonPuzzle );
 
 	            inputPuzzleText = jsonPuzzle.getJSONArray("states").getString(0);
-	            inputPuzzleSolution = jsonPuzzle.getString("solution");
+	            inputPuzzleSolution = jsonPuzzle.optString("solution");
 	            JSONArray jsonArray = jsonPuzzle.getJSONArray("rules");
 	            if ( null != jsonArray && jsonArray.length() > 0) {
 	            	statedPuzzleRules = new ArrayList<>( jsonArray.length());
@@ -171,6 +171,7 @@ public class SudokuSolver {
 			new HiddenSubsets(3), // HiddenTriples
 			new XWings(),
 			new Swordfish(),
+			new Skyscraper(),
 			// new ColorChains(),		// bugs
 			// new ForcingChains(),		// bugs
 		};
@@ -271,11 +272,16 @@ public class SudokuSolver {
 		
 		// Print metrics
 		System.out.println( format("%-18s, %10s, %10s, %10s", "Rule", "Locations", "Updates", "Time (uS)" ));
+		int [] totals = new int[]{ 0, 0, 0 };
 		for ( int rulei = 0; rulei < rules.length; rulei++ ) {
 			System.out.println( format("%-18s, %10d, %10d, %10d", 
 				rules[ rulei ].ruleName(), possibles[ rulei ], updates[ rulei ], timings[ rulei ] ));
+			    totals[ 0 ] += possibles[ rulei ];
+				totals[ 1 ] += updates[ rulei ];
+			    totals[ 2 ] += timings[ rulei ];
 		}
-		
+		System.out.println( format("%-18s, %10d, %10d, %10d", "Total", totals[0], totals[1], totals[2] ));
+
 		return solved;
 	}
 

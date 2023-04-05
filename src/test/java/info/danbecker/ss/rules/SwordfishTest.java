@@ -13,7 +13,6 @@ import info.danbecker.ss.Candidates;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -84,7 +83,7 @@ public class SwordfishTest {
 		int prevCandidates = candidates.candidateCount();
 		rule.updateCandidates(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates,candidates.candidateCount() + exLocs.size());		
+		assertEquals( prevCandidates,candidates.candidateCount() + exLocs.size());
 	}
 	
 	@Test
@@ -126,7 +125,7 @@ public class SwordfishTest {
 		int prevCandidates = candidates.candidateCount();
 		rule.updateCandidates(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates,candidates.candidateCount() + exLocs.size());		
+		assertEquals( prevCandidates,candidates.candidateCount() + exLocs.size());
 	}
 	
 	@Test

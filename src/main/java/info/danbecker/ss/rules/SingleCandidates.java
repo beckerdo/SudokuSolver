@@ -45,7 +45,7 @@ public class SingleCandidates implements UpdateCandidatesRule {
 		ArrayList<int[]> locations = new ArrayList<>();
 		for (int rowi = 0; rowi < ROWS; rowi++) {
 			for (int coli = 0; coli < COLS; coli++) {
-				if (1 == candidates.candidateCount(ROWCOL[rowi][coli])) {
+				if (1 == candidates.candidateCellCount(ROWCOL[rowi][coli])) {
 					locations.add(new int[] { rowi, coli });
 				}
 			}

@@ -125,7 +125,7 @@ public class ColorChainsTest {
 		// Entries same. Candidate loses 1. 
 		// Candidates loses 1.
 		assertEquals( prevEntries, candidates.entryCount() );
-		assertEquals( prevCandidates, candidates.candidateCount() + updates);		
+		assertEquals( prevCandidates, candidates.candidateCount() + updates);
 	}
 	
 	@Test

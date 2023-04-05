@@ -3,13 +3,11 @@ package info.danbecker.ss.rules;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
-import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.*;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
-import info.danbecker.ss.Utils;
 
 import java.text.ParseException;
 import java.util.List;

@@ -14,7 +14,6 @@ import static info.danbecker.ss.Candidates.FULL_COMBI_MATCH;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.List;
 
 public class HiddenSubsetsTest {

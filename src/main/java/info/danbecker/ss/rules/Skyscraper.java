@@ -159,8 +159,8 @@ public class Skyscraper implements UpdateCandidatesRule {
 						(null != roof && 2 == roof.length && null != roof[0] && null != roof[1])) {
 						// Have a valid base and roof. Check for other locations that can see both roofs
 						List<RowCol> removeMe = new ArrayList<>();
-						List<RowCol> candCols = candidates.digitLocs(digit);
-						for (RowCol rowCol : candCols) {
+						List<RowCol> candLocs = candidates.digitLocs(digit);
+						for (RowCol rowCol : candLocs) {
 							// Check if candidate location is part of the skyscraper
 							if (!base[0].equals(rowCol) && !base[1].equals(rowCol) &&
 									!roof[0].equals(rowCol) && !roof[1].equals(rowCol)) {

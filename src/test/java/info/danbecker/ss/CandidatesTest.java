@@ -180,6 +180,11 @@ public class CandidatesTest {
 		rowLocations = candidates.candidateRowLocations(1, 1);
 		assertEquals( 3, rowLocations.length );
 		assertTrue( Arrays.equals( new int[]{3,4,5}, rowLocations) );
+		List<RowCol> rowLocs = candidates.getRowDigitLocs( 1, 1 );
+		assertEquals( 3, rowLocs.size() );
+		for ( int i = 0; i < rowLocations.length; i++ ) {
+			assertEquals( ROWCOL[1][ rowLocations[i] ], rowLocs.get(i));
+		}
 		
 		int [] colLocations = candidates.candidateColLocations(8, 3);
 		assertEquals( 0, colLocations.length );
@@ -187,13 +192,18 @@ public class CandidatesTest {
 		assertEquals( 5, colLocations.length );
 		// System.out.println( "Col locations=" + Arrays.toString(colLocations) );
 		assertTrue( Arrays.equals( new int[]{0,1,3,4,5}, colLocations) );
-		
+		List<RowCol> colLocs = candidates.getColDigitLocs( 2, 3 );
+		assertEquals( 5, colLocs.size() );
+		for ( int i = 0; i < colLocations.length; i++ ) {
+			assertEquals( ROWCOL[ colLocations[i] ][2], colLocs.get(i));
+		}
+
 		RowCol boxLocation = candidates.candidateBoxLocation(8, 5);
 		assertNotNull( boxLocation );
 		assertEquals( ROWCOL[7][6], boxLocation );
 		boxLocation = candidates.candidateBoxLocation(8, 8);
 		assertEquals( 6, boxLocation.row() );
-		List<RowCol> boxLocations = candidates.candidateBoxLocations(8, 8);
+		List<RowCol> boxLocations = candidates.getBoxDigitLocs(8, 8);
 		assertEquals( 3, boxLocations.size() );
 		// System.out.println( RowCol.toString(boxLocations));
 		assertEquals( ROWCOL[6][6], boxLocations.get(0) );
@@ -237,8 +247,8 @@ public class CandidatesTest {
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Digits 1 and 2 in blocks 0 and 1
-		assertEquals( 0, candidates.candidateBoxLocations(0, 1).size());
-		assertEquals( 3, candidates.candidateBoxLocations(1, 2).size());
+		assertEquals( 0, candidates.getBoxDigitLocs(0, 1).size());
+		assertEquals( 3, candidates.getBoxDigitLocs(1, 2).size());
 
 		// Test alternate way of counting by block locations
 		assertEquals( 0, candidates.candidateDigitRowColCount( 1, Board.getBoxRowCols(0)));

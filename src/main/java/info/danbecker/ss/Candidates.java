@@ -659,6 +659,16 @@ public class Candidates implements Comparable<Candidates> {
 		return rowLocations;
 	}
 
+	/** Returns a list of rowCols in this row index having this digit candidate. */
+	public List<RowCol> getRowDigitLocs(int rowi, int digi) {
+		List<RowCol> locs = new ArrayList<>();
+		int [] cols = candidateRowLocations( rowi, digi );
+		for ( int coli = 0; coli < cols.length; coli++ ) {
+			locs.add( ROWCOL[rowi][cols[coli]]);
+		}
+		return locs;
+	}
+
 	/** Returns the number of candidates for this digit in this col. */
 	public int candidateColCount( int coli, int digi) {
 		int count = 0;
@@ -681,6 +691,16 @@ public class Candidates implements Comparable<Candidates> {
 		return colLocations;
 	}
 
+	/** Returns a list of rowCols in this col index having this digit candidate. */
+	public List<RowCol> getColDigitLocs(int coli, int digi) {
+		List<RowCol> locs = new ArrayList<>();
+		int [] rows = candidateColLocations( coli, digi );
+		for ( int rowi = 0; rowi < rows.length; rowi++ ) {
+			locs.add( ROWCOL[rows[rowi]][coli]);
+		}
+		return locs;
+	}
+
 	/** Returns the number of candidates for this digit in this box. */
 	public int candidateBoxCount( int boxi, int digi) {
 		int count = 0;
@@ -693,7 +713,7 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	/** Returns the locations of candidates for this digit in this box. */
-	public List<RowCol> candidateBoxLocations( int boxi, int digi) {
+	public List<RowCol> getBoxDigitLocs(int boxi, int digi) {
 		List<RowCol> locations = new ArrayList<>();
 		RowCol[] locs = Board.BOXR[ boxi ];
 		for( int loci = 0; loci < BOXES; loci++) {
@@ -704,7 +724,6 @@ public class Candidates implements Comparable<Candidates> {
 		}
 		return locations;
 	}
-
 
 	/** Returns the number of groups of this size with this candidate ones-based digit in this row. */
 	public int candidateRowGroupCount( int rowi, int digi, int groupSize) {

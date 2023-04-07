@@ -3,12 +3,10 @@ package info.danbecker.ss.rules;
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
-import info.danbecker.ss.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static info.danbecker.ss.Board.ROWCOL;
 import static info.danbecker.ss.Utils.DIGITS;
 import static info.danbecker.ss.Utils.BOXES;
 
@@ -60,7 +58,7 @@ public class CandidateLines implements UpdateCandidatesRule {
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if (!board.digitCompleted(digi)) {
 				for (int boxi = 0; boxi < BOXES; boxi++) {
-					List<RowCol> potentials = candidates.candidateBoxLocations(boxi, digi);
+					List<RowCol> potentials = candidates.getBoxDigitLocs(boxi, digi);
 					if ( 0 < potentials.size() ) {
 						// Check for row/col match of all potentials
 						RowCol first = potentials.get(0);

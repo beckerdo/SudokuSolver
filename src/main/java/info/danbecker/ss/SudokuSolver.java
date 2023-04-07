@@ -43,7 +43,8 @@ import static java.lang.String.format;
  * Comments are lines beginning with #   
  * <p>
  * TODOs:
- * Verbose command line option for all the printlns, perhaps specify rule, rowCol, digit in command line.
+ * Verbose command line option for all the logging printlns, perhaps specify rule, rowCol, digit in command line.
+ * Command line option for solving rules or grops: -r "Basic,Subsets,Coloring,Chains"
  * Consider RowCol String and list output used on websites such as r1c5, r345c8, r4c89
  * Update digits/rows/cols/boxes to be 0-based everywhere internally and 1-based externally (input parsing and output strings).
  * Update UpdateCandidatesRule interface
@@ -53,12 +54,13 @@ import static java.lang.String.format;
  * Refactor APIs to use Units and remove APIs that have Row/Col/Box in name.
  * Consider matchers for use with lists of locations. Match by candidate count, combo, etc.
  *    This might cut down on the number of candidate row col box methods.
- * Move json resources from main to test
+ *    Consider matchers for chains/coloring. Single digit, group 2,...
  * For puzzles with known solutions (all of them), validate every location/update action (OCCUPY,REMOVE)
  *    Should rule perform validation, or the solver
  *    BUG LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
  *    BUG ColorChains 20221118-diabolical-17500.json removed digit 3 from [8,5] {-8}, remaining candidates {-8}
- * 
+ * Move json resources from main to test
+ *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
 public class SudokuSolver {
@@ -158,6 +160,7 @@ public class SudokuSolver {
 		Candidates candidates = new Candidates( board );
 
 		// List of rules to run
+		// To do, allow command line to list rules or rule groups
 		UpdateCandidatesRule [] rules = {
 			new LegalCandidates(),
 			new SingleCandidates(),
@@ -172,6 +175,7 @@ public class SudokuSolver {
 			new XWings(),
 			new Swordfish(),
 			new Skyscraper(),
+			new TwoStringKite(),
 			// new ColorChains(),		// bugs
 			// new ForcingChains(),		// bugs
 		};

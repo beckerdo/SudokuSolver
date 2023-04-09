@@ -5,7 +5,6 @@ import org.apache.commons.cli.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,7 +35,8 @@ import static java.lang.String.format;
  * <pre>
  * Example command line "java SudokuSolver 
  *    -i input file puzzle
- *    -s text string of puzzle
+ *    -t text string of puzzle
+ *    -s solution of puzzle
  * </pre>
  * <p>
  * Puzzles in text contain 81 spaces,containing digits, ( .)(empty space), or (cr,lf,/,-)(end of row)
@@ -113,13 +113,14 @@ public class SudokuSolver {
 	}
 	
 	/** Gather command line options for this application. Place info in this class instance variables. */
-	public static void parseGatherOptions(String[] args) throws ParseException, URISyntaxException, IOException {
+	public static void parseGatherOptions(String[] args) throws ParseException, URISyntaxException {
 		// Parse the command line arguments
 		Options options = new Options();
 		// Use dash with shortcut (-h) or -- with name (--help).
         options.addOption("h", "help", false, "print the command line options");
         options.addOption("i", "if", true, "input file for puzzle");
-        options.addOption("s", "is", true, "input string for puzzle");
+		options.addOption("t", "it", true, "input text puzzle");
+		options.addOption("s", "is", true, "input solution for puzzle");
 
 		CommandLineParser cliParser = new DefaultParser();
 		CommandLine line = cliParser.parse(options, args);
@@ -139,8 +140,8 @@ public class SudokuSolver {
             inputPuzzleFile = option;          
         }
         
-        if (line.hasOption("s")) {
-            String option = line.getOptionValue("s");
+        if (line.hasOption("t")) {
+            String option = line.getOptionValue("t");
             inputPuzzleText = option;          
         }
 	}
@@ -176,6 +177,7 @@ public class SudokuSolver {
 			new Swordfish(),
 			new Skyscraper(),
 			new TwoStringKite(),
+			new XYWing(),
 			// new ColorChains(),		// bugs
 			// new ForcingChains(),		// bugs
 		};
@@ -189,14 +191,14 @@ public class SudokuSolver {
 		int rulesRun = 0;
 		long cumStartTime = System.currentTimeMillis();
 		boolean updated = false;
-		int startingEntries = candidates.entryCount();
-		int startingCandidates = candidates.candidateCount();
+		int startingEntries = candidates.getAllOccupiedCount();
+		int startingCandidates = candidates.getAllCandidateCount();
 		do {
 			updated = false;
 			// Go through each rule.
 			for ( int rulei = 0; rulei < rules.length; rulei++ ) {
 			   System.out.println(format("i%d.%d Board entries=%d, candidates=%d", iterations, rulei,
-				  candidates.entryCount(), candidates.candidateCount()));
+				  candidates.getAllOccupiedCount(), candidates.getAllCandidateCount()));
 			   // System.out.println( "Board=\n" + board );		
                // System.out.println( "Candidates=\n" + candidates.toStringCompact() );
 			   UpdateCandidatesRule rule = rules[ rulei ];
@@ -208,7 +210,8 @@ public class SudokuSolver {
 				   System.out.print(format("Rule %s reports %d possible locations", rule.ruleName(), locations.size()));
 				   if ( locations.size() > 0  ) {
 					   possibles[ rulei ] += locations.size();
-	   				   System.out.println( ": " + Utils.locationsString(locations));
+	   				   System.out.println( ": " + Utils.digitsToString(locations));
+
 				   } else {
 					   System.out.println();
 				   }
@@ -241,7 +244,7 @@ public class SudokuSolver {
 				   // No need to iterate through rules.
 				   break;
 			   }		   
-			   if ( 0 == candidates.candidateCount()) {
+			   if ( 0 == candidates.getAllCandidateCount()) {
 				   if ( !board.completed() )
 					   System.out.println( "***Warning unsolved board, no candidates, rule=" + rule.ruleName());
 				   // No need to iterate through rules.
@@ -260,7 +263,7 @@ public class SudokuSolver {
 		System.out.println( format( "Solving %s successful after %d rules, %d iterations, %dmS", 
 			solvedText, rulesRun, iterations, (System.currentTimeMillis() - cumStartTime) ));
 		System.out.println( format( "Entry count went from %d to %d. Candidate count went from %d to %d.", 
-			startingEntries, candidates.entryCount(), startingCandidates, candidates.candidateCount() ));
+			startingEntries, candidates.getAllOccupiedCount(), startingCandidates, candidates.getAllCandidateCount() ));
 		System.out.println("Board=" + board.toSudokuString("-"));
 		if (!solved) {
 			System.out.println("Remaining candidates=\n" + candidates.toStringBoxed());

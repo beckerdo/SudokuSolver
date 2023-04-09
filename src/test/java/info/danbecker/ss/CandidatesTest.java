@@ -60,7 +60,7 @@ public class CandidatesTest {
      	assertTrue( Arrays.equals( new int[] {1,2,3,4,5,6,7,8,9}, candidates1.getCandidates( ROWCOL[8][8] )));
      	candidates1.setCandidates( ROWCOL[8][0], new int[]{ 0,2,0,4,0,6,0,8,0} );
      	assertTrue( Arrays.equals( new int[] {0,2,0,4,0,6,0,8,0}, candidates1.getCandidates( ROWCOL[8][0] )));
-     	
+
      	List<Integer> cands = candidates1.getCandidatesList( ROWCOL[8][0] );
      	assertEquals( 4, cands.size());
      	// assertEquals( new int[] {2,4,6,8}, cands.toArray(new int[0]) );
@@ -160,17 +160,21 @@ public class CandidatesTest {
 		Candidates candidates = new Candidates( board );
 		
 		// Fresh new board
-		assertEquals( 20, candidates.entryCount() );
-		assertEquals( 549, candidates.candidateCount() );
+		assertEquals( 20, candidates.getAllOccupiedCount() );
+		assertEquals( 549, candidates.getAllCandidateCount() );
 		assertEquals( 9, candidates.candidateCellCount( ROWCOL[0][0] ));
 		assertEquals( 9, candidates.candidateCellCount( ROWCOL[8][8] ));
 		assertTrue( Arrays.equals( new int[]{ 1,2,3,4,5,6,7,8,9}, candidates.getRemainingCandidates( ROWCOL[8][8] )));
+		assertTrue( candidates.containsDigits( ROWCOL[8][8], new int[]{ 1,9 }));
+		// assertFalse( candidates.containsDigits( ROWCOL[8][8], new int[]{ 1,9 }));
+		assertTrue( candidates.containsOnlyDigits( ROWCOL[8][8], new int[]{ 1,2,3,4,5,6,7,8,9 }));
+		assertFalse( candidates.containsOnlyDigits( ROWCOL[8][8], new int[]{ 1,9 }));
 
 		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// After removing legal moves
-		assertEquals( 307, candidates.candidateCount() );
+		assertEquals( 307, candidates.getAllCandidateCount() );
 		assertEquals( 6, candidates.candidateCellCount( ROWCOL[0][0] ));
 		assertEquals( 2, candidates.candidateCellCount( ROWCOL[8][8] ));
 		
@@ -209,7 +213,7 @@ public class CandidatesTest {
 		assertEquals( ROWCOL[6][6], boxLocations.get(0) );
 		assertEquals( ROWCOL[7][6], boxLocations.get(2) );
 
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		List<RowCol> rowCols = candidates.digitLocs( 1 );
 		assertNotNull( rowCols );
 		// System.out.println( "Locs=" + RowCol.toString(rowCols));
@@ -232,9 +236,9 @@ public class CandidatesTest {
 		assertEquals( 2, candidates.candidateColLocCount( 8, new int[]{7,8}));
 		assertEquals( 0, candidates.emptyLocations().size());
 
-		assertEquals( 307, candidates.candidateCount() );
+		assertEquals( 307, candidates.getAllCandidateCount() );
 		candidates.removeAllCandidates();
-		assertEquals( 0, candidates.candidateCount() );
+		assertEquals( 0, candidates.getAllCandidateCount() );
 	}
 
 	@Test

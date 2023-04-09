@@ -146,7 +146,7 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	/** Returns number of occupied boxes for the entire board. */
-	public int entryCount() {
+	public int getAllOccupiedCount() {
 	   if ( null == candidates) return 0;
 	   int count = 0;
 	      for( int rowi = 0; rowi < ROWS; rowi++ ) {
@@ -157,12 +157,66 @@ public class Candidates implements Comparable<Candidates> {
 	   return count;
 	}
 
-	/** Returns all candidates in the given box. */
+	/** Returns total of all candidates in all boxes. */
+	public int getAllCandidateCount() {
+		if ( null == candidates) return 0;
+		int count = 0;
+		for( int rowi = 0; rowi < ROWS; rowi++ ) {
+			for ( int coli = 0; coli < COLS; coli++) {
+				count += candidateCellCount( ROWCOL[rowi][coli] );
+			}
+		}
+		return count;
+	}
+
+	/** Return the first non-zero candidate at the given row, col.
+	 * @return the digit for the first candidate, or NOT_CANDIDATE if no candidates.
+	 */
+	public int getFirstCandidateDigit(RowCol rowCol) {
+		for (int digi = 0; digi < DIGITS; digi++) {
+			if (candidates[rowCol.row()][rowCol.col()][digi] > 0)
+				return candidates[rowCol.row()][rowCol.col()][digi];
+		}
+		return NOT_CANDIDATE;
+	}
+
+	/** Returns if this ones-based digit is a candidate in this cell. */
+	public boolean isCandidate( RowCol rowCol, int digi) {
+		if ( candidates[rowCol.row()][rowCol.col()][digi - 1] == digi ) return true;
+		return false;
+	}
+
+	/** Returns the number of candidates in a single cell. */
+	public int candidateCellCount(RowCol rowCol) {
+		int count = 0;
+		for( int digi = 0; digi < DIGITS; digi++) {
+			if ( candidates[rowCol.row()][rowCol.col()][digi] > 0) count++;
+		}
+		return count;
+	}
+
+	/** Returns total of all candidates in the given locations. */
+	public int candidateLocationCount(List<RowCol> locs) {
+		if (null == candidates)	return 0;
+		if (null == locs) return 0;
+		int count = 0;
+		for (int loci = 0; loci < locs.size(); loci++) {
+			RowCol rowCol = locs.get(loci);
+			count += candidateCellCount(rowCol);
+		}
+		return count;
+	}
+
+	/** Returns all candidates in the given box.
+	 * @return int[] of 9 candidates, 0 for unoccupied
+	 */
 	public int [] getCandidates( RowCol rowCol ) {
 		return candidates[ rowCol.row() ][ rowCol.col() ];
 	}
 
-	/** Returns all candidates in the given box. */
+	/** Returns all candidates in the given box.
+	 * @return List<Integer> of only set candidates
+	 * */
 	public List<Integer> getCandidatesList( RowCol rowCol ) {
 		List<Integer> candList = new ArrayList<>();
 		for( int digi = 0; digi < DIGITS; digi++) {
@@ -172,7 +226,9 @@ public class Candidates implements Comparable<Candidates> {
 		return candList;
 	}
 
-	/** Returns all candidates in the given cell. */
+	/** Returns all candidates in the given cell.
+	 * 	 @return int[] of only set candidates
+	 */
 	public int [] getRemainingCandidates( RowCol rowCol ) {
 		int [] candidates = new int[ candidateCellCount( rowCol ) ];
 		int candi = 0;
@@ -181,6 +237,35 @@ public class Candidates implements Comparable<Candidates> {
 				candidates[ candi++ ] =  this.candidates[rowCol.row()][rowCol.col()][digi];
 		}
 		return candidates;
+	}
+
+	/**
+	 * States whether the given ones-based digits are contained in the rowCol.
+	 * Note that the cell may have more candidates, for example
+	 * digits {19} and rowCol candidates {1459} returns TRUE
+	 */
+	public boolean containsDigits( RowCol rowCol, int[] digits ) {
+		for( int digi = 0; digi < digits.length; digi++) {
+			if ( this.candidates[rowCol.row()][rowCol.col()][digits[digi]-1] < 1)
+				return false;
+		}
+		return true;
+	}
+
+	/**
+	 * States whether ONLY the given ones-based digits are contained in the rowCol.
+	 * The cell must have ONLY those candidates and nothing more, for example
+	 * digits {19} and rowCol candidates {1459} returns FALSE
+	 */
+	public boolean containsOnlyDigits( RowCol rowCol, int[] digits ) {
+		int [] candidates = getRemainingCandidates( rowCol );
+		if ( candidates.length != digits.length)
+			return false;
+		for( int digi = 0; digi < digits.length; digi++) {
+			if ( candidates[digi] != digits[digi] )
+				return false;
+		}
+		return true;
 	}
 
 	/** Completely replace the candidate list.
@@ -503,57 +588,7 @@ public class Candidates implements Comparable<Candidates> {
 		return count;
 	}
 
-	/** Return the first non-zero candidate at the given row, col. 
-	 * @return the digit for the first candidate, or NOT_CANDIDATE if no candidates.
-	 */
-	public int getCandidateDigit(RowCol rowCol) {
-		for (int digi = 0; digi < DIGITS; digi++) {
-			if (candidates[rowCol.row()][rowCol.col()][digi] > 0)
-				return candidates[rowCol.row()][rowCol.col()][digi];
-		}
-		return NOT_CANDIDATE;
-	}
-
-	/** Returns if this ones-based digit is a candidate in this cell. */
-	public boolean isCandidate( RowCol rowCol, int digi) {
-		if ( candidates[rowCol.row()][rowCol.col()][digi - 1] == digi ) return true;
-		return false;
-	}
-	
-	/** Returns total of all candidates in all boxes. */
-	public int candidateCount() {
-	   if ( null == candidates) return 0;
-	   int count = 0;
-	      for( int rowi = 0; rowi < ROWS; rowi++ ) {
-	   	   for ( int coli = 0; coli < COLS; coli++) {
-	   		   count += candidateCellCount( ROWCOL[rowi][coli] );
-	   	   }    	   
-	      }
-	   return count;
-	}
-
-	/** Returns the number of candidates in a single cell. */
-	public int candidateCellCount(RowCol rowCol) {
-	   int count = 0;
-	   for( int digi = 0; digi < DIGITS; digi++) {
-		   if ( candidates[rowCol.row()][rowCol.col()][digi] > 0) count++;
-	   }
-	   return count;
-	}
-
-	/** Returns total of all candidates in the given locations. */
-	public int candidateLocationCount(List<RowCol> locs) {
-		if (null == candidates)	return 0;
-		if (null == locs) return 0;
-		int count = 0;
-		for (int loci = 0; loci < locs.size(); loci++) {
-			RowCol rowCol = locs.get(loci);
-			count += candidateCellCount(rowCol);
-		}
-		return count;
-	}
-
-	/** Returns a list of locations with no candidates 
+	/** Returns a list of locations with no candidates
 	 * and not occupied, a sign of an error condition.
 	 * @return
 	 */
@@ -917,7 +952,7 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	/** Returns the number of groups with this one-based candidate digit in this box. */
-	public List<RowCol>  candidateBoxGroupLocs( int boxi, int digi, int groupSize) {
+	public List<RowCol> candidateBoxGroupLocs( int boxi, int digi, int groupSize) {
 	   List<RowCol> locations = new LinkedList<>();
 	   RowCol[] locs = Board.BOXR[ boxi ];
 	   for( int loci = 0; loci < BOXES; loci++) {
@@ -974,25 +1009,25 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	/** Returns a list of locations having these particulars
-	 * 
+	 *
 	 * @param digi - one-based digi or ALL_DIGITS 
 	 * @param count - particular count or ALL_COUNTS
 	 * @return
 	 */
 	public List<RowCol> getGroupLocations( int digi, int count ){
-	   List<RowCol> locs = new LinkedList<>();
-	   for ( int rowi = 0; rowi < ROWS; rowi++ ) {
-		   for ( int coli = 0; coli < COLS; coli++ ) {
-			   if (( ALL_DIGITS == digi ) || isCandidate(ROWCOL[rowi][coli],digi)) {
-				   if (( ALL_COUNTS == count ) || (count == candidateCellCount( ROWCOL[rowi][coli] ))) {
-					   locs.add( ROWCOL[rowi][coli] );
-				   }					   
-			   }			   
-		   }		   
-	   }
-	   return locs;
+		List<RowCol> locs = new LinkedList<>();
+		for ( int rowi = 0; rowi < ROWS; rowi++ ) {
+			for ( int coli = 0; coli < COLS; coli++ ) {
+				if (( ALL_DIGITS == digi ) || isCandidate(ROWCOL[rowi][coli],digi)) {
+					if (( ALL_COUNTS == count ) || (count == candidateCellCount( ROWCOL[rowi][coli] ))) {
+						locs.add( ROWCOL[rowi][coli] );
+					}
+				}
+			}
+		}
+		return locs;
 	}
-	
+
 	/** Returns a list of locations in same unit having these particulars
 	 * @param unit - Unit enum 
 	 * @param digi - one-based digi or ALL_DIGITS 

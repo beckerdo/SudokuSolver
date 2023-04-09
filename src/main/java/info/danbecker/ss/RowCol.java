@@ -1,5 +1,6 @@
 package info.danbecker.ss;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -76,6 +77,38 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	}
 
 	/**
+	 * Return 0, 1, 2, or 3 completely matching units of the list
+	 */
+	public static List<Utils.Unit> getMatchingAllUnits( List<RowCol> rowCols ){
+		List<Utils.Unit> matching = new ArrayList<>();
+		if ( rowsMatch( rowCols  ))
+			matching.add( Utils.Unit.ROW );
+		if ( colsMatch( rowCols  ))
+			matching.add( Utils.Unit.COL );
+		if ( boxesMatch( rowCols ))
+			matching.add( Utils.Unit.BOX );
+		return matching;
+	}
+
+	/**
+	 * Return 0, 1, 2, or 3 matching units of the two locations.
+	 * If rc1.equals(rc2), the list will be length 3.
+	 * @param rc1
+	 * @param rc2
+	 * @return
+	 */
+	public static List<Utils.Unit> getMatchingUnits(RowCol rc1, RowCol rc2 ){
+		List<Utils.Unit> matching = new ArrayList<>();
+		if ( rc1.row() == rc2.row() )
+			matching.add( Utils.Unit.ROW );
+		if ( rc1.col() == rc2.col() )
+			matching.add( Utils.Unit.COL );
+		if ( rc1.box() == rc2.box() )
+			matching.add( Utils.Unit.BOX );
+		return matching;
+	}
+
+	/**
 	 * Returns unit index if the given unit matches in the locations.
 	 * Returns NOT_FOUND if there is no unit matchs.
 	 *
@@ -84,7 +117,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * @param loc2
 	 * @return
 	 */
-	public static int unitMatch (Utils.Unit unit, RowCol loc1, RowCol loc2) {
+	public static int unitMatch(Utils.Unit unit, RowCol loc1, RowCol loc2) {
 		return switch ( unit ) {
 			case ROW: if ( loc1.row() == loc2.row() ) yield loc1.row(); else yield Board.NOT_FOUND;
 			case COL: if ( loc1.col() == loc2.col() ) yield loc1.col(); else yield Board.NOT_FOUND;

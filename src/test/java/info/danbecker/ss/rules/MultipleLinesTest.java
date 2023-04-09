@@ -131,17 +131,17 @@ public class MultipleLinesTest {
 		assertEquals( 2, encoding[ 7 ]); // keeper row
 		
 		// Assure candidates are updated
-		int prevCandCount = candidates.candidateCount();
+		int prevCandCount = candidates.getAllCandidateCount();
 		int updates = rule.updateCandidates(board, null, candidates, locations); // remove digi 5, block 3
 		assertEquals( 3, updates );
-		assertEquals( prevCandCount, updates + candidates.candidateCount());
+		assertEquals( prevCandCount, updates + candidates.getAllCandidateCount());
 
 		// Assure rule does not report updated locations
 		locations = rule.locations(board, candidates);
-		prevCandCount = candidates.candidateCount();
+		prevCandCount = candidates.getAllCandidateCount();
 		updates = rule.updateCandidates(board, null, candidates, locations); // remove digi 5, block 4
 		assertEquals( 6, updates);
-		assertEquals( prevCandCount, updates + candidates.candidateCount());
+		assertEquals( prevCandCount, updates + candidates.getAllCandidateCount());
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
 	}
 }

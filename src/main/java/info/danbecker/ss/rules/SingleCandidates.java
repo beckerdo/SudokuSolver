@@ -28,7 +28,7 @@ public class SingleCandidates implements UpdateCandidatesRule {
 			int[] location = locations.get(0);
 			int rowi = location[0];
 			int coli = location[1];
-			int digit = candidates.getCandidateDigit(ROWCOL[rowi][coli]);
+			int digit = candidates.getFirstCandidateDigit(ROWCOL[rowi][coli]);
 
 			System.out.println(format("Rule %s places digit %d at rowCol [%d,%d]", ruleName(), digit, rowi, coli));
 			board.set(ROWCOL[rowi][coli], digit); // simply puts a digit in the board

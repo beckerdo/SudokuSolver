@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -35,23 +35,7 @@ public class Utils {
 			throw new IllegalArgumentException( "input file path must exist, path=" + path );
 		if (!Files.isReadable( path  ))
 			throw new IllegalArgumentException( "input file path must be readable, path=" + path);
-
-		JSONObject jsonObject = new JSONObject(Files.readString( path, StandardCharsets.UTF_8));
-		return jsonObject;
-	}
-
-	/**
-	 * Create a String of ints from List<int[]>
-	 * More compact than Arrays.toString().
-	 * Keep this until the Candidates rule gets rid of encoding */
-	public static String locationsString( List<int[]> locations ) {
-		StringBuilder sb = new StringBuilder();
-		for( int loci = 0; loci < locations.size(); loci++) {
-			if (loci > 0 ) sb.append( ",");
-			int [] loc = locations.get(loci);
-			sb.append( "[" + loc[0] + "," + loc[1] + "]" );
-		}
-		return sb.toString();
+		return new JSONObject(Files.readString( path, StandardCharsets.UTF_8));
 	}
 
 	public static boolean contains( int[] arr, int digit ) {
@@ -80,29 +64,31 @@ public class Utils {
 	// triples=112,113,114,...,123,124,...189,
 	// Note that these combos are 0 based	
 	
-	/*
-	 * Generate combinations of n elements (9 digits), r at a time.
-	 * 
+	/**
+	 * Generate combinations of n non-repeating digits, r at a time.
+	 * <p>
 	 * Combinatorics says C(n,r) = n! / r! * (n-r)!
 	 * which is written recursively as C(n,r)=C(n-1,r-1) + C(n-1,r)
-	 * doubles=12,13,14,...,23,24,....89
-	 * triples=112,113,114,...,123,124,...189,
-	 *
-	 * Note that these combos are 0 based 
-	 * 	 
-	 * @param n is the set size for example 9 for digits 1 through 9
-	 * @param r is the subset size for example take r = 2 from 9
+	 * <p>
+	 * Note that these combos are 0 based.
+	 * <p>
+	 * For example:
+	 * singles (n=9,r=1)->0,1,2,...,8
+	 * doubles (n=9,r=2)->01,02...08,12,13...18,21...78
+	 * triples (n=9,r=3)->012,013,...,018,023,024,...028,034,035,...038,...,678
+	 * <p>
+	 * @param n is the set size for example 9 for digits 0 through 8
+	 * @param r is the subset size for example r = 2 takes 2 digits from 9
 	 * @return int [] of 0 based integer combinations 
-	 *    for example n=9,r=1 returns [0],[1],...[8] 
 	 */
-	public static ArrayList<int[]> comboGenerate(int n, int r) {
-	    ArrayList<int[]> combinations = new ArrayList<>();
+	public static List<int[]> comboGenerate(int n, int r) {
+	    List<int[]> combinations = new LinkedList<>();
 	    comboHelper(combinations, new int[r], 0, n-1, 0);
 	    return combinations;
 	}
 	
-	// Helps with the recursion of method comboGenerate
-	private static void comboHelper(ArrayList<int[]> combinations, int data[], int start, int end, int index) {
+	// Helps with the (tail) recursion of method comboGenerate
+	private static void comboHelper(List<int[]> combinations, int[] data, int start, int end, int index) {
 	    if (index == data.length) {
 	        int[] combination = data.clone();
 	        combinations.add(combination);
@@ -124,7 +110,7 @@ public class Utils {
 	}
 
 	/**
-	 * Convert a combo [] of integers to a single int.
+	 * Convert an int [] of ints to a single int combo.
 	 * <p>
 	 * The param int[] is 0-based. The return int is 1-based
 	 * to prevent losing leading zeros.
@@ -132,41 +118,66 @@ public class Utils {
 	 * For example int[]{1,8} becomes integer 29.
 	 * For example int[]{0,4,5} becomes integer 156.
 	 * 
-	 * @param combo int[] of 0 based integers
+	 * @param ints int[] of 0 based integers
 	 * @return single integer of 1 based digits
 	 */
-	public static int comboToInt( int[] combo) {
-	   if ( combo == null) return -1;
+	public static int intsToCombo(int[] ints) {
+	   if ( ints == null) return -1;
 	   int value = 0;
-	   for( int i = 0; i < combo.length; i++ ) {
-		   value = value * 10 + combo[ i ] + 1;		   
+	   for( int i = 0; i < ints.length; i++ ) {
+		   value = value * 10 + ints[ i ] + 1;
 	   }
 	   return value;
 	}
 	
-	/* 
-	 * Convert an int to an int[] of digits
-	 * 
+	/**
+	 * Convert an int combo to an int[] of ints
+	 * <p>
 	 * The param int is 1-based. The return int [] is 0-based
 	 * to prevent losing leading zeros.
-	 * 
+	 * <p>
 	 * For example 29 becomes int[]{1,8}
 	 * For example 156 becomes int[]{0,4,5}
 	 * 
-	 * @param single int of 1 based digits
+	 * @param combo int of one-based digits
 	 * @return int [] of 0 based integers
 	 */
-	public static int [] intToCombo( int integer ) {
-	   String stringInt = Integer.toString(integer);
-	   int [] value = new int[ stringInt.length() ];
-	   for( int i = 0; i < value.length; i++ ) {
-		   value[ i ] = Integer.parseInt(stringInt.substring(i,i+1)) - 1;	   
+	public static int [] comboToInts(int combo ) {
+	   String stringInt = Integer.toString(combo);
+	   int [] ints = new int[ stringInt.length() ];
+	   for( int i = 0; i < ints.length; i++ ) {
+		   ints[ i ] = Integer.parseInt(stringInt.substring(i,i+1)) - 1;
 	   }
-	   return value;
+	   return ints;
+	}
+
+	/**
+	 * Renders the int[] of digits as a String.
+	 * @param digits
+	 * @return
+	 */
+	public static String digitsToString(int [] digits ) {
+		StringBuilder sb = new StringBuilder("{");
+		for( int i = 0; i < digits.length; i++ ) {
+			sb.append( digits[i] );
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+	/**
+	 * Create a String of ints from List<int[]>
+	 * More compact than Arrays.toString().
+	 * Keep this until the Candidates rule gets rid of encoding */
+	public static String digitsToString(List<int[]> digits ) {
+		StringBuilder sb = new StringBuilder();
+		for( int digi = 0; digi < digits.size(); digi++) {
+			if ( 0 < digi ) sb.append(",");
+			sb.append( digitsToString( digits.get(digi) ));
+		}
+		return sb.toString();
 	}
 
 	public static String createIndent(int repeats) {
 		return "   ".repeat(repeats);
 	}
-	
 }

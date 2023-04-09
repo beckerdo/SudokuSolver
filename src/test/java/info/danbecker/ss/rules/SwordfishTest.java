@@ -79,11 +79,11 @@ public class SwordfishTest {
    		assertEquals(3, exLocs.size());
 				
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, encodings);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates,candidates.candidateCount() + exLocs.size());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandidates,candidates.getAllCandidateCount() + exLocs.size());
 	}
 	
 	@Test
@@ -121,11 +121,11 @@ public class SwordfishTest {
    		assertEquals(3, exLocs.size());
 				
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, encodings);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates,candidates.candidateCount() + exLocs.size());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandidates,candidates.getAllCandidateCount() + exLocs.size());
 	}
 	
 	@Test

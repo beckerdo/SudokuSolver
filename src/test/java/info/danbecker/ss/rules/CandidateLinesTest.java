@@ -43,9 +43,9 @@ public class CandidateLinesTest {
 		assertEquals( 8, loc[2] ); // boxi
 		assertEquals( 4, loc[3] ); // digi
 
-		int prevCount = candidates.candidateCount();
+		int prevCount = candidates.getAllCandidateCount();
 		candidates.removeCandidateNotInBox(loc[0],loc[1],loc[2],loc[3]);
-		assertTrue( prevCount > candidates.candidateCount());
-		System.out.print(format("Rule %s reduced candidates from %d to %d", rule.ruleName(), prevCount, candidates.candidateCount()));
+		assertTrue( prevCount > candidates.getAllCandidateCount());
+		System.out.print(format("Rule %s reduced candidates from %d to %d", rule.ruleName(), prevCount, candidates.getAllCandidateCount()));
 	}
 }

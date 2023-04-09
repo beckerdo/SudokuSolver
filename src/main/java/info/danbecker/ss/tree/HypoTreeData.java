@@ -54,8 +54,8 @@ public class HypoTreeData implements Comparable<HypoTreeData>{
 
 		// Comparing by size might actually cause similars to be equal
 		// Might want to fully compare items.
-		if ( this.candidates.candidateCount() < that.candidates.candidateCount()) return -1;
-		if ( this.candidates.candidateCount() > that.candidates.candidateCount()) return 1;
+		if ( this.candidates.getAllCandidateCount() < that.candidates.getAllCandidateCount()) return -1;
+		if ( this.candidates.getAllCandidateCount() > that.candidates.getAllCandidateCount()) return 1;
 
 		if ( this.actions.size() < that.actions.size()) return -1;
 		if ( this.actions.size() > that.actions.size()) return 1;

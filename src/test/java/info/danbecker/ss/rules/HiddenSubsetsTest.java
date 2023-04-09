@@ -146,13 +146,13 @@ public class HiddenSubsetsTest {
 		assertEquals(3, locations.size());
 
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locations);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 //		assertEquals( 4, candidates.candidateComboRowCount(8, combo15));
-		System.out.println( format( "Candidate count prev/curr = %d/%d", prevCandidates, candidates.candidateCount()));
+		System.out.println( format( "Candidate count prev/curr = %d/%d", prevCandidates, candidates.getAllCandidateCount()));
 		// System.out.println( "Candidates=" + candidates.toStringCompact());		
 	}
   	
@@ -179,11 +179,11 @@ public class HiddenSubsetsTest {
 		assertNotNull( locs);
 		assertEquals( 1, locs.size());
 		// Update test
-		int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+		int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locs);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates, candidates.candidateCount() + 1);
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 1);
 	}
  
 	// Puzzle from https://www.sudokuoftheday.com/dailypuzzles/2023-01-03/diabolical/solver
@@ -207,10 +207,10 @@ public class HiddenSubsetsTest {
 		assertNotNull(locs);
 		assertEquals( 2, locs.size());
 		// Update test
-		int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+		int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locs);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates, candidates.candidateCount() + 4);
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 4);
  	}
 }

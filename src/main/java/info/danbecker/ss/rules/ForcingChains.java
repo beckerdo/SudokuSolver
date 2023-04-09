@@ -182,7 +182,7 @@ public class ForcingChains implements UpdateCandidatesRule {
 		if ( null != nodeData ) {
 			// Bring node info into scope.
 			Candidates candidates = nodeData.candidates;
-			if ( 0 == candidates.candidateCount()) return;
+			if ( 0 == candidates.getAllCandidateCount()) return;
 			int digit = nodeData.digit;
 			RowCol rowCol = nodeData.rowCol;
 			List<ChangeData> actions = nodeData.actions;
@@ -207,7 +207,7 @@ public class ForcingChains implements UpdateCandidatesRule {
 							// System.out.println( format("%sDigit %d at [%d,%d] has new same %s single at [%d,%d] with digit %s",
 							// 	Utils.createIndent(node.getLevel()+1), digit,rowCol[0],rowCol[1], unit.name(), 
 							// 	candLoc[0],candLoc[1], candidates.getCandidatesStringCompact(candLoc[0],candLoc[1]) ));
-							int candDigit = candidates.getCandidateDigit(candLoc);
+							int candDigit = candidates.getFirstCandidateDigit(candLoc);
 							// Child node
 							HypoTreeData childData = new HypoTreeData(candDigit,candLoc,candidates);
 							TreeNode<HypoTreeData> child = node.setChild(childData, unit.ordinal());

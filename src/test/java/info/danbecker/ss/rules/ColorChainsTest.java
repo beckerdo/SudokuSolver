@@ -119,13 +119,13 @@ public class ColorChainsTest {
 		assertEquals( 3, enc[ 6 ] );
 		
 		// Test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		int updates = rule.updateCandidates(board, null, candidates, encs);
 		// Entries same. Candidate loses 1. 
 		// Candidates loses 1.
-		assertEquals( prevEntries, candidates.entryCount() );
-		assertEquals( prevCandidates, candidates.candidateCount() + updates);
+		assertEquals( prevEntries, candidates.getAllOccupiedCount() );
+		assertEquals( prevCandidates, candidates.getAllCandidateCount() + updates);
 	}
 	
 	@Test

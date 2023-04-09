@@ -87,11 +87,11 @@ public class DoublePairsTest {
 		// double pair for digit 4 at row/col=4/1,4/6 and row/col=5/1,5/6
 		
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locations);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 		// remove 4 digit 3 candidates not in rowCols 2,4 7,5
 	}
 }

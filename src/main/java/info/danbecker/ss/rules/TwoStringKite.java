@@ -38,7 +38,7 @@ public class TwoStringKite implements UpdateCandidatesRule {
 			int digit = enc[0];
 			RowCol[] rowCols = new RowCol[ enc.length - 1];
 			for( int loci = 1; loci < enc.length; loci++) {
-				int[] rowCol = intToCombo( enc[ loci ] ); // converts 1-based to 0-based
+				int[] rowCol = comboToInts( enc[ loci ] ); // converts 1-based to 0-based
 				rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]];
 			}
 			// Just correct first item
@@ -157,11 +157,11 @@ public class TwoStringKite implements UpdateCandidatesRule {
 
 		int [] encoded = new int[6 ];
 		encoded[0] = digit;
-		encoded[1] = comboToInt( new int[]{ hands[0].row(), hands[0].col() } );
-		encoded[2] = comboToInt( new int[]{ hands[1].row(), hands[1].col() } );
-		encoded[3] = comboToInt( new int[]{ strings[0].row(), strings[0].col() } );
-		encoded[4] = comboToInt( new int[]{ strings[1].row(), strings[1].col() } );
-		encoded[5] = comboToInt( new int[]{ loc.row(), loc.col() } );
+		encoded[1] = intsToCombo( new int[]{ hands[0].row(), hands[0].col() } );
+		encoded[2] = intsToCombo( new int[]{ hands[1].row(), hands[1].col() } );
+		encoded[3] = intsToCombo( new int[]{ strings[0].row(), strings[0].col() } );
+		encoded[4] = intsToCombo( new int[]{ strings[1].row(), strings[1].col() } );
+		encoded[5] = intsToCombo( new int[]{ loc.row(), loc.col() } );
 		return encoded;
 	}
 
@@ -174,12 +174,12 @@ public class TwoStringKite implements UpdateCandidatesRule {
 		int digit = location[0];
 		RowCol[] rowCols = new RowCol[ location.length - 1];
 		for( int loci = 1; loci < location.length; loci++) {
-			int[] rowCol = intToCombo( location[ loci ] ); // converts one-based to zero-based
+			int[] rowCol = comboToInts( location[ loci ] ); // converts one-based to zero-based
 			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]];
 		}
-		RowCol[] base = new RowCol[]{
-				ROWCOL[rowCols[0].row()][rowCols[0].col()],
-				ROWCOL[rowCols[1].row()][rowCols[1].col()] };
+		// RowCol[] base = new RowCol[]{
+		// 		ROWCOL[rowCols[0].row()][rowCols[0].col()],
+		// 		ROWCOL[rowCols[1].row()][rowCols[1].col()] };
 		return format("digit %d has kite at (hands,strings,loc) %s",
 			digit, RowCol.toString(rowCols));
 	}

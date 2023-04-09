@@ -141,12 +141,12 @@ public class XWingsTest {
 		assertEquals(8, first[9]);
 		
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		// XWings removed 3 digit 6 row candidates not in rowCols [3,2] [8,8]
 		rule.updateCandidates(board, null, candidates, encodings);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 		
 		encodings = rule.locations(board, candidates);
 		assertTrue(null != encodings);
@@ -161,12 +161,12 @@ public class XWingsTest {
 		assertEquals(6, first[9]);
 		
         // Update test
-        prevEntries = candidates.entryCount();
-		prevCandidates = candidates.candidateCount();
+        prevEntries = candidates.getAllOccupiedCount();
+		prevCandidates = candidates.getAllCandidateCount();
 		// XWings removed 1 digit 6 col candidates not in rowCols [5,0] [6,6]
 		rule.updateCandidates(board, null, candidates, encodings);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 	}
 	
 	@Test
@@ -198,12 +198,12 @@ public class XWingsTest {
         assertEquals(3, first[9]);
 		
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		// XWings removed 2 digit 6 row candidates not in rowCols [0,2] [6,3]
 		rule.updateCandidates(board, null, candidates, encodings);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 
 		encodings = rule.locations(board, candidates);
 		assertTrue(null != encodings);
@@ -218,11 +218,11 @@ public class XWingsTest {
         assertEquals(5, first[9]);
 		
         // Update test
-        prevEntries = candidates.entryCount();
-		prevCandidates = candidates.candidateCount();
+        prevEntries = candidates.getAllOccupiedCount();
+		prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, encodings);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 	}
 
 	// https://www.sudokuoftheday.com/dailypuzzles/2023-01-03/diabolical/solver
@@ -246,11 +246,11 @@ public class XWingsTest {
 		assertEquals( 2, locs.size());
 		// System.out.println( "Locs=" + Utils.locationsString(locs));
 		// Update test
-		int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+		int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locs);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates, candidates.candidateCount() + 1);
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 1);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 	}
 
@@ -274,11 +274,11 @@ public class XWingsTest {
 		assertEquals( 2, locs.size());
 		// System.out.println( "Locs=" + Utils.locationsString(locs));
 		// Update test
-		int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+		int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locs);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates, candidates.candidateCount() + 1);
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 1);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 	}
 	
@@ -313,11 +313,11 @@ public class XWingsTest {
 		assertEquals(1, encs.size());
 
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		int updates = rule.updateCandidates(board, null, candidates, encs);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertEquals( prevCandidates,candidates.candidateCount() + updates);
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandidates,candidates.getAllCandidateCount() + updates);
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 	}
 	

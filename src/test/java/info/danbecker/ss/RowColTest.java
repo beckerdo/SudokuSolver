@@ -74,6 +74,13 @@ public class RowColTest {
 
 		assertTrue(RowCol.rowsMatch(rowMatch));
 		assertTrue(RowCol.rowsMatch(RowCol.toArray(rowMatch)));
+		assertTrue( 0 == RowCol.getMatchingAllUnits(rowMatch).size());
+		assertTrue( 0 == RowCol.getMatchingUnits( noMatch.get(0), noMatch.get(1)).size());
+		assertTrue( 1 == RowCol.getMatchingAllUnits(rowMatch).size());
+		assertTrue( 1 == RowCol.getMatchingUnits( rowMatch.get(0), rowMatch.get(1)).size());
+		assertTrue( 1 == RowCol.getMatchingAllUnits(colMatch).size());
+		assertTrue( 1 == RowCol.getMatchingUnits( colMatch.get(0), colMatch.get(1)).size());
+		assertTrue( 3 == RowCol.getMatchingUnits( colMatch.get(0), colMatch.get(0)).size());
 		assertEquals(0, RowCol.unitMatch( Utils.Unit.ROW, new RowCol( 0,0 ), new RowCol( 0,1)));
 		assertTrue( Arrays.equals(new int[]{0,0}, RowCol.unitMatch( new RowCol( 0,0 ), new RowCol( 0,1 ))));
 		assertEquals( RowCol.NOT_FOUND, RowCol.unitMatch( new RowCol( 0,0 ), new RowCol( 8,8)));

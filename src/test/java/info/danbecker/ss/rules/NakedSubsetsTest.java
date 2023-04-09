@@ -80,13 +80,13 @@ public class NakedSubsetsTest {
         // System.out.println( "Encoded location=" + Arrays.toString(encoded)); // one based
 
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locations);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 		assertEquals( 4, candidates.candidateComboRowCount(8, combo15));		
 	}
 	
@@ -121,10 +121,10 @@ public class NakedSubsetsTest {
         // System.out.println( "Encoded location=" + Arrays.toString(encoded)); // one based
 
         // Update test
-        int prevEntries = candidates.entryCount();
-		int prevCandidates = candidates.candidateCount();
+        int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandidates = candidates.getAllCandidateCount();
 		rule.updateCandidates(board, null, candidates, locations);
-		assertEquals( prevEntries, candidates.entryCount());
-		assertTrue( prevCandidates > candidates.candidateCount());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 	}
 }

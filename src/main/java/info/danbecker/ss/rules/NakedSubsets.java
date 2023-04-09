@@ -16,8 +16,8 @@ import static info.danbecker.ss.Utils.ROWS;
 import static info.danbecker.ss.Utils.COLS;
 import static info.danbecker.ss.Utils.BOXES;
 import static info.danbecker.ss.Utils.DIGITS;
-import static info.danbecker.ss.Utils.intToCombo;
-import static info.danbecker.ss.Utils.comboToInt;
+import static info.danbecker.ss.Utils.comboToInts;
+import static info.danbecker.ss.Utils.intsToCombo;
 
 import static info.danbecker.ss.Candidates.NAKED;
 
@@ -62,15 +62,15 @@ public class NakedSubsets implements UpdateCandidatesRule {
 			// Just act on first find
 			int [] encoded = locations.get(0);
 			// Decode information
-			int [] combo = intToCombo( encoded[0] ); // converts 1-based to 0-based			
+			int [] combo = comboToInts( encoded[0] ); // converts 1-based to 0-based
 			RowCol[] rowCols = new RowCol[ encoded.length - 1];
 			for( int loci = 1; loci < encoded.length; loci++) {
-				int [] rowCol = intToCombo( encoded[ loci ] ); // converts 1-based to 0-based
+				int [] rowCol = comboToInts( encoded[ loci ] ); // converts 1-based to 0-based
 				rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]];
 			}
 
 			System.out.println( format( "%s will remove candidates {%d} not in locations %s", ruleName(),
-			   comboToInt(combo), // converts 0-based to 1-based
+			   intsToCombo(combo), // converts 0-based to 1-based
 			   RowCol.toString( rowCols )));
 			// Just correct first item
 			updates += candidates.removeCandidatesNotInLocations(combo, rowCols);
@@ -96,7 +96,7 @@ public class NakedSubsets implements UpdateCandidatesRule {
 		ArrayList<int[]> locations = new ArrayList<>();
 		// Generate combinations of n elements (9 digits), r at a time.
 		// Note that these combos are 0 based
-		ArrayList<int[]> combinations = Utils.comboGenerate(DIGITS, subsetSize); // combos are 0 based
+		List<int[]> combinations = Utils.comboGenerate(DIGITS, subsetSize); // combos are 0 based
 		for( int combi = 0; combi < combinations.size(); combi++) {
 			int [] combo = combinations.get(combi); // combo is 0 based
 			if (!board.comboCompleted(combo)) {
@@ -170,10 +170,10 @@ public class NakedSubsets implements UpdateCandidatesRule {
 	/** Given 0-based combo and 0-based locations, return 1-base combo,locations array */
 	public int [] encodeLocation( int [] combo, List<RowCol> locations) {
 		int [] encoded = new int[1 + locations.size() ];
-		encoded[0] = comboToInt( combo ); // Converts 0-based digits to 1-based int
+		encoded[0] = intsToCombo( combo ); // Converts 0-based digits to 1-based int
 		for( int loci = 0; loci < locations.size(); loci++) {
 			RowCol rowCol = locations.get( loci );
-			encoded[ loci+1 ] = comboToInt( new int[]{ rowCol.row(), rowCol.col() } ); // Converts 0-based int[] to 1-based int
+			encoded[ loci+1 ] = intsToCombo( new int[]{ rowCol.row(), rowCol.col() } ); // Converts 0-based int[] to 1-based int
 		}
 		return encoded;
 	}
@@ -190,7 +190,7 @@ public class NakedSubsets implements UpdateCandidatesRule {
 		int combo = location[0];
 		RowCol[] rowCols = new RowCol[ location.length - 1];
 		for( int loci = 1; loci < location.length; loci++) {
-			int[] rowCol = intToCombo( location[ loci ] );
+			int[] rowCol = comboToInts( location[ loci ] );
 			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]]; // // Converts 1-based int to 0-based int[]
 		}
 		// Check if rows/cols

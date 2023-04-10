@@ -21,15 +21,11 @@ import static info.danbecker.ss.Board.NOT_FOUND;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class SinglePositions implements UpdateCandidatesRule {
-
-	public SinglePositions() {
-	}
-
+public class SinglePositions implements FindUpdateRule {
 	@Override
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
-		if (locations.size() > 0) {
-			int[] location = locations.get(0);
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
+		if (encs.size() > 0) {
+			int[] location = encs.get(0);
 			int rowi = location[ 0 ];
 			int coli = location[ 1 ];
 			// int boxi = location[ 2 ];
@@ -44,7 +40,7 @@ public class SinglePositions implements UpdateCandidatesRule {
 	}
 
 	@Override
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		ArrayList<int[]> locations = new ArrayList<>();
@@ -73,6 +69,17 @@ public class SinglePositions implements UpdateCandidatesRule {
 			}
 		}
 		return locations;
+	}
+
+	@Override
+	public String encodingToString(int[] enc) {
+		int rowi = enc[ 0 ];
+		int coli = enc[ 1 ];
+		// int boxi = enc[ 2 ];
+		int digit = enc[ 3 ];
+		RowCol rowCol = ROWCOL[rowi][coli];
+
+		return String.format("digit %d at rowCol %s", digit, rowCol);
 	}
 
 	@Override

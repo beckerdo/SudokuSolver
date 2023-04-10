@@ -22,14 +22,14 @@ import static info.danbecker.ss.Board.NOT_FOUND;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class LegalCandidates implements UpdateCandidatesRule {
+public class LegalCandidates implements FindUpdateRule {
 	public static ArrayList<int[]> DUMMY = new ArrayList<>();
 
 	public LegalCandidates() {
 	}
 
 	@Override
-	public int updateCandidates( Board board, Board solution, Candidates candidates, List<int[]> locations ) {
+	public int update( Board board, Board solution, Candidates candidates, List<int[]> encs ) {
 		int count = 0;
 		
 		// Remove candidates from  occupied boxes
@@ -71,9 +71,14 @@ public class LegalCandidates implements UpdateCandidatesRule {
 	}
 
 	@Override
-	public List<int[]> locations( Board board, Candidates candidates ){
+	public List<int[]> find(Board board, Candidates candidates ){
 		// Always reports location, but does not look til update phase.		
 		return DUMMY;
+	}
+
+	@Override
+	public String encodingToString(int[] enc) {
+		return "locations determined in update";
 	}
 
 	@Override

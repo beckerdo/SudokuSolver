@@ -48,19 +48,19 @@ import static info.danbecker.ss.Utils.Unit;
  * 
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class ColorChains implements UpdateCandidatesRule {
+public class ColorChains implements FindUpdateRule {
 	public static int NO_COLOR = -1;
 	public static int ALL_COLORS = -2;
 	
 	@Override
 	// Location int [] index map
 	// digit plus rowCol
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
-		if ( null == locations) return updates;
-		if (locations.size() > 0) {
+		if ( null == encs) return updates;
+		if (encs.size() > 0) {
 			// Just correct 1 location (which might update multiple candidates.
-			int[] loc = locations.get(0);
+			int[] loc = encs.get(0);
 			// Encoding
 			// - digit						0
 			// - intended/cand rowCol		56
@@ -100,7 +100,7 @@ public class ColorChains implements UpdateCandidatesRule {
 	 *      - a chain can connect up to 3 times (unit) to another candidate
 	 *      - if color collision remove it.
 	 */
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		List<int[]> matched = new ArrayList<>();
@@ -301,11 +301,12 @@ public class ColorChains implements UpdateCandidatesRule {
 			pRowCol.row(), pRowCol.col(), pColor,
 			sRowCol.row(), sRowCol.col(), sColor };
 	}
-	
-	public String encodingToString( int[] loc) {
-		Unit unit = Unit.values()[loc[1]];
+
+	@Override
+	public String encodingToString( int[] enc) {
+		Unit unit = Unit.values()[enc[1]];
 		return format( "digit %d tree origin [%d,%d], candidate [%d,%d]-%d has %s %d clash with [%d,%d]-%d or [%d,%d]-%d" ,
-			loc[0], loc[3], loc[4], loc[5],loc[6],loc[7], unit.name(),loc[2], loc[8],loc[9],loc[10], loc[11],loc[12],loc[13]);		
+			enc[0], enc[3], enc[4], enc[5],enc[6],enc[7], unit.name(),enc[2], enc[8],enc[9],enc[10], enc[11],enc[12],enc[13]);
 	}
 	
 	/** Returns a list of locations minus the locations in the given tree.
@@ -340,7 +341,7 @@ class RowColMatch implements Comparable<ColorData> {
 		if (null == that) return 1;
 		return this.rowCol.compareTo( that.rowCol );
 	}
-};
+}
 
 class AnyUnitMatch implements Comparable<ColorData> {
 	RowCol rowCol;
@@ -357,7 +358,7 @@ class AnyUnitMatch implements Comparable<ColorData> {
 		if ( this.rowCol.box() == that.rowCol.box()) return 0;
 		return -1;
 	}
-};
+}
 
 class UnitMatch implements Comparable<ColorData> {
 	Utils.Unit unit;
@@ -380,4 +381,4 @@ class UnitMatch implements Comparable<ColorData> {
 		}
 		return -1;
 	}
-};
+}

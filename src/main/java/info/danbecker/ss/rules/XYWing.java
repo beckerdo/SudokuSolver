@@ -16,7 +16,7 @@ import static java.lang.String.format;
 
 /**
  * XY-Wing
- * From https://hodoku.sourceforge.net/en/tech_wings.php#xy
+ * From <a href="https://hodoku.sourceforge.net/en/tech_wings.php#xy">Hudoku Solving Page XY-Wings</a>
  * <p>
  * An XY-Wing is really a short XY-Chain.
  * Look for bivalue cell (the pivot).
@@ -30,12 +30,9 @@ import static java.lang.String.format;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class XYWing implements UpdateCandidatesRule {
-	public XYWing() {
-	}
-
+public class XYWing implements FindUpdateRule {
 	@Override
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> locations) {
 		int updates = 0;
 		if ( null == locations) return updates;
 		if (locations.size() > 0) {
@@ -82,7 +79,7 @@ public class XYWing implements UpdateCandidatesRule {
 	}
 
 	@Override
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		List<int[]> locs = new ArrayList<>();
@@ -137,7 +134,7 @@ public class XYWing implements UpdateCandidatesRule {
 											if ( 0 < zLocs.size()) {
 												int[] xyz = new int[]{xDigit, yDigit, zDigit};
 												int[] enc = encodeLocation(xyz, xyLoc, xzLoc, yzLoc, zLocs);
-												System.out.println(format("%s found %s", ruleName(), locationToString(enc)));
+												System.out.println(format("%s found %s", ruleName(), encodingToString(enc)));
 												locs.add( enc );
 											}
 										}
@@ -204,11 +201,14 @@ public class XYWing implements UpdateCandidatesRule {
 		return encoded;
 	}
 
+
+
 	/**
 	 * @param loc one-based digit and combo encoded locations
 	 * @return String version of encoded locations
 	 */
-	public static String locationToString( int [] loc ) {
+	@Override
+	public String encodingToString(int [] loc ) {
 		if ( null == loc ) return "null";
 		int xDigit = loc[0];
 		int yDigit = loc[1];

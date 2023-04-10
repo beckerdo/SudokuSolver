@@ -23,17 +23,14 @@ import static java.lang.String.format;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class TwoStringKite implements UpdateCandidatesRule {
-	public TwoStringKite() {
-	}
-
+public class TwoStringKite implements FindUpdateRule {
 	@Override
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
-		if ( null == locations) return updates;
-		if (locations.size() > 0) {
+		if ( null == encs) return updates;
+		if (encs.size() > 0) {
 			// Just act on first find
-			int [] enc = locations.get(0);
+			int [] enc = encs.get(0);
 			// Decode information
 			int digit = enc[0];
 			RowCol[] rowCols = new RowCol[ enc.length - 1];
@@ -68,7 +65,7 @@ public class TwoStringKite implements UpdateCandidatesRule {
 	}
 
 	@Override
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		List<int[]> locs = new ArrayList<>();
@@ -169,7 +166,8 @@ public class TwoStringKite implements UpdateCandidatesRule {
 	 * @param location one-based digit and combo encoded locations
 	 * @return String version of encoded locations
 	 */
-	public static String locationToString( int [] location ) {
+	@Override
+	public String encodingToString( int [] location ) {
 		if ( null == location ) return "null";
 		int digit = location[0];
 		RowCol[] rowCols = new RowCol[ location.length - 1];

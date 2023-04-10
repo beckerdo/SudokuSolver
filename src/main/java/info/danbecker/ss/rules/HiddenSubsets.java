@@ -39,7 +39,7 @@ import static info.danbecker.ss.Candidates.NOT_NAKED;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class HiddenSubsets implements UpdateCandidatesRule {
+public class HiddenSubsets implements FindUpdateRule {
 	
 	protected int subsetSize; 
 	protected int partialCount; 
@@ -56,12 +56,12 @@ public class HiddenSubsets implements UpdateCandidatesRule {
 	}
 
 	@Override
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
-		if ( null == locations) return updates;
-		if (locations.size() > 0) {
+		if ( null == encs) return updates;
+		if (encs.size() > 0) {
 			// Just act on first find
-			int [] encoded = locations.get(0);
+			int [] encoded = encs.get(0);
 			// Decode information
 			int [] combo = comboToInts( encoded[0] ); // converts 1-based to 0-based
 			RowCol[] rowCols = new RowCol[ encoded.length - 1];
@@ -90,7 +90,7 @@ public class HiddenSubsets implements UpdateCandidatesRule {
 	 * Each location is reported as: comboToInt, rowCol1ToInt, rowCol2ToInt, ..., rowColRToInt
 	 */
 	@Override
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		ArrayList<int[]> locations = new ArrayList<>();
@@ -205,17 +205,18 @@ public class HiddenSubsets implements UpdateCandidatesRule {
 	
 	/**
 	 * {15} row candidate at row/col [8,1],[8,6]
-	 * @param location one-based location
+	 * @param enc one-based location
 	 * @return String version of encoded locations
 	 */
-	public String locationToString( int [] location ) {
-		if ( null == location ) return "null";
-		if ( location.length != subsetSize + 1 )
-			return "location length should be " + (subsetSize + 1) + "but was " + location.length;
-		int combo = location[0];
-		RowCol[] rowCols = new RowCol[ location.length - 1];
-		for( int loci = 1; loci < location.length; loci++) {
-			int[] rowCol = comboToInts( location[ loci ] );
+	@Override
+	public String encodingToString( int [] enc ) {
+		if ( null == enc ) return "null";
+		if ( enc.length != subsetSize + 1 )
+			return "location length should be " + (subsetSize + 1) + "but was " + enc.length;
+		int combo = enc[0];
+		RowCol[] rowCols = new RowCol[ enc.length - 1];
+		for( int loci = 1; loci < enc.length; loci++) {
+			int[] rowCol = comboToInts( enc[ loci ] );
 			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]]; // // Converts 1-based int to 0-based int[]
 		}
 		// Check if rows/cols

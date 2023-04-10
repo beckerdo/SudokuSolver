@@ -6,6 +6,7 @@ import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static info.danbecker.ss.Utils.DIGITS;
@@ -18,17 +19,13 @@ import static info.danbecker.ss.Utils.BOXES;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class MultipleLines implements UpdateCandidatesRule {
-
-	public MultipleLines() {
-	}
-
+public class MultipleLines implements FindUpdateRule {
 	@Override
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
-		if ( null == locations) return updates;
-		if (locations.size() > 0) {
-			int [] enc = locations.get(0);
+		if ( null == encs) return updates;
+		if (encs.size() > 0) {
+			int [] enc = encs.get(0);
 			// Just correct item 1.
 			// Encoding [] = digit, row 0|col 1, boxML0, boxML1, savebox, ml0, ml1, keepline
 			int digi = enc[0];
@@ -53,10 +50,10 @@ public class MultipleLines implements UpdateCandidatesRule {
      * if row match, see if other candidates exist on same row outside of block
 	 * if col match, see if other candidates exist on same col outside of block
 	 */
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		ArrayList<int[]> locations = new ArrayList<int[]>();
+		ArrayList<int[]> locations = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if (!board.digitCompleted(digi)) {
 				for (final boolean rowOrientation : new boolean [] { true, false } ){
@@ -83,9 +80,7 @@ public class MultipleLines implements UpdateCandidatesRule {
 						if (0 == tupi) {
 							for (int i = 0; i < BOXES / 3; i++) {
 								int[] boxCounts = counts[i];
-								for (int j = 0; j < boxCounts.length; j++) {
-									boxCounts[j] = 0;
-								}
+								Arrays.fill(boxCounts, 0);
 							}
 						}
 						
@@ -150,7 +145,7 @@ public class MultipleLines implements UpdateCandidatesRule {
 	 * returns the box and segment indexes which have multiple lines,
 	 * and which may be cleared, lastly candidate index and location 
 	 * which should be saved.
-	 * @returns null with no combo
+	 * @return null with no combo
 	 */
 	public int [] multiMatch( int [][] counts ) {
 		if ( null == counts || counts.length < 3 )
@@ -204,6 +199,7 @@ public class MultipleLines implements UpdateCandidatesRule {
 	/**
 	 * Gives a useful string for the encoding
 	 */
+	@Override
 	public String encodingToString( int [] enc ) {
 		if ( null == enc ) return "null";
 		if ( enc.length != 8 ) return "bad length " + enc.length;

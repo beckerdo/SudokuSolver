@@ -23,14 +23,14 @@ public class CandidateLinesTest {
 	public void testBasics() throws ParseException {
 		Board board = new Board(MULTIPLELINES_D4C7);
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		(new LegalCandidates()).update(board, null, candidates, null);
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(board.legal());
 
-		UpdateCandidatesRule rule = new CandidateLines();
+		FindUpdateRule rule = new CandidateLines();
 		assertEquals(rule.ruleName(), rule.getClass().getSimpleName());
 
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertNotNull(locations);
 		assertEquals(1, locations.size());
 		int[] loc = locations.get(0);

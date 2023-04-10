@@ -30,15 +30,15 @@ public class SkyscraperTest {
 		Board board = new Board(SKYSCRAPERROW_BASER4C58_ROOFR0R2_REMOVER0C67R2C34);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(candidates.isCandidate( ROWCOL[4][5], 1));
 		assertTrue(candidates.isCandidate( ROWCOL[4][8], 1));
 		assertTrue(candidates.isCandidate( ROWCOL[0][5], 1));
 		assertTrue(candidates.isCandidate( ROWCOL[2][8], 1));
 
-		UpdateCandidatesRule rule = new Skyscraper();
-		List<int[]> encs = rule.locations( board, candidates );
+		FindUpdateRule rule = new Skyscraper();
+		List<int[]> encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 1, encs.size() );
 
@@ -55,7 +55,7 @@ public class SkyscraperTest {
 		assertEquals( 34, enc[7]);
 		assertEquals( 35, enc[8]);
 
-		int updates = rule.updateCandidates( board, null, candidates, encs );
+		int updates = rule.update( board, null, candidates, encs );
 		assertEquals( 4, updates );
 	}
 
@@ -64,15 +64,15 @@ public class SkyscraperTest {
 		Board board = new Board(SKYSCRAPERCOL_BASER17C0_ROOFC4C3_REMOVER0C3);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(candidates.isCandidate( ROWCOL[1][0], 4));
 		assertTrue(candidates.isCandidate( ROWCOL[7][0], 4));
 		assertTrue(candidates.isCandidate( ROWCOL[1][4], 4));
 		assertTrue(candidates.isCandidate( ROWCOL[7][3], 4));
 
-		UpdateCandidatesRule rule = new Skyscraper();
-		List<int[]> encs = rule.locations( board, candidates );
+		FindUpdateRule rule = new Skyscraper();
+		List<int[]> encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 1, encs.size() );
 
@@ -86,7 +86,7 @@ public class SkyscraperTest {
 		assertEquals( 84, enc[4]);
 		assertEquals( 14, enc[5]);
 
-		int updates = rule.updateCandidates( board, null, candidates, encs );
+		int updates = rule.update( board, null, candidates, encs );
 		assertEquals( 1, updates );
 	}
 
@@ -110,7 +110,8 @@ public class SkyscraperTest {
 		assertEquals( 17, enc[7]);
 		assertEquals( 18, enc[8]);
 
-		String loc = Skyscraper.locationToString( enc );
+		FindUpdateRule rule = new Skyscraper();
+		String loc = rule.encodingToString( enc );
 		// System.out.println( "Loc=" + loc);
 		assertTrue ( loc.contains( "digit " + digit ));
 		assertTrue ( loc.contains( "row " ));

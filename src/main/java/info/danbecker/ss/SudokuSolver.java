@@ -5,7 +5,6 @@ import org.apache.commons.cli.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,23 +43,22 @@ import static java.lang.String.format;
  * <p>
  * TODOs:
  * Verbose command line option for all the logging printlns, perhaps specify rule, rowCol, digit in command line.
- * Command line option for solving rules or grops: -r "Basic,Subsets,Coloring,Chains"
+ * Command line option for solving rules or groups: -r "Basic,Subsets,Coloring,Chains"
  * Consider RowCol String and list output used on websites such as r1c5, r345c8, r4c89
  * Update digits/rows/cols/boxes to be 0-based everywhere internally and 1-based externally (input parsing and output strings).
- * Update UpdateCandidatesRule interface
- *    Replace location in rules to encoded/decoded/string objects
+ * FindUpdateRule changes
  *    All rule updates should report occupy and candidate location changes to aid in debugging.
  *    Change int updateCandidates to something that encodes actions occupy/add/remove, digit, and location.
+ *    Should rule perform validation, or the solver (seems like less code to put it in SudokuSolver than X Rules).
  * Refactor APIs to use Units and remove APIs that have Row/Col/Box in name.
  * Consider matchers for use with lists of locations. Match by candidate count, combo, etc.
  *    This might cut down on the number of candidate row col box methods.
  *    Consider matchers for chains/coloring. Single digit, group 2,...
- * For puzzles with known solutions (all of them), validate every location/update action (OCCUPY,REMOVE)
- *    Should rule perform validation, or the solver
- *    BUG LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
- *    BUG ColorChains 20221118-diabolical-17500.json removed digit 3 from [8,5] {-8}, remaining candidates {-8}
+ * BUGS (disable until fixed)
+ *    LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
+ *    ColorChains 20221118-diabolical-17500.json removed digit 3 from [8,5] {-8}, remaining candidates {-8}
  * Move json resources from main to test
- *
+ * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
 public class SudokuSolver {
@@ -113,7 +111,7 @@ public class SudokuSolver {
 	}
 	
 	/** Gather command line options for this application. Place info in this class instance variables. */
-	public static void parseGatherOptions(String[] args) throws ParseException, URISyntaxException {
+	public static void parseGatherOptions(String[] args) throws ParseException {
 		// Parse the command line arguments
 		Options options = new Options();
 		// Use dash with shortcut (-h) or -- with name (--help).
@@ -162,7 +160,7 @@ public class SudokuSolver {
 
 		// List of rules to run
 		// To do, allow command line to list rules or rule groups
-		UpdateCandidatesRule [] rules = {
+		FindUpdateRule[] rules = {
 			new LegalCandidates(),
 			new SingleCandidates(),
 			new SinglePositions(),
@@ -201,24 +199,23 @@ public class SudokuSolver {
 				  candidates.getAllOccupiedCount(), candidates.getAllCandidateCount()));
 			   // System.out.println( "Board=\n" + board );		
                // System.out.println( "Candidates=\n" + candidates.toStringCompact() );
-			   UpdateCandidatesRule rule = rules[ rulei ];
+			   FindUpdateRule rule = rules[ rulei ];
 			   long startTime = System.nanoTime();
-			   List<int []> locations = rule.locations( board, candidates );
+			   List<int[]> encs = rule.find( board, candidates );
 			   // Cannot assume value of each location since each rule reports it separately
 			   if ( 0 != rulei ) {
 				   // Rule 0 (ValidateLegalCandidates) never reports a location, only updates
-				   System.out.print(format("Rule %s reports %d possible locations", rule.ruleName(), locations.size()));
-				   if ( locations.size() > 0  ) {
-					   possibles[ rulei ] += locations.size();
-	   				   System.out.println( ": " + Utils.digitsToString(locations));
-
+				   System.out.print(format("Rule %s reports %d possibles", rule.ruleName(), encs.size()));
+				   if ( encs.size() > 0  ) {
+					   possibles[ rulei ] += encs.size();
+	   				   System.out.println( ": " + rule.encodingToString(encs.get(0)));
 				   } else {
 					   System.out.println();
 				   }
 			   }
 		       // System.out.println("Candidates=" + candidates.toString());
-			   int changes = rule.updateCandidates( board, solution, candidates, locations);
-			   
+			   int changes = rule.update( board, solution, candidates, encs);
+
 			   // Update metrics
 			   long endTime = System.nanoTime();
 			   long duration = (endTime - startTime) / 1000;  //divide by 1000000 to get milliseconds
@@ -293,12 +290,12 @@ public class SudokuSolver {
 	}
 
 	/** Utility that is helpful for testing. */
-	public static int runOnce( Board board, Candidates candidates, UpdateCandidatesRule rule) {
-        List<int []> locations = rule.locations( board, candidates );
+	public static int runOnce( Board board, Candidates candidates, FindUpdateRule rule) {
+        List<int []> locations = rule.find( board, candidates );
         System.out.println(format("Rule %s reports %d possible locations", rule.ruleName(), locations.size()));
-   	    int changes = rule.updateCandidates( board, null, candidates, locations);
+   	    int changes = rule.update( board, null, candidates, locations);
         System.out.println(format("Rule %s made %d changes", rule.ruleName(), changes));
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
         return changes;
 	}
 }

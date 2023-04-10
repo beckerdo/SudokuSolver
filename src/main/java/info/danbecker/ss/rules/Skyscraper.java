@@ -20,17 +20,14 @@ import static java.lang.String.format;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class Skyscraper implements UpdateCandidatesRule {
-	public Skyscraper() {
-	}
-
+public class Skyscraper implements FindUpdateRule {
 	@Override
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
-		if ( null == locations) return updates;
-		if (locations.size() > 0) {
+		if ( null == encs) return updates;
+		if (encs.size() > 0) {
 			// Just act on first find
-			int [] enc = locations.get(0);
+			int [] enc = encs.get(0);
 			// Decode information
 			int digit = enc[0];
 			RowCol[] rowCols = new RowCol[ enc.length - 1];
@@ -140,7 +137,7 @@ public class Skyscraper implements UpdateCandidatesRule {
 	 * other candidates of that digit that can see both roofs can be deleted.
 	 */
 	@Override
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		List<int[]> locs = new ArrayList<>();
@@ -185,7 +182,7 @@ public class Skyscraper implements UpdateCandidatesRule {
 						}
 						if ( 0 < removeMe.size() ) {
 							System.out.println(format("%s found a digit %d %s base at %s and roof at %s. These locs see both: %s",
-								ruleName(), digit, unit.toString() ,
+								ruleName(), digit, unit,
 								RowCol.toString(base), RowCol.toString(roof), RowCol.toString( removeMe )));
 							locs.add( encodeLocation( digit, base, roof, removeMe ));
 						}
@@ -214,7 +211,7 @@ public class Skyscraper implements UpdateCandidatesRule {
 		if ( null == roof[0] || null == roof[1] )
 			throw new IllegalArgumentException( "roof=" + roof[0] + ", roof=" + roof[1] );
 		if ( null == locs || 0 == locs.size() )
-			throw new IllegalArgumentException( "locs=" + RowCol.toString( locs ));
+			throw new IllegalArgumentException( "locs=" + locs );
 
 		int [] encoded = new int[5 + locs.size() ];
 		encoded[0] = digit;
@@ -230,15 +227,16 @@ public class Skyscraper implements UpdateCandidatesRule {
 	}
 
 	/**
-	 * @param location one-based digit and combo encoded locations
+	 * @param enc one-based digit and combo encoded locations
 	 * @return String version of encoded locations
 	 */
-	public static String locationToString( int [] location ) {
-		if ( null == location ) return "null";
-		int digit = location[0];
-		RowCol[] rowCols = new RowCol[ location.length - 1];
-		for( int loci = 1; loci < location.length; loci++) {
-			int[] rowCol = comboToInts( location[ loci ] );
+	@Override
+	public String encodingToString(int [] enc) {
+		if ( null == enc ) return "null";
+		int digit = enc[0];
+		RowCol[] rowCols = new RowCol[ enc.length - 1];
+		for( int loci = 1; loci < enc.length; loci++) {
+			int[] rowCol = comboToInts( enc[ loci ] );
 			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]]; // // Converts 1-based int to 0-based int[]
 		}
 		RowCol[] base = new RowCol[]{

@@ -120,14 +120,14 @@ public class XWingsTest {
 		Board board = new Board(XWINGS);
 		assertTrue(board.legal());
 
-		UpdateCandidatesRule rule = new XWings();
+		FindUpdateRule rule = new XWings();
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
 
 		// Locations test
-		List<int[]> encodings = rule.locations(board, candidates);
+		List<int[]> encodings = rule.find(board, candidates);
 		assertTrue(null != encodings);
 		assertEquals(2, encodings.size());
 		// XWings found digit 6 row at rowCols=[3,2],[3,8] and rowCols=[8,2],[8,8]
@@ -144,11 +144,11 @@ public class XWingsTest {
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
 		// XWings removed 3 digit 6 row candidates not in rowCols [3,2] [8,8]
-		rule.updateCandidates(board, null, candidates, encodings);
+		rule.update(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 		
-		encodings = rule.locations(board, candidates);
+		encodings = rule.find(board, candidates);
 		assertTrue(null != encodings);
 		assertEquals(1, encodings.size());
 		// XWings found digit 6 col at rowCols=[5,0],[6,0] and rowCols=[5,6],[6,6]
@@ -164,7 +164,7 @@ public class XWingsTest {
         prevEntries = candidates.getAllOccupiedCount();
 		prevCandidates = candidates.getAllCandidateCount();
 		// XWings removed 1 digit 6 col candidates not in rowCols [5,0] [6,6]
-		rule.updateCandidates(board, null, candidates, encodings);
+		rule.update(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 	}
@@ -174,17 +174,17 @@ public class XWingsTest {
 		Board board = new Board(XWINGS);
 		assertTrue(board.legal());
 
-		UpdateCandidatesRule rule = new XWings();
+		FindUpdateRule rule = new XWings();
 		
 		// Try a column search
 		board = Board.rotateRight(board);
 		assertTrue(board.legal());
 		
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
 
-		List<int[]> encodings = rule.locations(board, candidates);
+		List<int[]> encodings = rule.find(board, candidates);
 		assertTrue(null != encodings);
 		assertEquals(2, encodings.size());
 		// XWings found digit 6 row at rowCols=[0,2],[0,3] and rowCols=[6,2],[6,3]
@@ -201,11 +201,11 @@ public class XWingsTest {
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
 		// XWings removed 2 digit 6 row candidates not in rowCols [0,2] [6,3]
-		rule.updateCandidates(board, null, candidates, encodings);
+		rule.update(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 
-		encodings = rule.locations(board, candidates);
+		encodings = rule.find(board, candidates);
 		assertTrue(null != encodings);
 		assertEquals(1, encodings.size());
 		// XWings found digit 6 col at rowCols=[2,0],[8,0] and rowCols=[2,5],[8,5]
@@ -220,7 +220,7 @@ public class XWingsTest {
         // Update test
         prevEntries = candidates.getAllOccupiedCount();
 		prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, encodings);
+		rule.update(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 	}
@@ -234,21 +234,21 @@ public class XWingsTest {
 		Board board = new Board(XWINGS_20230103);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Test rule
-		UpdateCandidatesRule rule = new XWings();
+		FindUpdateRule rule = new XWings();
 		assertEquals(rule.ruleName(), "XWings" );
 		// Locations test
-		List<int[]> locs = rule.locations(board, candidates);
+		List<int[]> locs = rule.find(board, candidates);
 		assertTrue(null != locs);
 		assertEquals( 2, locs.size());
 		// System.out.println( "Locs=" + Utils.locationsString(locs));
 		// Update test
 		int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locs);
+		rule.update(board, null, candidates, locs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 1);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
@@ -262,21 +262,21 @@ public class XWingsTest {
 		board = Board.rotateLeft(board);
 		assertTrue(board.legal());	
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Test rule
-		UpdateCandidatesRule rule = new XWings();
+		FindUpdateRule rule = new XWings();
 		assertEquals(rule.ruleName(), "XWings" );
 		// Locations test
-		List<int[]> locs = rule.locations(board, candidates);
+		List<int[]> locs = rule.find(board, candidates);
 		assertTrue(null != locs);
 		assertEquals( 2, locs.size());
 		// System.out.println( "Locs=" + Utils.locationsString(locs));
 		// Update test
 		int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locs);
+		rule.update(board, null, candidates, locs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 1);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
@@ -290,7 +290,7 @@ public class XWingsTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
+		(new LegalCandidates()).update(board, null, candidates, null);	
 		// Need to update candidates to get it into the proper state
    	    candidates.removeCandidates( ROWCOL[0][4], new int[]{1,6});
    	    candidates.removeCandidates( ROWCOL[0][5], new int[]{6});
@@ -308,14 +308,14 @@ public class XWingsTest {
 		
 		XWings rule = new XWings();
 		// Locations test
-		List<int[]> encs = rule.locations(board, candidates);
+		List<int[]> encs = rule.find(board, candidates);
 		assertTrue(null != encs);
 		assertEquals(1, encs.size());
 
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		int updates = rule.updateCandidates(board, null, candidates, encs);
+		int updates = rule.update(board, null, candidates, encs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates,candidates.getAllCandidateCount() + updates);
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());

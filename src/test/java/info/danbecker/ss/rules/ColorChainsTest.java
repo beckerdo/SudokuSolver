@@ -52,7 +52,7 @@ public class ColorChainsTest {
 		ColorChains rule = new ColorChains();
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// No color clash in pairs tree
@@ -97,7 +97,7 @@ public class ColorChainsTest {
 		ColorChains rule = new ColorChains();
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// No color clash in pairs tree
@@ -121,7 +121,7 @@ public class ColorChainsTest {
 		// Test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		int updates = rule.updateCandidates(board, null, candidates, encs);
+		int updates = rule.update(board, null, candidates, encs);
 		// Entries same. Candidate loses 1. 
 		// Candidates loses 1.
 		assertEquals( prevEntries, candidates.getAllOccupiedCount() );
@@ -205,11 +205,11 @@ public class ColorChainsTest {
 		ColorChains rule = new ColorChains();
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// No color clash in pairs tree
-		List<int[]> encs = rule.locations(board, candidates );		
+		List<int[]> encs = rule.find(board, candidates );
 		assertEquals( 27, encs.size());
 		
 	}

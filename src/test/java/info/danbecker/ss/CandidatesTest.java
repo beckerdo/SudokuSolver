@@ -170,7 +170,7 @@ public class CandidatesTest {
 		assertTrue( candidates.containsOnlyDigits( ROWCOL[8][8], new int[]{ 1,2,3,4,5,6,7,8,9 }));
 		assertFalse( candidates.containsOnlyDigits( ROWCOL[8][8], new int[]{ 1,9 }));
 
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// After removing legal moves
@@ -247,7 +247,7 @@ public class CandidatesTest {
 		Candidates candidates = new Candidates( board );
 
 		LegalCandidates rule = new LegalCandidates();
-		rule.updateCandidates( board, null, candidates, null);
+		rule.update( board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Digits 1 and 2 in blocks 0 and 1
@@ -267,7 +267,7 @@ public class CandidatesTest {
 		// Test getLocations
 		Board board = new Board( PAIRS );
 		Candidates candidates = new Candidates( board );
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 
 		// Returns a list of locations having these particulars		
 		// public List<int[]> getLocations( int digi, int count )
@@ -327,7 +327,7 @@ public class CandidatesTest {
     public void testCandidateComboLocations() throws ParseException {
 		Board board = new Board(PAIRS);
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
 
 		// Test row/col/all search with certain combo
@@ -409,7 +409,7 @@ public class CandidatesTest {
     public void testCandidateChanges() throws ParseException {
 		Board board = new Board(PAIRS);
 		Candidates cFrom = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, cFrom, null);
+		(new LegalCandidates()).update(board, null, cFrom, null);
 		// System.out.println( "Candidates=\n" + cFrom.toStringBoxed());
 
 		Candidates cTo = new Candidates(cFrom);

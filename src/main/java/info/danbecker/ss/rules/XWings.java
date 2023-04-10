@@ -18,29 +18,28 @@ import static info.danbecker.ss.Utils.DIGITS;
 /**
  * XWings occurs when a board has a candidate two lines, 
  * each having the same two positions for a number.
- * 
+ * <p>
  * Info based on clues given at
  * https://www.sudokuoftheday.com/techniques/x-wings
- * 
+ * <p>
  * Note that https://www.thonky.com/sudoku/unique-rectangle says
  * the corners of the double pair must be in two boxes, not four.
- * 
+ * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class XWings implements UpdateCandidatesRule {
-	
+public class XWings implements FindUpdateRule {
 	@Override
 	// Location int [] index map
 	// digit plus four rowCols A, B, C, D
 	// digit at index 0 
 	// first pair AB rowCols at indexes 1,2 and 3,4
 	// second pair CD rowCols at indexes 5,6 and 7,8
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
-		if ( null == locations) return updates;
-		if (locations.size() > 0) {
+		if ( null == encs) return updates;
+		if (encs.size() > 0) {
 			// Just correct 1 location (which might update multiple candidates.
-			int[] loc = locations.get(0);
+			int[] loc = encs.get(0);
 			// Encoding
 			// int[] {digi,rowCol
 			//  firstRow[0][0],firstRow[0][1],firstRow[1][0],firstRow[1][1],   // 2345
@@ -63,13 +62,13 @@ public class XWings implements UpdateCandidatesRule {
 				updates += candidates.removeColCandidatesNotIn(digit, colA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowB][colA] });
 				updates += candidates.removeColCandidatesNotIn(digit, colB, new RowCol[] {ROWCOL[rowA][colB], ROWCOL[rowB][colB] });
 				System.out.println( format("%s removed %d digit %d %s candidates not in rowCols [%d,%d] [%d,%d]", 
-					ruleName(), updates, digit, (rowCol==0)?"row":"col",rowA, colA, rowB, colB ) );
+					ruleName(), updates, digit,"row",rowA, colA, rowB, colB ) );
 			} else {
 				// if cols match, remove row candidates not in these cols.
 				updates += candidates.removeRowCandidatesNotIn(digit, rowA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowA][colB] });
 				updates += candidates.removeRowCandidatesNotIn(digit, rowB, new RowCol[] {ROWCOL[rowB][colA], ROWCOL[rowB][colB] });
 				System.out.println( format("%s removed %d digit %d %s candidates not in rowCols [%d,%d] [%d,%d]", 
-						ruleName(), updates, digit, (rowCol==0)?"row":"col",rowA, colA, rowB, colB ) );
+						ruleName(), updates, digit,"col",rowA, colA, rowB, colB ) );
 			}
 		}
 		return updates;
@@ -85,16 +84,16 @@ public class XWings implements UpdateCandidatesRule {
      * if row match, see if other candidates exist on same row outside of box
 	 * if col match, see if other candidates exist on same col outside of box
 	 */
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		List<int[]> matched = new ArrayList<int[]>();
+		List<int[]> matched = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if ( !board.digitCompleted( digi )) {
 				// Go through all rows and pick out double candidate rows for this digit.
 				// Be careful, there can be multiple matches such as
 				// [1,2][1,6]/[7,2][7,6] and [3,3][3,5]/[6,3][6,5]
-				LinkedList<int[][]> doubleRows = new LinkedList<int[][]>();
+				LinkedList<int[][]> doubleRows = new LinkedList<>();
 				for ( int rowi = 0; rowi < ROWS; rowi++) {
 					int[] colLocs = candidates.candidateRowLocations(rowi,digi);
 					if ( 2 == colLocs.length) {
@@ -124,7 +123,7 @@ public class XWings implements UpdateCandidatesRule {
 				// Go through all cols and pick out double candidate cols for this digit.
 				// Be careful, there can be multiple matches such as
 				// [1,2][1,6]/[7,2][7,6] and [3,3][3,5]/[6,3][6,5]
-				LinkedList<int[][]> doubleCols = new LinkedList<int[][]>();
+				LinkedList<int[][]> doubleCols = new LinkedList<>();
 				for ( int coli = 0; coli < COLS; coli++) {
 					int[] rowLocs = candidates.candidateColLocations(coli,digi);
 					if ( 2 == rowLocs.length) {
@@ -228,9 +227,10 @@ public class XWings implements UpdateCandidatesRule {
 			second[0][0],second[0][1],second[1][0],second[1][1]};		
 	}
 	
-	public static String encodingToString( int[] loc) {
+	@Override
+	public String encodingToString( int[] enc) {
 		return format( "digit %d %s at rowCols=[%d,%d],[%d,%d] and rowCols=[%d,%d],[%d,%d]" ,
-			loc[0],(loc[1]==0)?"row":"col", loc[2],loc[3],loc[4],loc[5],loc[6],loc[7],loc[8],loc[9]);		
+			enc[0],(enc[1]==0)?"row":"col", enc[2],enc[3],enc[4],enc[5],enc[6],enc[7],enc[8],enc[9]);
 	}
 	
 	@Override

@@ -20,25 +20,25 @@ import static info.danbecker.ss.Candidates.ALL_DIGITS;
 
 /**
  * ForcingChain is also known as a HypotheticalChain.
- *  
+ * <p>
  * Unlike a ColorChain which looks at one digit,
  * the HypChain investigate hypothetical changes
  * to a Candidate tree, for instance when one
  * of two candidates in a pair is selected.
- * 
+ * <p>
  * If the alternatives lead to a cell with the
  * same digit, that digit can be made a board/candidate entry.
- * 
+ * <p>
  * SOTD has a bad example at
  * https://www.sudokuoftheday.com/techniques/forcing-chains
  * Thonky has ColoringChains examples at
  * https://www.thonky.com/sudoku/simple-coloring
- * 
+ * <p>
  * Use ForcingChains when there are many candidate pairs. 
  * 
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class ForcingChains implements UpdateCandidatesRule {
+public class ForcingChains implements FindUpdateRule {
 	
 	@Override
 	// enc int []
@@ -46,7 +46,7 @@ public class ForcingChains implements UpdateCandidatesRule {
 	// 2 = digit
 	// 3,4 = dest rowCol
 	// 5,6 = tree depths
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> encs) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
 		if ( null == encs) return updates;
 		// Select encoding with the smallest tree depths.
@@ -62,7 +62,7 @@ public class ForcingChains implements UpdateCandidatesRule {
 				   minDepth = td1 + td2;
 			   }
 		}
-		// Update lowest depth encoding position
+		// Update the lowest depth encoding position
 		if ( -1 != minEnci ) {
 			   int[] enc = encs.get( minEnci );
 			   int digit = enc[2];
@@ -93,7 +93,7 @@ public class ForcingChains implements UpdateCandidatesRule {
      * Return any location where either digit leads to same output.
      * The starting digit location is given to help with testability. 
 	 */
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		List<int[]> matched = new LinkedList<>();
 		
 		List<RowCol> digitPairs = candidates.getGroupLocations(Candidates.ALL_DIGITS, 2);
@@ -253,8 +253,8 @@ public class ForcingChains implements UpdateCandidatesRule {
 		enc[6] = td2;
 		return enc;
 	}
-	
-	public static String encodingToString( int[] enc) {
+	@Override
+	public String encodingToString( int[] enc) {
 		return format("Orig loc [%d,%d], dest loc [%d,%d], digit=%d, tree depths [%d,%d]",
 				enc[0], enc[1], enc[3], enc[4], enc[2], enc[5], enc[6]);
 	}

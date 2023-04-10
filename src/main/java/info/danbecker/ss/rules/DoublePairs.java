@@ -31,7 +31,7 @@ import static info.danbecker.ss.Board.NOT_FOUND;
  * 
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class DoublePairs implements UpdateCandidatesRule {
+public class DoublePairs implements FindUpdateRule {
 	
 	@Override
 	// Location int [] index map
@@ -39,12 +39,12 @@ public class DoublePairs implements UpdateCandidatesRule {
 	// digit at index 0 
 	// first pair AB rowCols at indexes 1,2 and 3,4
 	// second pair CD rowCols at indexes 5,6 and 7,8
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
-		if ( null == locations) return updates;
-		if (locations.size() > 0) {
+		if ( null == encs) return updates;
+		if (encs.size() > 0) {
 			// Just correct 1 location (which might update multiple candidates.)
-			int[] loc = locations.get(0);
+			int[] loc = encs.get(0);
 			int digit = loc[ 0 ];
 			int rowA = loc[ 1 ]; int rowB = loc[ 5 ];
 			int colA = loc[ 2 ]; int colB = loc[ 8 ];
@@ -71,7 +71,7 @@ public class DoublePairs implements UpdateCandidatesRule {
      * if row match, see if other candidates exist on same row outside of box
 	 * if col match, see if other candidates exist on same col outside of box
 	 */
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		ArrayList<int[]> locations = new ArrayList<>();
@@ -112,10 +112,10 @@ public class DoublePairs implements UpdateCandidatesRule {
 						locations.add( loc );
 						// Found two double pair rows
 						System.out.println( format( "Rule %s found double pair for %s" ,
-							ruleName(), locationToString( loc )));
+							ruleName(), encodingToString( loc )));
 					} else {
 						System.out.println( format( "Rule %s found double pair for %s with no more candidates" ,
-								ruleName(), locationToString( loc )));						
+								ruleName(), encodingToString( loc )));
 					}
 				}
 			}		
@@ -134,7 +134,9 @@ public class DoublePairs implements UpdateCandidatesRule {
 	//    - second pair rows (C row == D row)
 	//    - first pair first col and second pair first col (A col == C col)
 	//    - first pair second col and second pair second col (B col == D col)
-	public static String locationToString( int[] loc) {
+
+	@Override
+	public String encodingToString( int[] loc) {
 		if ( null == loc) return "null";
 		if ( 9 != loc.length) return "length of " + loc.length + "!= 9";
 		

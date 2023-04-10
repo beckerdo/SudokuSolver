@@ -29,15 +29,15 @@ public class XYWingTest {
 		Board board = new Board(XYWING_PIVOT57);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(candidates.containsOnlyDigits( ROWCOL[0][2], new int[]{5,7})); // xy pivot
 		assertTrue(candidates.containsOnlyDigits( ROWCOL[0][5], new int[]{2,5})); // xz pincer
 		assertTrue(candidates.containsOnlyDigits( ROWCOL[1][0], new int[]{2,7})); // yz pincer
 		assertTrue(candidates.isCandidate( ROWCOL[1][5], 2)); // removal candidate
 
-		UpdateCandidatesRule rule = new XYWing();
-		List<int[]> encs = rule.locations( board, candidates );
+		FindUpdateRule rule = new XYWing();
+		List<int[]> encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 3, encs.size() );
 
@@ -52,11 +52,11 @@ public class XYWingTest {
 		assertEquals( 21, enc[5]);
 		assertEquals( 26, enc[6]);
 
-		int updates = rule.updateCandidates( board, null, candidates, encs );
+		int updates = rule.update( board, null, candidates, encs );
 		assertEquals( 1, updates );
 
 		// Location to string
-		String encString = XYWing.locationToString( enc );
+		String encString = rule.encodingToString( enc );
 		assertTrue( encString.contains("xyz=572") );
 		assertTrue( encString.contains("xyLoc=[0,2]") );
 		assertTrue( encString.contains("xzLoc=[0,5]") );
@@ -74,7 +74,7 @@ public class XYWingTest {
 		board = Board.rotateRight( board );
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(candidates.containsOnlyDigits( ROWCOL[0][5], new int[]{1,6})); // xy pivot
 		assertTrue(candidates.containsOnlyDigits( ROWCOL[3][5], new int[]{1,9})); // xz pincer
@@ -85,8 +85,8 @@ public class XYWingTest {
 		assertTrue(candidates.isCandidate( ROWCOL[4][4], 9)); // removal candidates
 		assertTrue(candidates.isCandidate( ROWCOL[5][4], 9)); // removal candidates
 
-		UpdateCandidatesRule rule = new XYWing();
-		List<int[]> encs = rule.locations( board, candidates );
+		FindUpdateRule rule = new XYWing();
+		List<int[]> encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 1, encs.size() );
 
@@ -105,11 +105,11 @@ public class XYWingTest {
 		assertEquals( 55, enc[9]);
 		assertEquals( 65, enc[10]);
 
-		int updates = rule.updateCandidates( board, null, candidates, encs );
+		int updates = rule.update( board, null, candidates, encs );
 		assertEquals( 5, updates );
 
 		// Location to string
-		String encString = XYWing.locationToString( enc );
+		String encString = rule.encodingToString( enc );
 		assertTrue( encString.contains("xyz=169") );
 		assertTrue( encString.contains("xyLoc=[0,5]") );
 		assertTrue( encString.contains("xzLoc=[3,5]") );
@@ -136,7 +136,8 @@ public class XYWingTest {
 		assertEquals( 21, enc[5]);
 		assertEquals( 26, enc[6]);
 
-		String loc = XYWing.locationToString( enc );
+		FindUpdateRule rule = new XYWing();
+		String loc = rule.encodingToString( enc );
 		// System.out.println( "enc=" + loc);
 		assertTrue ( loc.contains( "xyz=" + xyzDigits[0] + xyzDigits[1] + xyzDigits[2]  ));
 		assertTrue ( loc.contains( "xyLoc=[0,2]" ));

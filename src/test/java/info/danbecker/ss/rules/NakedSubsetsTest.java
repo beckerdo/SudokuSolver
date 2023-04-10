@@ -49,7 +49,7 @@ public class NakedSubsetsTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 
 		// Pre tests
 		int [] combo15 = new int [] {0, 4};
@@ -68,11 +68,11 @@ public class NakedSubsetsTest {
 		assertEquals( 4, candidates.candidateComboColCount(1, combo15));
 
 		// Run rule
-		UpdateCandidatesRule rule = new NakedSubsets(2);
+		FindUpdateRule rule = new NakedSubsets(2);
 		assertEquals(rule.ruleName(), "NakedSubsets2" );
 
 		// Locations test
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertNotNull( locations);
 		assertEquals(1, locations.size());
 		// int [] encoded = locations.get( 0 );
@@ -82,7 +82,7 @@ public class NakedSubsetsTest {
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locations);
+		rule.update(board, null, candidates, locations);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 
@@ -96,7 +96,7 @@ public class NakedSubsetsTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 
 		// Pre tests
 		int [] combo138 = new int [] {0,2,7};
@@ -109,11 +109,11 @@ public class NakedSubsetsTest {
 		assertEquals( ROWCOL[6][1], nakedpartialTriples.get( 2 ));
 
 		// Run rule
-		UpdateCandidatesRule rule = new NakedSubsets(3);
+		FindUpdateRule rule = new NakedSubsets(3);
 		assertEquals(rule.ruleName(), "NakedSubsets3" );
 
 		// Locations test
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertNotNull(locations);
 		assertEquals(1, locations.size());
 		// System.out.println(format("Rule %s reports %d find", rule.ruleName(), locations.size()));
@@ -123,7 +123,7 @@ public class NakedSubsetsTest {
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locations);
+		rule.update(board, null, candidates, locations);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 	}

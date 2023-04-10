@@ -53,18 +53,19 @@ public class DoublePairsTest {
 	@Test
 	public void testLocationString() {
 		// Middle box double pair
+		FindUpdateRule rule = new DoublePairs();
 		int[] test = new int[] { 1, 3, 3, 3, 5, 5, 3, 5, 5 };
-		assertEquals("null", DoublePairs.locationToString(null));
-		assertTrue(DoublePairs.locationToString(new int[0]).contains("length"));
-		assertTrue(DoublePairs.locationToString(new int[8]).contains("length"));
-		String result = DoublePairs.locationToString(test);
+		assertEquals("null", rule.encodingToString(null));
+		assertTrue(rule.encodingToString(new int[0]).contains("length"));
+		assertTrue(rule.encodingToString(new int[8]).contains("length"));
+		String result = rule.encodingToString(test);
 		// System.out.println( "Location=" + result );
 		assertTrue(result.contains("digit 1"));
 		test[1] = 0;
-		result = DoublePairs.locationToString(test);
+		result = rule.encodingToString(test);
 		assertTrue(result.contains("row mismatch"));
 		test[8] = 8;
-		result = DoublePairs.locationToString(test);
+		result = rule.encodingToString(test);
 		assertTrue(result.contains("col mismatch"));
 	}
 	
@@ -74,13 +75,13 @@ public class DoublePairsTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		System.out.println( "Candidates=" + candidates.toStringCompact());
 
-		UpdateCandidatesRule rule = new DoublePairs();
+		FindUpdateRule rule = new DoublePairs();
 		
 		// Locations test
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertNotNull(locations);
 		assertEquals(2, locations.size());
 		// double pair for digit 3 at row/col=2/4,2/5 and row/col=7/4,7/5
@@ -89,7 +90,7 @@ public class DoublePairsTest {
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locations);
+		rule.update(board, null, candidates, locations);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 		// remove 4 digit 3 candidates not in rowCols 2,4 7,5

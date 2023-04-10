@@ -16,7 +16,7 @@ import static info.danbecker.ss.Utils.BOXES;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class CandidateLines implements UpdateCandidatesRule {
+public class CandidateLines implements FindUpdateRule {
 
 	public CandidateLines() {
 	}
@@ -28,7 +28,7 @@ public class CandidateLines implements UpdateCandidatesRule {
 	 * int[] location = new int[]{rowi, -1, boxi, digi};
 	 * int[] location = new int[]{-1, coli, boxi, digi};
 	 */
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> locations) {
 		int updates = 0;
 		if ( null == locations) return updates;
 		if (locations.size() > 0) {
@@ -51,9 +51,7 @@ public class CandidateLines implements UpdateCandidatesRule {
      * if row match, see if other candidates exist on same row outside of box
 	 * if col match, see if other candidates exist on same col outside of box
 	 */
-	public List<int[]> locations(Board board, Candidates candidates) {
-		if (null == candidates)
-			return null;
+	public List<int[]> find(Board board, Candidates candidates) {
 		ArrayList<int[]> locations = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if (!board.digitCompleted(digi)) {
@@ -83,6 +81,21 @@ public class CandidateLines implements UpdateCandidatesRule {
 			}
 		}
 		return locations;
+	}
+
+	/**
+	 * encoding of form
+	 * int[] enc = new int[]{rowi, -1, boxi, digi};
+	 * int[] enc = new int[]{-1, coli, boxi, digi};
+	 */
+	@Override
+	public String encodingToString(int[] enc) {
+		if ( null == enc || 4 != enc.length)
+			throw new IllegalArgumentException( "encoding should be length 4 for row,col,box,digit");
+		String unit = -1 == enc[0] ? "col" : "row";
+		int uniti = -1 == enc[0] ? enc[1] : enc[0];
+		return String.format( "digit %d candidates in box %d point on %s %d",
+			enc[3], enc[2], unit, uniti );
 	}
 
 	@Override

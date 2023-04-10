@@ -33,7 +33,7 @@ public class TwoStringKiteTest {
 		Board board = new Board(TWOSTRINGKITE_R1C3_REMOVEOVER1C3);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(candidates.isCandidate( ROWCOL[1][3], 5));
 		assertTrue(candidates.isCandidate( ROWCOL[1][6], 5));
@@ -41,8 +41,8 @@ public class TwoStringKiteTest {
 		assertTrue(candidates.isCandidate( ROWCOL[7][8], 5));
 		assertTrue(candidates.isCandidate( ROWCOL[8][6], 5));
 
-		UpdateCandidatesRule rule = new TwoStringKite();
-		List<int[]> encs = rule.locations( board, candidates );
+		FindUpdateRule rule = new TwoStringKite();
+		List<int[]> encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 1, encs.size() );
 
@@ -56,11 +56,11 @@ public class TwoStringKiteTest {
 		assertEquals( 27, enc[4]);
 		assertEquals( 24, enc[5]);
 
-		int updates = rule.updateCandidates( board, null, candidates, encs );
+		int updates = rule.update( board, null, candidates, encs );
 		assertEquals( 1, updates );
 
 		// Location to string
-		String encString = TwoStringKite.locationToString( enc );
+		String encString = rule.encodingToString( enc );
 		assertTrue( encString.contains("digit 5") );
 		assertTrue( encString.contains("[1,3]") );
 		assertTrue( encString.contains("[1,6]") );
@@ -74,7 +74,7 @@ public class TwoStringKiteTest {
 		Board board = new Board(TWOSTRINGKITE_R5C6_REMOVEOVER5C6);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(candidates.isCandidate( ROWCOL[3][1], 9));
 		assertTrue(candidates.isCandidate( ROWCOL[5][0], 9));
@@ -82,8 +82,8 @@ public class TwoStringKiteTest {
 		assertTrue(candidates.isCandidate( ROWCOL[6][1], 9));
 		assertTrue(candidates.isCandidate( ROWCOL[6][5], 9));
 
-		UpdateCandidatesRule rule = new TwoStringKite();
-		List<int[]> encs = rule.locations( board, candidates );
+		FindUpdateRule rule = new TwoStringKite();
+		List<int[]> encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 1, encs.size() );
 
@@ -97,7 +97,7 @@ public class TwoStringKiteTest {
 		assertEquals( 72, enc[4]);
 		assertEquals( 76, enc[5]);
 
-		int updates = rule.updateCandidates( board, null, candidates, encs );
+		int updates = rule.update( board, null, candidates, encs );
 		assertEquals( 1, updates );
 	}
 
@@ -106,7 +106,7 @@ public class TwoStringKiteTest {
 		Board board = new Board(DUALTWOSTRINGKITE_R1C1_REMOVEOVER8C3R5C7);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		assertTrue(candidates.isCandidate( ROWCOL[0][2], 1));
 		assertTrue(candidates.isCandidate( ROWCOL[0][7], 1));
@@ -117,8 +117,8 @@ public class TwoStringKiteTest {
 		assertTrue(candidates.isCandidate( ROWCOL[5][0], 1));
 		assertTrue(candidates.isCandidate( ROWCOL[5][7], 1));
 
-		UpdateCandidatesRule rule = new TwoStringKite();
-		List<int[]> encs = rule.locations( board, candidates );
+		FindUpdateRule rule = new TwoStringKite();
+		List<int[]> encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 2, encs.size() );
 
@@ -132,10 +132,10 @@ public class TwoStringKiteTest {
 		assertEquals( 61, enc[4]);
 		assertEquals( 68, enc[5]);
 
-		int updates = rule.updateCandidates( board, null, candidates, encs );
+		int updates = rule.update( board, null, candidates, encs );
 		assertEquals( 1, updates );
 
-		encs = rule.locations( board, candidates );
+		encs = rule.find( board, candidates );
 		assertNotNull( encs );
 		assertEquals( 1, encs.size() );
 
@@ -149,7 +149,7 @@ public class TwoStringKiteTest {
 		assertEquals( 43, enc[4]);
 		assertEquals( 49, enc[5]);
 
-		updates = rule.updateCandidates( board, null, candidates, encs );
+		updates = rule.update( board, null, candidates, encs );
 		assertEquals( 1, updates );
 	}
 
@@ -170,7 +170,8 @@ public class TwoStringKiteTest {
 		assertEquals( 84, enc[4]);
 		assertEquals( 24, enc[5]);
 
-		String loc = Skyscraper.locationToString( enc );
+		FindUpdateRule rule = new Skyscraper();
+		String loc = rule.encodingToString( enc );
 		// System.out.println( "Loc=" + loc);
 		assertTrue ( loc.contains( "digit " + digit ));
 		assertTrue ( loc.contains( "box " ));

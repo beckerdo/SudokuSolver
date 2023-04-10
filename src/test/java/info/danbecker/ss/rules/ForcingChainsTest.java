@@ -28,7 +28,7 @@ public class ForcingChainsTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// Need to update candidates to get it into the proper state
 		candidates.removeCandidates( ROWCOL[0][0], new int[]{4,9});
 		candidates.removeCandidates( ROWCOL[0][1], new int[]{4});
@@ -42,14 +42,14 @@ public class ForcingChainsTest {
 		
 		ForcingChains rule = new ForcingChains();
 		// Locations test
-		List<int[]> encs = rule.locations(board, candidates);
+		List<int[]> encs = rule.find(board, candidates);
 		assertNotNull( encs);
 		assertEquals(2, encs.size());
 
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		int updates = rule.updateCandidates(board, null, candidates, encs);
+		int updates = rule.update(board, null, candidates, encs);
 		// Destination gains entry, loses 2 candidates.
 		// Will likely knock out more same-unit candidates after LegalCandidate update.
 		assertEquals( prevEntries, candidates.getAllOccupiedCount() - updates);
@@ -74,7 +74,8 @@ public class ForcingChainsTest {
 		assertEquals(5, enc[6]);
 
    		// Test the string
-   		String encString = ForcingChains.encodingToString(enc);
+		FindUpdateRule rule = new ForcingChains();
+   		String encString = rule.encodingToString(enc);
    		// System.out.println( "Enc=" +encString);
    		assertNotNull(encString);
    		assertTrue(encString.contains("digit=" + digit));
@@ -90,7 +91,7 @@ public class ForcingChainsTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// Need to update candidates to get it into the proper state
    	    candidates.removeCandidates( ROWCOL[0][4], new int[]{1,6});
    	    candidates.removeCandidates( ROWCOL[0][5], new int[]{6});
@@ -104,19 +105,19 @@ public class ForcingChainsTest {
    	    candidates.removeCandidates( ROWCOL[4][1], new int[]{2});
    	    candidates.removeCandidates( ROWCOL[5][1], new int[]{2});
    	    candidates.removeCandidates( ROWCOL[8][4], new int[]{1,6});
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		
 		ForcingChains rule = new ForcingChains();
 		// Locations test
-		List<int[]> encs = rule.locations(board, candidates);
+		List<int[]> encs = rule.find(board, candidates);
 		assertNotNull(encs);
 		assertEquals(6, encs.size());
 
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		int updates = rule.updateCandidates(board, null, candidates, encs);
+		int updates = rule.update(board, null, candidates, encs);
 		// Destination gains entry, loses 2 candidates.
 		// Will likely knock out more same-unit candidates after LegalCandidate update.
 		assertEquals( prevEntries, candidates.getAllOccupiedCount() - updates);
@@ -142,7 +143,7 @@ public class ForcingChainsTest {
 		ForcingChains rule = new ForcingChains();
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);	
+		(new LegalCandidates()).update(board, null, candidates, null);
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Need to run a few other rules to get to the test place
@@ -154,7 +155,7 @@ public class ForcingChainsTest {
 //			at info.danbecker.ss.SudokuSolver.solve(SudokuSolver.java:238)
 //			at info.danbecker.ss.SudokuSolver.main(SudokuSolver.java:131)
 		
-		List<int[]> encs = rule.locations(board, candidates );		
+		List<int[]> encs = rule.find(board, candidates );
 		assertEquals( 3, encs.size());
 	}
 }

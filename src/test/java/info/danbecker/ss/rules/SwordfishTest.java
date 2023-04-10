@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import static info.danbecker.ss.Board.ROWCOL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
@@ -54,14 +53,14 @@ public class SwordfishTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		Swordfish rule = new Swordfish();
 		// Locations test
 		// List<int[]> encodings = rule.locations(board, candidates, 8);
-		List<int[]> encodings = rule.locations(board, candidates );
-		assertTrue(null != encodings);
+		List<int[]> encodings = rule.find(board, candidates );
+		assertNotNull(encodings);
 		assertEquals(1, encodings.size());
 				
 		// Swordfish found digit 8 rowa at locs=..., extra locs=...
@@ -81,7 +80,7 @@ public class SwordfishTest {
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, encodings);
+		rule.update(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates,candidates.getAllCandidateCount() + exLocs.size());
 	}
@@ -95,7 +94,7 @@ public class SwordfishTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		Swordfish rule = new Swordfish();
@@ -103,7 +102,7 @@ public class SwordfishTest {
 		// Locations test
 		List<int[]> encodings = rule.locations(board, candidates, 8);
 		// List<int[]> encodings = rule.locations(board, candidates );
-		assertTrue(null != encodings);
+		assertNotNull(encodings);
 		assertEquals(1, encodings.size());
 				
 		// Swordfish found digit 8 rowa at locs=..., extra locs=...
@@ -123,7 +122,7 @@ public class SwordfishTest {
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, encodings);
+		rule.update(board, null, candidates, encodings);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates,candidates.getAllCandidateCount() + exLocs.size());
 	}
@@ -167,9 +166,10 @@ public class SwordfishTest {
    		assertEquals(exLocs.get(exLocs.size()-1), decexLocs.get(decexLocs.size()-1));
 
    		// Test the string
-   		String encString = Swordfish.encodingToString(enc);
+		FindUpdateRule rule = new Swordfish();
+   		String encString = rule.encodingToString(enc);
    		// System.out.println( "Enc=" +encString);
-   		assertTrue(null != encString);
+   		assertNotNull(encString);
    		assertTrue(encString.contains("digit " + digit));
    		assertTrue(encString.contains("rows"));
    		assertTrue(encString.contains("locs="));

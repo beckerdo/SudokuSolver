@@ -47,7 +47,7 @@ import static java.lang.String.format;
  * 
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class Swordfish implements UpdateCandidatesRule {
+public class Swordfish implements FindUpdateRule {
 	
 	@Override
 	// Location int [] index map
@@ -55,7 +55,7 @@ public class Swordfish implements UpdateCandidatesRule {
 	// digit at index 0 
 	// first pair AB rowCols at indexes 1,2 and 3,4
 	// second pair CD rowCols at indexes 5,6 and 7,8
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> encs) {
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
 		if ( null == encs) return updates;
 		for ( int enci = 0; enci < encs.size(); enci++ ) {
@@ -94,7 +94,7 @@ public class Swordfish implements UpdateCandidatesRule {
 	 * can knock out candidates in other boxes in the same row/col
 	 */
 	@Override
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		List<int[]> matched = new LinkedList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
     		List<int[]> thisDigitMatch = locations(board, candidates, digi );
@@ -434,7 +434,8 @@ public class Swordfish implements UpdateCandidatesRule {
 		}
 	}
 	
-	public static String encodingToString( int[] enc) {
+	@Override
+	public String encodingToString( int[] enc) {
 		List<RowCol> swLocs = new ArrayList<>();
 		List<RowCol> exLocs = new ArrayList<>();
 		decode( enc, swLocs, exLocs );

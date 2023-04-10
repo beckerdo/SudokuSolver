@@ -33,13 +33,13 @@ public class SingleCandidatesTest {
     public void testBasics() throws ParseException {
 		Board board = new Board( SINGLECANDIDATE );
 		Candidates candidates = new Candidates( board );
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
-		UpdateCandidatesRule rule = new SingleCandidates();
+		FindUpdateRule rule = new SingleCandidates();
 		assertEquals( rule.ruleName(), rule.getClass().getSimpleName() );
 
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertNotNull( locations  );
 		assertEquals( 1, locations.size() );
 		int [] location = locations.get( 0 );

@@ -36,13 +36,13 @@ public class MultipleLinesTest {
 		Board board = new Board(MULTIPLELINES);
 		assertTrue(board.legal());	
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		System.out.println( "Candidates=" + candidates.toStringCompact());
 
-		UpdateCandidatesRule rule = new MultipleLines();
+		FindUpdateRule rule = new MultipleLines();
 		assertEquals(rule.ruleName(), rule.getClass().getSimpleName());
 
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertEquals( 1, locations.size());
 		int [] encoding = locations.get(0);
 		assertEquals( 5, encoding[ 0 ]); // digit
@@ -58,9 +58,9 @@ public class MultipleLinesTest {
 		board = Board.rotateRight(board);
 		assertTrue(board.legal());	
 		candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
-		locations = rule.locations(board, candidates);
+		locations = rule.find(board, candidates);
 		assertEquals( 1, locations.size());
 		encoding = locations.get(0);
 		assertEquals( 5, encoding[ 0 ]); // digit
@@ -75,9 +75,9 @@ public class MultipleLinesTest {
 		board = Board.rotateRight(board);
 		assertTrue(board.legal());	
 		candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
-		locations = rule.locations(board, candidates);
+		locations = rule.find(board, candidates);
 		assertEquals( 1, locations.size());
 		encoding = locations.get(0);
 		assertEquals( 5, encoding[ 0 ]); // digit
@@ -92,9 +92,9 @@ public class MultipleLinesTest {
 		board = Board.rotateRight(board);
 		assertTrue(board.legal());	
 		candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
-		locations = rule.locations(board, candidates);
+		locations = rule.find(board, candidates);
 		assertEquals( 1, locations.size());
 		encoding = locations.get(0);
 		assertEquals( 5, encoding[ 0 ]); // digit
@@ -112,13 +112,13 @@ public class MultipleLinesTest {
 		Board board = new Board(MULTIPLELINES);
 		assertTrue(board.legal());	
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 
-		UpdateCandidatesRule rule = new MultipleLines();
+		FindUpdateRule rule = new MultipleLines();
 		assertEquals(rule.ruleName(), rule.getClass().getSimpleName());
 
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertEquals( 1, locations.size());
 		int [] encoding = locations.get(0);
 		assertEquals( 5, encoding[ 0 ]); // digit
@@ -132,14 +132,14 @@ public class MultipleLinesTest {
 		
 		// Assure candidates are updated
 		int prevCandCount = candidates.getAllCandidateCount();
-		int updates = rule.updateCandidates(board, null, candidates, locations); // remove digi 5, block 3
+		int updates = rule.update(board, null, candidates, locations); // remove digi 5, block 3
 		assertEquals( 3, updates );
 		assertEquals( prevCandCount, updates + candidates.getAllCandidateCount());
 
 		// Assure rule does not report updated locations
-		locations = rule.locations(board, candidates);
+		locations = rule.find(board, candidates);
 		prevCandCount = candidates.getAllCandidateCount();
-		updates = rule.updateCandidates(board, null, candidates, locations); // remove digi 5, block 4
+		updates = rule.update(board, null, candidates, locations); // remove digi 5, block 4
 		assertEquals( 6, updates);
 		assertEquals( prevCandCount, updates + candidates.getAllCandidateCount());
 		// System.out.println( "Candidates=" + candidates.toStringCompact());

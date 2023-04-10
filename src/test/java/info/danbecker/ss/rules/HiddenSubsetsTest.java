@@ -61,7 +61,7 @@ public class HiddenSubsetsTest {
 		//	    rowCol=2/8, candidates=[1, 2, 3, 0, 0, 0, 0, 0, 0]
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 
 		int [] combo13 = new int [] {0, 2};
 		// Row test
@@ -83,7 +83,7 @@ public class HiddenSubsetsTest {
 		//    rowCol=4/3, candidates=[0, 0, 0, 4, 0, 0, 0, 8, 9]
 		assertTrue(board.legal());
 		candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 
 		int [] combo25 = new int [] {1, 4};
 		// Col test
@@ -100,7 +100,7 @@ public class HiddenSubsetsTest {
 		//	    rowCol=5/4, candidates=[0, 0, 3, 4, 0, 0, 7, 0, 0], subset 3, 0 extra
 		assertTrue(board.legal());
 		candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=" + candidates.toStringCompact());
 
 		int [] combo236 = new int [] {2, 3, 6};
@@ -130,14 +130,14 @@ public class HiddenSubsetsTest {
 //	    rowCol=2/8, candidates=[1, 2, 3, 0, 0, 0, 0, 0, 0]
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
-		UpdateCandidatesRule rule = new HiddenSubsets(2);
+		FindUpdateRule rule = new HiddenSubsets(2);
 		assertEquals(rule.ruleName(), "HiddenSubsets2" );
 
 		// Locations test
-		List<int[]> locations = rule.locations(board, candidates);
+		List<int[]> locations = rule.find(board, candidates);
 		assertNotNull( locations);
 		// System.out.println(format("Rule %s reports %d finds", rule.ruleName(), locations.size()));
 		// int [] encoded = locations.get( 0 );
@@ -148,7 +148,7 @@ public class HiddenSubsetsTest {
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locations);
+		rule.update(board, null, candidates, locations);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertTrue( prevCandidates > candidates.getAllCandidateCount());
 //		assertEquals( 4, candidates.candidateComboRowCount(8, combo15));
@@ -168,20 +168,20 @@ public class HiddenSubsetsTest {
 		Board board = new Board(HIDDENTRIPLE_347_COL4);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Run rule
-		UpdateCandidatesRule rule = new HiddenSubsets( 3 );
+		FindUpdateRule rule = new HiddenSubsets( 3 );
 		assertEquals(rule.ruleName(), "HiddenSubsets3" );
 		// Locations test
-		List<int[]> locs = rule.locations(board, candidates);
+		List<int[]> locs = rule.find(board, candidates);
 		assertNotNull( locs);
 		assertEquals( 1, locs.size());
 		// Update test
 		int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locs);
+		rule.update(board, null, candidates, locs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 1);
 	}
@@ -196,20 +196,20 @@ public class HiddenSubsetsTest {
 		Board board = new Board(HIDDENPAIRS_20230103);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).updateCandidates(board, null, candidates, null);
+		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Run rule.
-		UpdateCandidatesRule rule = new HiddenSubsets( 2 );
+		FindUpdateRule rule = new HiddenSubsets( 2 );
 		assertEquals(rule.ruleName(), "HiddenSubsets2" );
 		// Locations test
-		List<int[]> locs = rule.locations(board, candidates);
+		List<int[]> locs = rule.find(board, candidates);
 		assertNotNull(locs);
 		assertEquals( 2, locs.size());
 		// Update test
 		int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCandidateCount();
-		rule.updateCandidates(board, null, candidates, locs);
+		rule.update(board, null, candidates, locs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 4);
  	}

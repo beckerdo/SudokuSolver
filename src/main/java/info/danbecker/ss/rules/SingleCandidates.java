@@ -2,6 +2,7 @@ package info.danbecker.ss.rules;
 
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 
 import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
@@ -17,15 +18,11 @@ import static info.danbecker.ss.Utils.COLS;
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
-public class SingleCandidates implements UpdateCandidatesRule {
-
-	public SingleCandidates() {
-	}
-
+public class SingleCandidates implements FindUpdateRule {
 	@Override
-	public int updateCandidates(Board board, Board solution, Candidates candidates, List<int[]> locations) {
-		if (locations.size() > 0) {
-			int[] location = locations.get(0);
+	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
+		if (encs.size() > 0) {
+			int[] location = encs.get(0);
 			int rowi = location[0];
 			int coli = location[1];
 			int digit = candidates.getFirstCandidateDigit(ROWCOL[rowi][coli]);
@@ -39,7 +36,7 @@ public class SingleCandidates implements UpdateCandidatesRule {
 	}
 
 	@Override
-	public List<int[]> locations(Board board, Candidates candidates) {
+	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		ArrayList<int[]> locations = new ArrayList<>();
@@ -51,6 +48,12 @@ public class SingleCandidates implements UpdateCandidatesRule {
 			}
 		}
 		return locations;
+	}
+
+	@Override
+	public String encodingToString(int[] enc) {
+		RowCol rowCol = ROWCOL[enc[0]][enc[1]];
+		return String.format("single candidate at %s", rowCol);
 	}
 
 	@Override

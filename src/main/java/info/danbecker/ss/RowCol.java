@@ -44,10 +44,8 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		if (null == that) return 1;
 		if ( this.row < that.row) return -1;
 		if ( this.row > that.row) return 1;
-		
-		if ( this.col < that.col) return -1;
-		if ( this.col > that.col) return 1;
-		return 0;
+
+		return Integer.compare(this.col, that.col);
 	}
 	
 	@Override
@@ -61,8 +59,8 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 
 	/**
 	 * Convert list to array. Shallow copy
-	 * @param rowCols
-	 * @return
+	 * @param rowCols list of rowCols
+	 * @return array of rowCols
 	 */
 	public static RowCol[] toArray( List<RowCol> rowCols ) {
 		return rowCols.toArray(new RowCol[0]);
@@ -70,9 +68,10 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 
 	/**
 	 * Convert list to array. Shallow copy
-	 * @param rowCols
-	 * @return
-	 */public static List<RowCol> toList( RowCol[] rowCols ) {
+	 * @param rowCols array of rowCols
+	 * @return list of rowCols
+	 */
+	public static List<RowCol> toList( RowCol[] rowCols ) {
 		return Arrays.asList( rowCols );
 	}
 
@@ -95,7 +94,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * If rc1.equals(rc2), the list will be length 3.
 	 * @param rc1
 	 * @param rc2
-	 * @return
+	 * @return list of units that match these two locations
 	 */
 	public static List<Utils.Unit> getMatchingUnits(RowCol rc1, RowCol rc2 ){
 		List<Utils.Unit> matching = new ArrayList<>();
@@ -111,11 +110,10 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	/**
 	 * Returns unit index if the given unit matches in the locations.
 	 * Returns NOT_FOUND if there is no unit matchs.
-	 *
 	 * @param unit
 	 * @param loc1
 	 * @param loc2
-	 * @return
+	 * @return index of unit match or NOT_FOUND
 	 */
 	public static int unitMatch(Utils.Unit unit, RowCol loc1, RowCol loc2) {
 		return switch ( unit ) {
@@ -254,5 +252,58 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * More compact than Arrays.toString() */
 	public static String toString( RowCol[] rowCols ) {
 		return toString( toList(rowCols) );
+	}
+
+	public static class RowColMatch implements Comparable<RowCol> {
+		RowCol rowCol;
+
+		public RowColMatch( RowCol rowCol ) {
+			this.rowCol = rowCol;
+		}
+
+		@Override
+		public int compareTo(RowCol that) {
+			if (null == that) return 1;
+			return this.rowCol.compareTo( that );
+		}
+	}
+	public static class AnyUnitMatch implements Comparable<RowCol> {
+		RowCol rowCol;
+
+		public AnyUnitMatch( RowCol rowCol ) {
+			this.rowCol = rowCol;
+		}
+
+		@Override
+		public int compareTo(RowCol that) {
+			if (null == that) return 1;
+			if ( this.rowCol.row() == that.row()) return 0;
+			if ( this.rowCol.col() == that.col()) return 0;
+			if ( this.rowCol.box() == that.box()) return 0;
+			return -1;
+		}
+	}
+
+	public static class UnitMatch implements Comparable<RowCol> {
+		Utils.Unit unit;
+		RowCol rowCol;
+
+		public UnitMatch(Utils.Unit unit, RowCol rowCol ) {
+			this.unit = unit;
+			this.rowCol = rowCol;
+		}
+
+		@Override
+		public int compareTo(RowCol that) {
+			if (null == that) return 1;
+			if (Utils.Unit.ROW == unit) {
+				if ( this.rowCol.row() == that.row()) return 0;
+			} else if (Utils.Unit.COL == unit) {
+				if ( this.rowCol.col() == that.col()) return 0;
+			} else if (Utils.Unit.BOX == unit) {
+				if ( this.rowCol.box() == that.box()) return 0;
+			}
+			return -1;
+		}
 	}
 }

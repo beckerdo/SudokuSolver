@@ -56,7 +56,6 @@ import static java.lang.String.format;
  *    Consider matchers for chains/coloring. Single digit, group 2,...
  * BUGS (disable until fixed)
  *    LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
- *    ColorChains 20221118-diabolical-17500.json removed digit 3 from [8,5] {-8}, remaining candidates {-8}
  * Move json resources from main to test
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
@@ -134,13 +133,11 @@ public class SudokuSolver {
         // Gather command line arguments for execution
 		System.out.println( "Command parse options:");
         if (line.hasOption("i")) {
-            String option = line.getOptionValue("i");
-            inputPuzzleFile = option;          
+			inputPuzzleFile = line.getOptionValue("i");
         }
         
         if (line.hasOption("t")) {
-            String option = line.getOptionValue("t");
-            inputPuzzleText = option;          
+			inputPuzzleText = line.getOptionValue("t");
         }
 	}
 	
@@ -176,7 +173,7 @@ public class SudokuSolver {
 			new Skyscraper(),
 			new TwoStringKite(),
 			new XYWing(),
-			// new ColorChains(),		// bugs
+			new SimpleColors(),
 			// new ForcingChains(),		// bugs
 		};
 		
@@ -290,12 +287,15 @@ public class SudokuSolver {
 	}
 
 	/** Utility that is helpful for testing. */
-	public static int runOnce( Board board, Candidates candidates, FindUpdateRule rule) {
+	public static int[] runOnce( Board board, Candidates candidates, String solution, FindUpdateRule rule) throws java.text.ParseException {
+		int [] results = new int[]{0,0};
         List<int []> locations = rule.find( board, candidates );
+		results[ 0 ] = locations.size();
         System.out.println(format("Rule %s reports %d possible locations", rule.ruleName(), locations.size()));
-   	    int changes = rule.update( board, null, candidates, locations);
+   	    int changes = rule.update( board, new Board(solution), candidates, locations);
+		results[ 1 ] = changes;
         System.out.println(format("Rule %s made %d changes", rule.ruleName(), changes));
 		(new LegalCandidates()).update(board, null, candidates, null);
-        return changes;
+        return results;
 	}
 }

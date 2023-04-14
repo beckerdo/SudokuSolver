@@ -318,7 +318,7 @@ public class XWingsTest {
 		int updates = rule.update(board, null, candidates, encs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( prevCandidates,candidates.getAllCandidateCount() + updates);
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 	}
 	
 }

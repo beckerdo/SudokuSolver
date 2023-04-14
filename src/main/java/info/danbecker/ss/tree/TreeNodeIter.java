@@ -41,9 +41,7 @@ public class TreeNodeIter<T> implements Iterator<TreeNode<T>> {
 				childrenSubNodeIter = childDirect.iterator();
 				this.doNext = ProcessStages.ProcessChildSubNode;
 				return hasNext();
-			}
-
-			else {
+			} else {
 				this.doNext = null;
 				return false;
 			}

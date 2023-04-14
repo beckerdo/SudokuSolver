@@ -108,7 +108,7 @@ public class Candidates implements Comparable<Candidates> {
 	/** 
 	 * Sets digit to an occupied board entry.
 	 * Sets all other digits to NOT_CANDIDATE.
-	 * @returns NOT_CANDIDATE if the box is empty, a digit if filled in. */
+	 * @return NOT_CANDIDATE if the box is empty, a digit if filled in. */
 	public int setOccupied( RowCol rowCol, int digit ) {
 	   int previous = NOT_CANDIDATE;
 	   // Check for setting two occupied digits
@@ -133,7 +133,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * Other digits are left alone.
 	 * Useful for undo or reset actions.
 	 * Will need to perform an ADD action on the digit if you wish to make it a candidate.
-	 * @returns 0 if the box is empty, a digit if filled in. */
+	 * @return 0 if the box is empty, a digit if filled in. */
 	public int setUnoccupied( RowCol rowCol, int digit ) {
 	   // Check for setting two occupied digits
 	   int alreadyThere = getOccupied( rowCol );
@@ -182,8 +182,7 @@ public class Candidates implements Comparable<Candidates> {
 
 	/** Returns if this ones-based digit is a candidate in this cell. */
 	public boolean isCandidate( RowCol rowCol, int digi) {
-		if ( candidates[rowCol.row()][rowCol.col()][digi - 1] == digi ) return true;
-		return false;
+		return candidates[rowCol.row()][rowCol.col()][digi - 1] == digi;
 	}
 
 	/** Returns the number of candidates in a single cell. */
@@ -320,37 +319,34 @@ public class Candidates implements Comparable<Candidates> {
 	public int removeCandidatesSameUnit( RowCol rowCol, int digit, Unit unit) {
 		int candCount = 0;
 		switch (unit) {
-		case ROW: {
-			for (int coli = 0; coli < COLS; coli++) {
-				// Ignore my location
-				if (rowCol.col() != coli) {
-					if (removeCandidate(ROWCOL[rowCol.row()][coli], digit))
-						candCount++;
+			case ROW -> {
+				for (int coli = 0; coli < COLS; coli++) {
+					// Ignore my location
+					if (rowCol.col() != coli) {
+						if (removeCandidate(ROWCOL[rowCol.row()][coli], digit))
+							candCount++;
+					}
 				}
 			}
-			break;
-		}
-		case COL: {
-			for (int rowi = 0; rowi < ROWS; rowi++) {
-				// Ignore my location
-				if (rowCol.row() != rowi) {
-					if (removeCandidate(ROWCOL[rowi][rowCol.col()], digit))
-						candCount++;
+			case COL -> {
+				for (int rowi = 0; rowi < ROWS; rowi++) {
+					// Ignore my location
+					if (rowCol.row() != rowi) {
+						if (removeCandidate(ROWCOL[rowi][rowCol.col()], digit))
+							candCount++;
+					}
 				}
 			}
-			break;
-		}
-		case BOX: {
-			RowCol[] boxLocs = Board.getBoxRowCols(rowCol.box());
-			for (int loci = 0; loci < boxLocs.length; loci++) {
-				// Ignore my location
-				if ( rowCol != boxLocs[loci] ) {
-					if (removeCandidate( rowCol, digit))
-						candCount++;
+			case BOX -> {
+				RowCol[] boxLocs = Board.getBoxRowCols(rowCol.box());
+				for (int loci = 0; loci < boxLocs.length; loci++) {
+					// Ignore my location
+					if (rowCol != boxLocs[loci]) {
+						if (removeCandidate(rowCol, digit))
+							candCount++;
+					}
 				}
 			}
-			break;
-		}
 		} // switch
 		return candCount;
 	}
@@ -590,7 +586,7 @@ public class Candidates implements Comparable<Candidates> {
 
 	/** Returns a list of locations with no candidates
 	 * and not occupied, a sign of an error condition.
-	 * @return
+	 * @return list of empty locations
 	 */
 	public List<RowCol> emptyLocations() {
 		List<RowCol> locs = new ArrayList<>();
@@ -818,12 +814,11 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the number of candidates for this digit in this unit, that are in a group of this size.
 	 *  For example a group of 2 will return a count of pairs in this unit with this candidate. */
 	public int candidateGroupCount( Utils.Unit unit, int uniti, int digi, int groupSize) {
-		switch (unit) {
-			case ROW: return candidateRowGroupCount( uniti, digi, groupSize );
-			case COL: return candidateColGroupCount( uniti, digi, groupSize );
-			case BOX: return candidateBoxGroupCount( uniti, digi, groupSize );
-		}
-		return -1; // should never get here
+		return switch (unit) {
+			case ROW -> candidateRowGroupCount(uniti, digi, groupSize);
+			case COL -> candidateColGroupCount(uniti, digi, groupSize);
+			case BOX -> candidateBoxGroupCount(uniti, digi, groupSize);
+		};
 	}
 	
 	
@@ -866,12 +861,11 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns the nth group with this number of candidates for this digit in this unit.
 	 *  For example a groupSize of 2 will return the nth count of pairs in this unit with this candidate. */
 	public int candidateGroupFind( Utils.Unit unit, int uniti, int digi, int groupSize, int groupi) {
-		switch (unit) {
-			case ROW: return candidateRowGroupFind( uniti, digi, groupSize, groupi );
-			case COL: return candidateColGroupFind( uniti, digi, groupSize, groupi );
-			case BOX: return candidateBoxGroupFind( uniti, digi, groupSize, groupi );
-		}
-		return -1; // should never get here
+		return switch (unit) {
+			case ROW -> candidateRowGroupFind(uniti, digi, groupSize, groupi);
+			case COL -> candidateColGroupFind(uniti, digi, groupSize, groupi);
+			case BOX -> candidateBoxGroupFind(uniti, digi, groupSize, groupi);
+		};
 	}
 
 	/** Returns the first col number of the candidates digit in this row. */
@@ -881,19 +875,6 @@ public class Candidates implements Comparable<Candidates> {
 			   return coli;
 	   }
 	   return NOT_FOUND;
-	}
-
-	/** Returns an array with unit indexes containing this one-based candidate digit in this unit. */
-	public int[] candidateUnitLocations(Unit unit, int coli, int digi) {
-		int[] rowLocations = new int[candidateColCount(coli, digi)];
-		if (0 == rowLocations.length)
-			return rowLocations;
-		int index = 0;
-		for (int rowi = 0; rowi < ROWS; rowi++) {
-			if (candidates[rowi][coli][digi - 1] > 0)
-				rowLocations[index++] = rowi;
-		}
-		return rowLocations;
 	}
 
 	/** Returns the number boxes with this group size for this one-based candidate digit in this col. */
@@ -988,31 +969,11 @@ public class Candidates implements Comparable<Candidates> {
 	   return null;
 	}
 
-	/** Returns a String showing all candidates for this box */
-	public String candidateBoxLocationsString(int blocki) {
-		StringBuilder sb = new StringBuilder("Candidates for block " + blocki + ":\n");
-		RowCol[] locs = Board.BOXR[blocki];
-		
-		for (int loci = 0; loci < locs.length; loci = loci + 3) {
-			RowCol rowcol1 = locs[loci];
-			RowCol rowcol2 = locs[loci+1];
-			RowCol rowcol3 = locs[loci+2];
-			sb.append(format("Row/cols %d/%d,%d,%d: %s%s%s", 
-				rowcol1.row(), rowcol1.col(),rowcol2.col(),rowcol3.col(),
-				getCandidatesString(rowcol1),
-				getCandidatesString(rowcol2),
-				getCandidatesString(rowcol3)
-				));
-			if (loci < locs.length - 1) sb.append("\n");
-		}
-		return sb.toString();
-	}
-
 	/** Returns a list of locations having these particulars
 	 *
 	 * @param digi - one-based digi or ALL_DIGITS 
 	 * @param count - particular count or ALL_COUNTS
-	 * @return
+	 * @return list of locations that have the given digit and count
 	 */
 	public List<RowCol> getGroupLocations( int digi, int count ){
 		List<RowCol> locs = new LinkedList<>();
@@ -1033,7 +994,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param digi - one-based digi or ALL_DIGITS 
 	 * @param count - particular count or ALL_COUNTS
 	 * @param firstRowCol - starting location
-	 * @return
+	 * @return list of locations with the same unit, given digit, and given counts
 	 */
 	public List<RowCol> getGroupSameUnitLocations( Unit unit, int digi, int count, RowCol firstRowCol ){
 	   List<RowCol> locations = new ArrayList<>();
@@ -1057,7 +1018,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param digi - one-based digi or ALL_DIGITS 
 	 * @param count - particular count or ALL_COUNTS
 	 * @param firstRowCol - starting location
-	 * @return
+	 * @return list of locations in any unit with the given digit and given count
 	 */
 	public List<RowCol> getGroupAllUnitLocations( int digi, int count, RowCol firstRowCol ){
 	   List<RowCol> locations = new ArrayList<>();
@@ -1073,7 +1034,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param uniti - index of given unit 
 	 * @param digi - one-based digi or ALL_DIGITS 
 	 * @param count - particular count or ALL_COUNTS
-	 * @return
+	 * @return list of locations with the given unit, index, digit, and count
 	 */
 	public List<RowCol> getGroupLocations( Utils.Unit unit, int uniti, int digi, int count ){
 	   List<RowCol> locations = new ArrayList<>();
@@ -1192,13 +1153,13 @@ public class Candidates implements Comparable<Candidates> {
 	}
 	
 	/** Returns the locations of candidates matching this col digit combo.
-	 * 
+	 * <p>
 	 * Combo {12} matches [120000000]. If naked
 	 * Combo {12} matches [123000000]. If not naked
-	 *
+	 * <p>
 	 * For combo {12}, matches [120000000] and [020000000]. If naked. Weird, single candidate
 	 * For combo {138}, matches [103000080] and [100000080]. If naked. Cool finds  {13} {18} {38} triple.
-	 * 
+	 * <p>
 	 * @param naked combo exact match required.
 	 * @param partialCount allows match of fewer than all combi digits. FULL_COMBI_MATCH requires
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
@@ -1232,10 +1193,10 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	/** Returns the locations of candidates matching this box digit combo.
-	 * 
+	 * <p>
 	 * Combo {12} matches [120000000]. If naked
 	 * Combo {12} matches [123000000]. If not naked
-	 * 
+	 * <p>
 	 * @param naked combo exact match required. 
 	 * @param partialCount allows match of fewer than all combi digits. FULL_COMBI_MATCH requires
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
@@ -1344,10 +1305,10 @@ public class Candidates implements Comparable<Candidates> {
 	}
 	
 	/** Returns the locations of candidates matching this digit combo.
-	 * @param combi array of zero based digits
+	 * @param combi array of zero-based digits
 	 * @param partialCount allows match of fewer than all combi digits. FULL_COMBI_MATCH requires
 	 * 	all combi digits must match, but a partialCount will allow fewer to match.
-	 * @return
+	 * @return list of locations with candidates matching this zero-base digit combo
 	 */
 	public List<RowCol> candidateComboAllLocations(int[] combi, int partialCount) {
 		List<RowCol> locations = new ArrayList<>();
@@ -1364,7 +1325,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * Returns whether the digit is in the array
 	 * @param combi is a 0-based set of int, for example [0,1,...8]
 	 * @param digit is a 0-based int
-	 * @return
+	 * @return whether the 0-based combo array has the given 0-based digit
 	 */
 	public static boolean containsDigit( int[] combi, int digit ) {
 		for( int i = 0; i < combi.length; i++) {
@@ -1432,7 +1393,7 @@ public class Candidates implements Comparable<Candidates> {
 	 *		    // 3,7, 3,9 is not a conjugate pair if other 3s in this unit. It is a 3 conjugate if these are the only 3s.
 	 */
 	public List<RowCol> isConjugateExtraLocations( int digit, int groupSize, RowCol firstRowCol, RowCol secondRowCol ) {
-		List<RowCol> locs = new LinkedList<RowCol>();
+		List<RowCol> locs = new LinkedList<>();
 		if ( firstRowCol.equals( secondRowCol ))
 			return locs; // same rowCols		
 		if ( !isCandidate(firstRowCol, digit) || !isCandidate(secondRowCol, digit ))
@@ -1534,19 +1495,11 @@ public class Candidates implements Comparable<Candidates> {
 		if (null == changes) return cTo;
 		for ( int ci=0; ci < changes.size(); ci++) {
 			ChangeData change = changes.get(ci);
-			switch( change.action ) {
-			case OCCUPY: {
-				cTo.setOccupied( change.rowCol, change.digit); break;
-			}
-			case UNOCCUPY: {
-				cTo.candidates[ change.rowCol.row() ][ change.rowCol.col() ][ change.digit - 1 ] = NOT_OCCUPIED; break;
-			}
-			case ADD: {
-				cTo.addCandidate( change.rowCol, change.digit ); break;
-			}
-			case REMOVE: {
-				cTo.removeCandidate( change.rowCol, change.digit ); break;
-			}
+			switch (change.action) {
+				case OCCUPY -> cTo.setOccupied(change.rowCol, change.digit);
+				case UNOCCUPY -> cTo.candidates[change.rowCol.row()][change.rowCol.col()][change.digit - 1] = NOT_OCCUPIED;
+				case ADD -> cTo.addCandidate(change.rowCol, change.digit);
+				case REMOVE -> cTo.removeCandidate(change.rowCol, change.digit);
 			} // switch
 		}
 		return cTo;
@@ -1584,10 +1537,9 @@ public class Candidates implements Comparable<Candidates> {
         if (obj == this) return true; 
   
         // Compare with class type
-        if (!(obj instanceof Candidates)) return false; 
+        if (!(obj instanceof Candidates that)) return false;
 
         // Cast to same type  
-        Candidates that = (Candidates) obj; 
 		return 0 == this.compareTo( that );
 	}
 	

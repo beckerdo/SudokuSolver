@@ -270,7 +270,7 @@ public class Board implements Comparable<Board> {
 
 	/** Determines if board state is legal
 	 * No set digits duplicated according to rules.
-	 * @return
+	 * @return whether or not this board is legal
 	 */
 	public boolean legal() {
 		for( int digit = 1; digit <= 9; digit++ ) {
@@ -285,7 +285,7 @@ public class Board implements Comparable<Board> {
 	
 	/** Determines if board state is completed.
 	 * All positions filled. Could be illegal, perhaps duplicated digits.
-	 * @return
+	 * @return whether or not this board is completed
 	 */
 	public boolean completed() {
    	   for( int rowi = 0; rowi < ROWS; rowi++  ) {
@@ -387,10 +387,9 @@ public class Board implements Comparable<Board> {
         if (obj == this) return true; 
   
         // Compare with class type
-        if (!(obj instanceof Board)) return false; 
+        if (!(obj instanceof Board that)) return false;
 
         // Cast to same type  
-        Board that = (Board) obj; 
 		return 0 == this.compareTo( that );
 	}
 	
@@ -414,8 +413,8 @@ public class Board implements Comparable<Board> {
 	
 	/** A Sudoku string of board entries and dots for no placement.
 	 * Works with sites such as https://www.thonky.com/sudoku/solution-count
-	 * @delimiter for rows
-	 * @return
+	 * @param delimiter character to separate rows
+	 * @return String of 81 digits, empties (.), and optional delimiters
 	 */
 	public String toSudokuString( String delimiter ) {
 		if (null == digits)

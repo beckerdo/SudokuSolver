@@ -153,8 +153,8 @@ public class Utils {
 
 	/**
 	 * Renders the int[] of digits as a String.
-	 * @param digits
-	 * @return
+	 * @param digits array of ints
+	 * @return string representing digits in array
 	 */
 	public static String digitsToString(int [] digits ) {
 		StringBuilder sb = new StringBuilder("{");

@@ -54,7 +54,7 @@ public class SwordfishTest {
 
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		Swordfish rule = new Swordfish();
 		// Locations test
@@ -95,7 +95,7 @@ public class SwordfishTest {
 
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		Swordfish rule = new Swordfish();
 		

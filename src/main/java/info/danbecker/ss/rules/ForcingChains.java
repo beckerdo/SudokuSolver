@@ -151,7 +151,7 @@ public class ForcingChains implements FindUpdateRule {
 							 	loc, candidates.getCandidatesStringCompact(loc), foundNode.data.digit,
 							 	foundNode.data.rowCol,node.getLevel(),foundNode.getLevel()));
 							matched.add( encode( loc, foundNode.data.digit, foundNode.data.rowCol, node.getLevel(),foundNode.getLevel() ) );
-							System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+							// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 							
 							// Need to remove all tree locations from the pairs list.
 							// int originalSize = digitPairs.size();

@@ -169,7 +169,7 @@ public class HiddenSubsetsTest {
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Run rule
 		FindUpdateRule rule = new HiddenSubsets( 3 );

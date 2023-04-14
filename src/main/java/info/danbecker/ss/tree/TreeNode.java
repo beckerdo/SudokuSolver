@@ -1,5 +1,7 @@
 package info.danbecker.ss.tree;
 
+import info.danbecker.ss.Utils;
+
 import static java.lang.String.format;
 
 import java.util.ArrayList;
@@ -107,8 +109,10 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		int nodeCount = 0;
 		int startLevel = this.getLevel();
 		for (TreeNode<T> node : this) {
+		// for ( int i = 0; i < children.size(); i++) {
 			int nodeLevel = node.getLevel();
 			String indent = "   ".repeat(Math.max(0, nodeLevel - startLevel));
+			// String nodeInfo = (null == node.data ) ? "no " + Utils.Unit.values()[i].toString().toLowerCase(): node.data.toString();
 			System.out.println(format("%s%d-%d-%s", indent, nodeLevel, nodeCount++, node.data));
 		}
 	}
@@ -268,7 +272,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 
 	public String toString( List<TreeNode<T>> tree ) {
 		if ( null == tree )
-			return "null tree";
+			return "null";
 		StringBuilder sb = new StringBuilder( "(" + tree.size() + " nodes)");
 		for ( int i = 0; i < tree.size(); i++ ) {
 			if ( i > 0 ) sb.append(",");

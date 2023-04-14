@@ -144,7 +144,7 @@ public class ForcingChainsTest {
 
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
-		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Need to run a few other rules to get to the test place
 //		i38.12 Board entries=57, candidates=49

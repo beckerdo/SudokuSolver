@@ -1,9 +1,6 @@
 package info.danbecker.ss;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import info.danbecker.ss.Utils.Unit;
 import info.danbecker.ss.tree.ChangeData;
@@ -403,7 +400,7 @@ public class Candidates implements Comparable<Candidates> {
 			ignoreCols[ignorei] = rowCols[ignorei].col();
 		for (int coli = 0; coli < COLS; coli++) {
 			// Ignore ignore cols
-			if (!containsDigit(ignoreCols, coli)) {
+			if (!containsOneDigit(ignoreCols, coli)) {
 				if (removeCandidate(ROWCOL[rowi][coli], digi))
 					count++;
 			}
@@ -439,7 +436,7 @@ public class Candidates implements Comparable<Candidates> {
 			ignoreRows[ignorei] = rowCols[ignorei].row();
 		for (int rowi = 0; rowi < ROWS; rowi++) {
 			// Ignore ignore rows 
-			if (!containsDigit(ignoreRows, rowi)) {
+			if (!containsOneDigit(ignoreRows, rowi)) {
 				if (removeCandidate( ROWCOL[rowi][coli], digi))
 					count++;
 			}
@@ -483,7 +480,7 @@ public class Candidates implements Comparable<Candidates> {
 				ignore[ignorei] = rowCols[ignorei].col();
 			for ( int coli = 0; coli < COLS; coli++ ) {
 				// Ignore cols 1 and 6
-				if ( !containsDigit( ignore, coli )) {
+				if ( !containsOneDigit( ignore, coli )) {
 					for ( int digiti = 0; digiti < combo.length; digiti++) {
 						// System.out.println( format("Removing digit %d from row rowCol=%d/%d", combo[ digiti ] + 1, rowi, coli));
 						if (removeCandidate(ROWCOL[rowi][coli], combo[ digiti ] + 1))
@@ -500,7 +497,7 @@ public class Candidates implements Comparable<Candidates> {
 				ignore[ignorei] = rowCols[ignorei].row();
 			for ( int rowi = 0; rowi < COLS; rowi++ ) {
 				// Ignore rows 3 and 7
-				if ( !containsDigit( ignore, rowi )) {
+				if ( !containsOneDigit( ignore, rowi )) {
 					for ( int digiti = 0; digiti < combo.length; digiti++) {
 						// System.out.println( format("Removing digit %d from col rowCol=%d/%d", combo[ digiti ] + 1, rowi, coli));
 						if (removeCandidate(ROWCOL[rowi][coli], combo[ digiti ] + 1))
@@ -521,7 +518,7 @@ public class Candidates implements Comparable<Candidates> {
 		int count = 0;
 		for ( int loci = 0; loci < rowCols.length; loci++) {
 			for ( int digiti = 0; digiti < DIGITS; digiti++) {
-				if ( !containsDigit( combo, digiti )) {
+				if ( !containsOneDigit( combo, digiti )) {
 				   if (removeCandidate(rowCols[loci], digiti + 1 )) {
                       // System.out.println( format("Removed digit %d from row rowCol=%d/%d", digiti + 1, rowi, coli));
 				      count++;
@@ -1085,7 +1082,7 @@ public class Candidates implements Comparable<Candidates> {
 			int matchCount = 0;
 			for (int candi = 0; candi < DIGITS; candi++) {
 			    // Combi contains candidate digit?
-				if (containsDigit( combi, candi )) {
+				if (containsOneDigit( combi, candi )) {
 					// Candidate digit in combo
 					if ( cellCandidates[candi] > 0 ) {
 					   // Candidate digit in cell.
@@ -1114,7 +1111,14 @@ public class Candidates implements Comparable<Candidates> {
 		return false;
 	}
 
-	/** 
+	public List<RowCol> candidateComboUnitLocations( Utils.Unit unit, int uniti, int [] combi, boolean naked, int partialCount ) {
+		return switch( unit ) {
+			case ROW -> candidateComboRowLocations( uniti, combi, naked, partialCount );
+			case COL -> candidateComboColLocations( uniti, combi, naked, partialCount );
+			case BOX -> candidateComboBoxLocations( uniti, combi, naked, partialCount );
+		};
+	}
+	/**
 	 * Returns the locations of candidates exactly matching this row digit combo.
 	 * Combo {12} matches [120000000]. If naked
 	 * Combo {12} matches [123000000]. If not naked
@@ -1145,7 +1149,7 @@ public class Candidates implements Comparable<Candidates> {
 	   for( int coli = 0; coli < COLS; coli++) {
 		   int[] cellCandidates = candidates[rowi][coli]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
-			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
+			   if ( cellCandidates[ candi ] > 0 && containsOneDigit( combi, candi ))
 				   count++;
 		   }
 	   }
@@ -1185,7 +1189,7 @@ public class Candidates implements Comparable<Candidates> {
 	   for( int rowi = 0; rowi < ROWS; rowi++) {
 		   int [] cellCandidates = candidates[rowi][coli]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
-			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
+			   if ( cellCandidates[ candi ] > 0 && containsOneDigit( combi, candi ))
 				   count++;
 		   }
 	   }
@@ -1235,7 +1239,7 @@ public class Candidates implements Comparable<Candidates> {
 		   RowCol rowCol = locs[ loci ];
 		   int[] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
-			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
+			   if ( cellCandidates[ candi ] > 0 && containsOneDigit( combi, candi ))
 				   count++;
 		   }
 	   }
@@ -1253,7 +1257,7 @@ public class Candidates implements Comparable<Candidates> {
 	   for( RowCol rowCol : locs) {
 		   int [] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
-			   if ( cellCandidates[ candi ] > 0 && containsDigit( combi, candi ))
+			   if ( cellCandidates[ candi ] > 0 && containsOneDigit( combi, candi ))
 				   count++;
 		   }
 	   }
@@ -1273,7 +1277,7 @@ public class Candidates implements Comparable<Candidates> {
 		   RowCol rowCol = locs[ loci ];
 		   int [] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
-			   if (!counted[candi] && cellCandidates[ candi ] > 0 && containsDigit( combi, candi )) {
+			   if (!counted[candi] && cellCandidates[ candi ] > 0 && containsOneDigit( combi, candi )) {
 				   count++;
 				   counted[candi] = true;
 			   }
@@ -1295,7 +1299,7 @@ public class Candidates implements Comparable<Candidates> {
 		   RowCol rowCol = locs.get(loci);
 		   int [] cellCandidates = candidates[rowCol.row()][rowCol.col()]; // 9 digits long
 		   for ( int candi = 0; candi < DIGITS; candi++) {
-			   if (!counted[candi] && cellCandidates[ candi ] > 0 && containsDigit( combi, candi )) {
+			   if (!counted[candi] && cellCandidates[ candi ] > 0 && containsOneDigit( combi, candi )) {
 				   count++;
 				   counted[candi] = true;
 			   }
@@ -1311,7 +1315,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * @return list of locations with candidates matching this zero-base digit combo
 	 */
 	public List<RowCol> candidateComboAllLocations(int[] combi, int partialCount) {
-		List<RowCol> locations = new ArrayList<>();
+		List<RowCol> locations = new LinkedList<>();
 
 		// Only go through rows
 		for (int rowi = 0; rowi < ROWS; rowi++) {
@@ -1327,7 +1331,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * @param digit is a 0-based int
 	 * @return whether the 0-based combo array has the given 0-based digit
 	 */
-	public static boolean containsDigit( int[] combi, int digit ) {
+	public static boolean containsOneDigit(int[] combi, int digit ) {
 		for( int i = 0; i < combi.length; i++) {
 			if ( combi[ i ] == digit ) return true;
 		}
@@ -1530,7 +1534,29 @@ public class Candidates implements Comparable<Candidates> {
 		}		
 		return 0;
 	}
-	
+
+	/** Can compare two candidate lists (from getCandidateList( RowCol rowCol ) ).
+	 *  Useful for sorting a list of rowCols by their candidates.
+	 *
+	 * @return
+	 */
+	public static int compareCandidates( List<Integer> candList1, List<Integer> candList2 ) {
+		if ( candList1.size() > candList2.size() ) return 1;
+		if ( candList2.size() > candList1.size() ) return -1;
+		candList1.sort( Integer::compareTo );
+		candList2.sort( Integer::compareTo );
+
+		for ( int digi = 0; digi < candList1.size(); digi++ ) {
+			int intCompare = Integer.compare( candList1.get(digi), candList2.get(digi));
+			if ( 1 == intCompare ) return 1;
+			if ( -1 == intCompare ) return -1;
+		}
+		return 0;
+	}
+
+	public static final Comparator<? super List<Integer>> CandidatesComparator =
+		(List<Integer> l1, List<Integer> l2) -> compareCandidates( l1, l2 );
+
 	@Override
 	public boolean equals(Object obj) {
         // Compare with self   
@@ -1645,4 +1671,6 @@ public class Candidates implements Comparable<Candidates> {
  	   compact.append( "}" );
        return compact.toString();    		   
 	}
+
+
 }

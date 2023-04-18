@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -164,6 +165,21 @@ public class Utils {
 		sb.append("}");
 		return sb.toString();
 	}
+
+	/**
+	 * Renders the List<Integer> of digits as a String.
+	 * @param digits list of ints
+	 * @return string representing digits
+	 */
+	public static String digitListToString(List<Integer> digits ) {
+		StringBuilder sb = new StringBuilder("{");
+		for( int i = 0; i < digits.size(); i++ ) {
+			sb.append( digits.get(i));
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+
 	/**
 	 * Create a String of ints from List<int[]>
 	 * More compact than Arrays.toString().
@@ -179,5 +195,30 @@ public class Utils {
 
 	public static String createIndent(int repeats) {
 		return "   ".repeat(repeats);
+	}
+
+	/**
+	 * Converts a list of one-based digits to an int[] of zero-based combos.
+	 * @param digits
+	 * @return
+	 */
+	public static int[] digitsToCombo( List<Integer> digits ) {
+		int[] combo = new int[ digits.size()];
+		for ( int i = 0; i < digits.size(); i++) {
+			combo[i] = digits.get(i) - 1;
+		}
+		return combo;
+	}
+	/**
+	 * Converts an int[] of zero-based combos to a list of one-based digits.
+	 * @param combo
+	 * @return
+	 */
+	public static List<Integer> comboToDigits( int[] combo ) {
+		List<Integer> digits = new ArrayList<>( combo.length );
+		for ( int i = 0; i < digits.size(); i++) {
+			digits.add( combo[i] + 1 );
+		}
+		return digits;
 	}
 }

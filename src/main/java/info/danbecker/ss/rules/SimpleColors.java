@@ -349,12 +349,17 @@ public class SimpleColors implements FindUpdateRule {
 
 	@Override
 	public String encodingToString( int[] enc) {
-		Unit unit = Unit.values()[enc[1]];
-		return format( "digit %d, type %d, tree %s, cand %s sees %d at %s and %d at %s" ,
-				enc[0], enc[1],
+		String typeString = (0 == enc[1]) ? "color trap" : "color wrap";
+		if ( 0 == enc[1] )
+			return format( "digit %d %s, tree %s, cand %s sees %d at %s and %d at %s" ,
+				enc[0], typeString,
 				ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]],
 				enc[6], ROWCOL[enc[7]][enc[8]],
 				enc[9], ROWCOL[enc[10]][enc[11]]);
+		else
+			return format( "digit %d %s, tree %s, child %s color %d sees %s color %d" ,
+				enc[0], typeString,
+				ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]], enc[6], ROWCOL[enc[7]][enc[8]], enc[6] );
 	}
 
 	@Override

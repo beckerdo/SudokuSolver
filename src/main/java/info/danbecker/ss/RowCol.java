@@ -2,6 +2,7 @@ package info.danbecker.ss;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -16,7 +17,8 @@ import static java.lang.String.format;
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
 public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>{
-	public RowCol ( int row, int col, int box ) {
+
+	public RowCol (int row, int col, int box ) {
 		if (( row < 0 ) || (row >= Board.ROWS)) throw new ArrayIndexOutOfBoundsException( "row=" + row);
 		if (( col < 0 ) || (col >= Board.COLS)) throw new ArrayIndexOutOfBoundsException( "col=" + col);
 
@@ -47,7 +49,14 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 
 		return Integer.compare(this.col, that.col);
 	}
-	
+
+	/**
+	 *RowColComparator is useful for Collections.sort where
+	 * one would like to sort by the RowCol natural order
+	 */
+	public static final Comparator<? super RowCol> RowColComparator =
+			(RowCol rc1, RowCol rc2) -> rc1.compareTo( rc2 );
+
 	@Override
 	public String toString() {
 		return format( "[%d,%d]", row, col);

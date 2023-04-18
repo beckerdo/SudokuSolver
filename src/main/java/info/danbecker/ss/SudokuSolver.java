@@ -57,6 +57,7 @@ import static java.lang.String.format;
  * BUGS (disable until fixed)
  *    LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
  * Move json resources from main to test
+ * Replace glut of comparators with Comparator lambdas based on compareTo.
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
@@ -168,7 +169,7 @@ public class SudokuSolver {
 			new DoublePairs(),
 			new HiddenSubsets(2), // HiddenPairs
 			new HiddenSubsets(3), // HiddenTriples
-			new XWings(),
+			new XWings(), // XWings is a fish and not a wing
 			new Swordfish(),
 			new Skyscraper(),
 			new TwoStringKite(),

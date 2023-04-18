@@ -1,6 +1,7 @@
 package info.danbecker.ss;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -13,10 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import static info.danbecker.ss.Board.ROWCOL;
 import static info.danbecker.ss.Candidates.*;
 import static info.danbecker.ss.Utils.Unit.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.text.ParseException;
 
@@ -41,12 +39,39 @@ public class CandidatesTest {
      	assertEquals( 0, candidates1.compareTo( candidates1 ));
      	assertEquals( 0, candidates1.compareTo( candidates3 ));
      	assertEquals( -1, candidates1.compareTo( candidates2 ));
-     	
+
+		assertEquals( 1, Candidates.compareCandidates( Arrays.asList(6,1), Arrays.asList(1,5) ));
+		assertEquals( -1, Candidates.compareCandidates( Arrays.asList(1,4), Arrays.asList(5,1) ));
+		assertEquals( 0, Candidates.compareCandidates( Arrays.asList(1,4), Arrays.asList(4,1) ));
+		assertEquals( 1, Candidates.compareCandidates( Arrays.asList(1,2,3), Arrays.asList(1,2) ));
+		assertEquals( -1, Candidates.compareCandidates( Arrays.asList(1,2), Arrays.asList(1,2,3) ));
+
      	Candidates clone = new Candidates( candidates3 );
      	assertEquals( clone, candidates3 );
      	clone.setOccupied( ROWCOL[0][0],1);
      	assertEquals( 1, clone.compareTo( candidates3 ));
-    }
+
+		 // Test sorted rowCols and sorted candidate lists
+		(new LegalCandidates()).update(board1, null, candidates1, null);
+		// System.out.println( "Candidates=\n" + candidates1.toStringBoxed());
+		List<RowCol> pairLocs = candidates1.getGroupLocations( ALL_DIGITS, 2 );
+		pairLocs.sort(RowCol.RowColComparator);
+		// Returns sorted RowCols, such as [[1,3], [1,4], [1,5], [2,0], [6,1], [6,8], [7,3], [8,8]]
+		// System.out.println( "Pair rowCols=" + pairLocs.toString());
+		assertEquals( ROWCOL[1][3], pairLocs.get( 0 ));
+		assertEquals( ROWCOL[8][8], pairLocs.get( pairLocs.size() - 1 ));
+
+		List<List<Integer>> pairCands = new LinkedList<>();
+		for ( RowCol rowCol : pairLocs ) {
+			List<Integer> cands = candidates1.getCandidatesList( rowCol );
+			if( !pairCands.contains( cands ))
+				pairCands.add( cands );
+		}
+		pairCands.sort(Candidates.CandidatesComparator);
+		// Returns sorted candidate pairs such as [[1,7], [1,9], [2,8], [4,5], [5,6], [5,7], [5, 8]]
+		assertEquals( Arrays.asList(1,7), pairCands.get( 0 ));
+		assertEquals( Arrays.asList(5,8), pairCands.get( pairCands.size() - 1));
+	}
 	
 	@Test
     public void testCandidateAdd() throws ParseException {

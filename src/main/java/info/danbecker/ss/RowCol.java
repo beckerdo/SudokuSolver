@@ -42,20 +42,15 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 
 	@Override
 	public int compareTo(RowCol that) {
-		//System.out.println( "compareTo");
-		if (null == that) return 1;
-		if ( this.row < that.row) return -1;
-		if ( this.row > that.row) return 1;
-
-		return Integer.compare(this.col, that.col);
+		return RowColComparator.compare(this, that);
 	}
 
 	/**
-	 *RowColComparator is useful for Collections.sort where
+	 * RowColComparator is useful for Collections.sort where
 	 * one would like to sort by the RowCol natural order
 	 */
 	public static final Comparator<? super RowCol> RowColComparator =
-			(RowCol rc1, RowCol rc2) -> rc1.compareTo( rc2 );
+		Comparator.nullsLast(Comparator.comparing(RowCol::row).thenComparing(RowCol::col));
 
 	@Override
 	public String toString() {
@@ -263,19 +258,6 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		return toString( toList(rowCols) );
 	}
 
-	public static class RowColMatch implements Comparable<RowCol> {
-		RowCol rowCol;
-
-		public RowColMatch( RowCol rowCol ) {
-			this.rowCol = rowCol;
-		}
-
-		@Override
-		public int compareTo(RowCol that) {
-			if (null == that) return 1;
-			return this.rowCol.compareTo( that );
-		}
-	}
 	public static class AnyUnitMatch implements Comparable<RowCol> {
 		RowCol rowCol;
 

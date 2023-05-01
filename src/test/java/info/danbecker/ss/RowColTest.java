@@ -28,12 +28,20 @@ public class RowColTest {
 		assertEquals( 5, b4.col() );
 		assertEquals( 4, b4.box() );
 
-		assertEquals( 1, b0.compareTo( null ));
+		assertEquals( -1, b0.compareTo( null ));
 		assertEquals( -1, b0.compareTo( b4 ));
 		assertEquals( 1, b4.compareTo( b0 ));
 		assertEquals( 0, b4.compareTo( b4 ));
 		assertTrue( b0.box() < b4.box());
 		assertTrue( b4.box() > b0.box());
+
+		var rowCols = Arrays.asList( b4, b0,
+			new RowCol(0,8), new RowCol(0,1), new RowCol( 8,8),new RowCol(8,0 ) );
+		// System.out.println( "RowCol list=" + RowCol.toString( rowCols));
+		var sortedRowCols = rowCols.stream().sorted().toList();
+		// System.out.println( "RowCol sorted=" + RowCol.toString( sortedRowCols));
+		assertEquals( new RowCol(0,1), sortedRowCols.get( 0 ));
+		assertEquals( new RowCol(8,8), sortedRowCols.get(sortedRowCols.size() - 1));
 
 		assertEquals( "[1,1]", b0.toString());
 		assertEquals( "[5,5,4]", b4.toStringWithBox());

@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -215,10 +216,47 @@ public class Utils {
 	 * @return
 	 */
 	public static List<Integer> comboToDigits( int[] combo ) {
-		List<Integer> digits = new ArrayList<>( combo.length );
-		for ( int i = 0; i < digits.size(); i++) {
+		List<Integer> digits = new ArrayList<>();
+		for ( int i = 0; i < combo.length; i++) {
 			digits.add( combo[i] + 1 );
 		}
 		return digits;
+	}
+
+	/**
+	 * Converts a list of Integer to int[] with no ones/zeros conversion.
+	 */
+	public static int[] listToArray( List<Integer> digits ) {
+		int[] ints = new int[digits.size()];
+		for ( int i = 0; i < digits.size(); i++)
+			ints[i] = digits.get(i);
+		return ints;
+	}
+
+	/**
+	 * Converts a int[] to List<Integer> with no ones/zeros conversion.
+	 */
+	public static List<Integer> arrayToList( int[] ints ) {
+		List<Integer> list = Arrays.stream(ints).boxed().toList();
+		return list;
+	}
+
+	public static int compareTo( List<Integer> list1, List<Integer> list2) {
+		if (null == list1 && null == list2) return 0;
+		if (null == list1) return -1;
+		if (null == list2) return 1;
+
+		if (list1.size() < list2.size()) return -1;
+		if (list1.size() > list2.size()) return 1;
+
+		int[] sorted1 = listToArray(list1);
+		Arrays.sort( sorted1 );
+		int[] sorted2 = listToArray(list2);
+		Arrays.sort( sorted2 );
+		for ( int i = 0; i < sorted1.length; i++ ) {
+			if (sorted1[i] < sorted2[i] ) return -1;
+			if (sorted1[i] > sorted2[i] ) return 1;
+		}
+		return 0;
 	}
 }

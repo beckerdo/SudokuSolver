@@ -90,11 +90,19 @@ public class TreeNodeTest {
 	@Test
     public void testIter() {		
 		TreeNode<String> treeRoot = getGeneralTree();
-		// treeRoot.printTree();
 		assertEquals( 4, treeRoot.getChildCount());
-		
 		assertEquals( 12, treeRoot.nodeCount() );
 		assertEquals( 4, treeRoot.deepestLevel() );
+
+		// Test TreeNodeIter which is depth first
+		int count = 0;
+		for ( TreeNode treeNode : treeRoot ) {
+			switch ( count ) {
+				case 0: { assertEquals( "root", treeNode.data ); break; }
+				case 11: { assertEquals( "node30", treeNode.data ); break ; }
+			}
+			count++;
+		}
     }
 
 	@Test

@@ -16,14 +16,19 @@ import static info.danbecker.ss.Utils.COLS;
 import static info.danbecker.ss.Utils.DIGITS;
 
 /**
- * XWings occurs when a board has a candidate two lines, 
+ * From https://hodoku.sourceforge.net/en/tech_fishg.php
+ * Fish are single digit patterns. "Single digit" means, that only candidates
+ * of the same digit are considered when looking at fish.
+ * "Pattern" means, that the location of the candidates in the grid is important.
+ * The term is used to differentiate them from chains.
+ * <p>
+ * The number of base/cover sets define the size of the fish. The following names are normally used:
+ *     Size 2: X-Wing (X-Wing is a fish and not a wing!), Size 3: Swordfish,  Size 4: Jellyfish
+ * <p>
+ * XWings occurs when a board has a candidate two lines,
  * each having the same two positions for a number.
  * <p>
- * Info based on clues given at
- * https://www.sudokuoftheday.com/techniques/x-wings
- * <p>
- * Note that https://www.thonky.com/sudoku/unique-rectangle says
- * the corners of the double pair must be in two boxes, not four.
+ * Also see https://www.sudokuoftheday.com/techniques/x-wings
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */

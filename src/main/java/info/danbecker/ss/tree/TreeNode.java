@@ -1,7 +1,11 @@
 package info.danbecker.ss.tree;
 
+import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
 
+import static info.danbecker.ss.Candidates.FULL_COMBI_MATCH;
+import static info.danbecker.ss.Candidates.NAKED;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
@@ -290,5 +294,54 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	@Override
 	public Iterator<TreeNode<T>> iterator() {
 		return new TreeNodeIter<>(this);
+	}
+
+
+	/**
+	 * Looks for an endpoint to a chain, which sees only one location.
+	 * Returns the location index, or -1 if one does not match (a loop).
+	 * @param candidates
+	 * @param zeroBasedDigits
+	 * @param locs
+	 * @return index in locs which sees one other location, -1 otherwise
+	 */
+	public static int pickMinSights(Candidates candidates, int[] zeroBasedDigits, List<RowCol> locs ) {
+		List<Integer> sees = new LinkedList<>();
+		for ( int loci = 0; loci < locs.size(); loci++) {
+			RowCol loc = locs.get( loci );
+			int locSightCount =
+					candidates.candidateComboRowLocations( loc.row(), zeroBasedDigits, NAKED, FULL_COMBI_MATCH ).size() - 1; // subtract self loc
+			locSightCount +=
+					candidates.candidateComboColLocations( loc.col(), zeroBasedDigits, NAKED, FULL_COMBI_MATCH ).size() - 1; // subtract self loc
+			// do not count box if unit was counted in same row or same col (
+			List<RowCol> boxLocs = candidates.candidateComboBoxLocations( loc.box(), zeroBasedDigits, NAKED, FULL_COMBI_MATCH );
+			for ( RowCol boxLoc : boxLocs) {
+				if ( !loc.equals( boxLoc ) && loc.row() != boxLoc.row() && loc.col() != boxLoc.col())  {
+					locSightCount++;
+				}
+			}
+			sees.add( locSightCount );
+		}
+		int min = Integer.MAX_VALUE;
+		int mini = -1;
+		// Find mininum sees count and index of this count.
+		for ( int seei = 0; seei < sees.size(); seei++) {
+			int units = sees.get( seei );
+			if ( units < min ) {
+				min = units;
+				mini = seei;
+			}
+
+		}
+		if ( -1 != mini ) {
+			if ( 1 == min) {
+				// System.out.println("   tree end min loc=" + pairLocs.get(mini) + ", sees=" + sees.get(mini));
+				return mini;
+			} else {
+				// System.out.println("   no end min loc=" + pairLocs.get(mini) + ", sees=" + sees.get(mini));
+				return -1;
+			}
+		}
+		return -1;
 	}
 }

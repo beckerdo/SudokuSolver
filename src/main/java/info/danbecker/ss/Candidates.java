@@ -222,7 +222,7 @@ public class Candidates implements Comparable<Candidates> {
 		return candList;
 	}
 
-	/** Returns all candidates in the given cell.
+	/** Returns remaining candidates in the given cell.
 	 * 	 @return int[] of only set candidates
 	 */
 	public int [] getRemainingCandidates( RowCol rowCol ) {

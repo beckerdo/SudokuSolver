@@ -36,8 +36,8 @@ public class CandidateLinesTest {
 		int[] loc = locations.get(0);
 		assertEquals( 4, loc.length );
 
-		System.out.println(format("Rule %s reports %d possible locations at row/col/block/digit=%d/%d/%d/%d ",
-			rule.ruleName(), locations.size(), loc[0],loc[1],loc[2],loc[3]));
+		// System.out.println(format("Rule %s reports %d possible locations at row/col/block/digit=%d/%d/%d/%d ",
+		// 	rule.ruleName(), locations.size(), loc[0],loc[1],loc[2],loc[3]));
 		assertEquals( -1, loc[0] ); // rowi
 		assertEquals( 7, loc[1] ); // coli
 		assertEquals( 8, loc[2] ); // boxi
@@ -46,6 +46,6 @@ public class CandidateLinesTest {
 		int prevCount = candidates.getAllCandidateCount();
 		candidates.removeCandidateNotInBox(loc[0],loc[1],loc[2],loc[3]);
 		assertTrue( prevCount > candidates.getAllCandidateCount());
-		System.out.print(format("Rule %s reduced candidates from %d to %d", rule.ruleName(), prevCount, candidates.getAllCandidateCount()));
+		// System.out.print(format("Rule %s reduced candidates from %d to %d", rule.ruleName(), prevCount, candidates.getAllCandidateCount()));
 	}
 }

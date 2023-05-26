@@ -4,15 +4,13 @@ import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
-import info.danbecker.ss.tree.ColorData;
-import info.danbecker.ss.tree.PairData;
 import info.danbecker.ss.tree.TreeNode;
+import info.danbecker.ss.tree.PairData;
 
 import java.util.*;
 
 import static info.danbecker.ss.Board.*;
 import static info.danbecker.ss.Candidates.*;
-import static info.danbecker.ss.Utils.DIGITS;
 import static info.danbecker.ss.Utils.Unit;
 import static java.lang.String.format;
 
@@ -35,36 +33,49 @@ import static java.lang.String.format;
 public class RemotePairs implements FindUpdateRule {
 	@Override
 	// Location int [] index map
-	// digit plus rowCol
+	// - 01 two one-based digits
+	// - 2 type						0=ColorTrap,1=ColorWrap
+	// - 34 tree root rowCol
+	// - 56 cand rowCol
+	// - 7 first color
+	// - 89 first RowCol
+	// - A second color
+	// - BC second RowCOl
 	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
 		if ( null == encs) return updates;
 		for ( int enci = 0; enci < encs.size(); enci++ ) {
 			int[] enc = encs.get(enci);
-			int digit = enc[ 0 ];
-			int type = enc[ 1 ];
+			int[] digits = new int[]{enc[ 0 ], enc[1]};
+			int type = enc[ 2 ];
 			String typeString = switch( type ) {
 				case 0 -> "color trap";
 				case 1 -> "color wrap";
 				default -> "type " + type;
 			};
-			RowCol cLoc = ROWCOL[enc[4]][enc[5]];
+			RowCol cLoc = ROWCOL[enc[5]][enc[6]];
 
 			// Validation, if available
 			if ( null != solution ) {
 				int cellStatus = solution.get(cLoc);
-				if ( cellStatus == digit ) {
+				if ( cellStatus == digits[0] ) {
 					throw new IllegalArgumentException( format("Rule %s would like to remove solution digit %d at loc %s.",
-							ruleName(), digit, cLoc));
+							ruleName(), digits[0], cLoc));
+				}
+				if ( cellStatus == digits[1] ) {
+					throw new IllegalArgumentException( format("Rule %s would like to remove solution digit %d at loc %s.",
+							ruleName(), digits[1], cLoc));
 				}
 			}
 
 			String prev = candidates.getCandidatesStringCompact( cLoc );
-			if ( candidates.removeCandidate( cLoc, digit )) {
-				updates++;
-				String cStr = candidates.getCandidatesStringCompact( cLoc );
-				System.out.println( format( "%s %s removed digit %d from %s, remaining candidates %s",
-						ruleName(), typeString, digit, cLoc, cStr ));
+			for ( int digi = 0; digi < 2; digi++) {
+				if (candidates.removeCandidate(cLoc, digits[digi])) {
+					updates++;
+					String cStr = candidates.getCandidatesStringCompact(cLoc);
+					System.out.println(format("%s %s removed digit %d from %s, remaining candidates %s",
+							ruleName(), typeString, digits[digi], cLoc, cStr));
+				}
 			}
 		}
 		return updates;
@@ -76,13 +87,14 @@ public class RemotePairs implements FindUpdateRule {
 	 * -For each pair of digits on the board,
 	 *    -find the longest chain for each location.
 	 *    -test for either digit, that can see two color PairNodes in the chain.
+	 * <p>
+	 * Note that the list may have duplicate candidates when it  can see 3 other locs in chain
 	 * @return a list of all locations that can see two colors.
 	 */
 	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
 		List<int[]> locs = new ArrayList<>();
-		List<TreeNode<PairData>> trees = new LinkedList<>();
 
 		// Get sorted set of digit pairs
 		List<RowCol> allPairLocs = candidates.getGroupLocations( ALL_DIGITS, 2 );
@@ -98,78 +110,52 @@ public class RemotePairs implements FindUpdateRule {
 
 		for ( List<Integer> pair : sortedPairDigits) {
 			int[] zeroBasedDigits = new int[]{ pair.get(0) - 1, pair.get(1) - 1};
-			List<RowCol> pairLocs = candidates.candidateComboAllLocations( zeroBasedDigits, Candidates.FULL_COMBI_MATCH);
-			if ( 2 < pairLocs.size()) {
-				System.out.println("Digits=" + pair.toString() + ", locs=" + pairLocs.toString());
-				// Make a long linear chain from the locations.
-				// Count each location's visibility to determine an endpoint.
-				int mini = pickMinSights( candidates, zeroBasedDigits, pairLocs);
-				if ( -1 != mini ) {
-
-					RowCol treeLoc = pairLocs.get( mini );
-					System.out.println( format( "   tree of digits %s starting at %s",
-  					pair, pairLocs.get(mini) ));
-					TreeNode<PairData> tree = new TreeNode<>(new PairData(pair, treeLoc, 0), 3);
-					List<int[]> treeClashes = buildPairTree(candidates, tree, pair, pairLocs );
-					System.out.println(format("Digit pair %s tree at %s has %d nodes and %d clashes",
-						pair.toString(), treeLoc, tree.size(), treeClashes.size()));
-					tree.printTree();
-					// Add clashes to matched locations
-					locs.addAll( treeClashes );
-				}
-			}
+			locs.addAll( find( board, candidates, zeroBasedDigits ));
 		}
 		return locs;
 	}
 
 	/**
-	 * Looks for a good endpoint to a pair chain (which sees only one other pair).
-	 * Returns the pairLocs index, or -1 if one does not match (a loop).
-	 * @param candidates
-	 * @param zeroBasedDigits
-	 * @param pairLocs
-	 * @return index in pairLocs which sees one other digits pair, -1 otherwise
+	 * Strategy.
+	 * -For a given pair of digits on the board,
+	 *    -find the longest chain for each location.
+	 *    -test for either digit, that can see two color PairNodes in the chain.
+	 * Useful for testing
+	 * @return a list of all locations that can see two colors.
 	 */
-	public int pickMinSights( Candidates candidates, int[] zeroBasedDigits, List<RowCol> pairLocs  ) {
-		List<Integer> sees = new LinkedList<>();
-		for ( int loci = 0; loci < pairLocs.size(); loci++) {
-			RowCol loc = pairLocs.get( loci );
-			int locSightCount =
-					candidates.candidateComboRowLocations( loc.row(), zeroBasedDigits, NAKED, FULL_COMBI_MATCH ).size() - 1; // subtract self loc
-			locSightCount +=
-					candidates.candidateComboColLocations( loc.col(), zeroBasedDigits, NAKED, FULL_COMBI_MATCH ).size() - 1; // subtract self loc
-			// do not count box if unit was counted in same row or same col (
-			List<RowCol> boxLocs = candidates.candidateComboBoxLocations( loc.box(), zeroBasedDigits, NAKED, FULL_COMBI_MATCH );
-			for ( RowCol boxLoc : boxLocs) {
-				if ( !loc.equals( boxLoc ) && loc.row() != boxLoc.row() && loc.col() != boxLoc.col())  {
-					locSightCount++;
-				}
-			}
-			sees.add( locSightCount );
-			// System.out.println("   loc=" + pairLocs.get( loci ) + ", sees=" + RowCol.toString( seeLocs ));
-			// System.out.println("   loc=" + pairLocs.get( loci ) + ", sees=" + locSightCount );
-		}
-		int min = Integer.MAX_VALUE;
-		int mini = -1;
-		// Find mininum sees count and index of this count.
-		for ( int seei = 0; seei < sees.size(); seei++) {
-			int units = sees.get( seei );
-			if ( units < min ) {
-				min = units;
-				mini = seei;
-			}
+	public List<int[]> find(Board board, Candidates candidates, int[] zeroBasedDigits ) {
+		if (null == candidates)
+			return null;
+		if ( null == zeroBasedDigits )
+			throw new NullPointerException();
+		if ( zeroBasedDigits.length != 2 || zeroBasedDigits[0] < 0 || zeroBasedDigits[1] > 8 || zeroBasedDigits[1] < 0 || zeroBasedDigits[1] > 8)
+			throw new IllegalArgumentException( "zb digits=" + Utils.digitsToString(zeroBasedDigits));
+		List<int[]> locs = new ArrayList<>();
 
-		}
-		if ( -1 != mini ) {
-			if ( 1 == min) {
-				// System.out.println("   tree end min loc=" + pairLocs.get(mini) + ", sees=" + sees.get(mini));
-				return mini;
-			} else {
-				// System.out.println("   no end min loc=" + pairLocs.get(mini) + ", sees=" + sees.get(mini));
-				return -1;
+		List<Integer> obDigitPair = Utils.comboToDigits(zeroBasedDigits);
+		List<RowCol> pairLocs = candidates.candidateComboAllLocations( zeroBasedDigits, Candidates.FULL_COMBI_MATCH);
+		if ( 2 < pairLocs.size()) {
+			// System.out.println("Digits=" + obDigitPair.toString() + ", locs=" + pairLocs.toString());
+			// Make a long linear chain from the locations.
+			// Count each location's visibility to determine an endpoint.
+			int mini = TreeNode.pickMinSights( candidates, zeroBasedDigits, pairLocs);
+			if ( -1 != mini ) {
+				RowCol treeLoc = pairLocs.get( mini );
+				// System.out.println( format( "   tree of digits %s starting at %s", obDigitPair, pairLocs.get(mini) ));
+				TreeNode<PairData> tree = new TreeNode<>(new PairData(obDigitPair, treeLoc, 0), 3);
+				List<int[]> treeClashes = buildPairTree(candidates, tree, obDigitPair, pairLocs );
+				// System.out.println(format("Digit pair %s tree at %s has %d nodes and %d clashes",
+				// 		obDigitPair.toString(), treeLoc, tree.size(), treeClashes.size()));
+				// tree.printTree();
+				// Add clashes to matched locations
+				locs.addAll( treeClashes );
+
+				// Now add in all non-pair candidates that can see two colors
+				List<int[]> twoDifferent = cellSeesTwoDifferentType0Trap(candidates, tree, obDigitPair );
+				locs.addAll( twoDifferent );
 			}
 		}
-		return -1;
+		return locs;
 	}
 
 	/**
@@ -179,7 +165,7 @@ public class RemotePairs implements FindUpdateRule {
 	 * Tree building should end when a node has multiple children because that will be shorter
 	 * than a single child chain.
      */
-	public List<int[]> buildPairTree( Candidates candidates, TreeNode<PairData> parentNode, List<Integer> digits, List<RowCol> pairLocs ) {
+	public List<int[]> buildPairTree(Candidates candidates, TreeNode<PairData> parentNode, List<Integer> digits, List<RowCol> pairLocs ) {
 		if (null == parentNode )
 			throw new NullPointerException( "parent node is null");
 		if (null == parentNode.data )
@@ -210,27 +196,31 @@ public class RemotePairs implements FindUpdateRule {
 						// Only add conjugate pairs to color tree
 						for (int loci = 0; loci < unitLocs.size(); loci++) {
 							RowCol loc = unitLocs.get(loci);
-							int nextColor = (0 == pData.color) ? 1 : 0;
-							cData = new PairData(digits, loc, nextColor);
-							TreeNode<PairData> foundNode = root.findTreeNode( new PairData.RowColMatch(cData));
-							if (null == foundNode) {
-								// unitNode not in tree
-								// System.out.println( format("   Digit %d, parent %s, loc %s not in tree", digi, pData.rowCol, loc));
-								// A child should not see another node in the tree that is the same color
-								List<int[]> seesSameColor = childSeesSame( candidates, root, pData );
-								if ( 0 == seesSameColor.size() ) {
-									// Add as child. Recurse to child node.
-									parentNode.setChild(pData, unit.ordinal());
-									childAdded[unit.ordinal()] = true;
-									// System.out.println( format("Rule %s, node %s added %s candidate at %s, seen by %d tree nodes (no color clash) %s",
-									// 	ruleName(), pData.toString(), unit.name(), Utils.locationString(loc), sameUnitNodes.size(), sameUnitNodes ));
-									// Depth first recursion
-									// List<int[]> colorClashes = buildPairTree(candidates,parentNode.getChild(unit.ordinal()), digits, 2);
-									// matched.addAll(colorClashes);
-								} else {
-									matched.addAll(seesSameColor);
+							if ( !loc.equals(pData.rowCol)) {
+								int nextColor = (0 == pData.color) ? 1 : 0;
+								cData = new PairData(digits, loc, nextColor);
+								TreeNode<PairData> foundNode = root.findTreeNode( new info.danbecker.ss.tree.PairData.RowColMatch(cData));
+								if (null == foundNode) {
+									// unitNode not in tree
+									// System.out.println( format("   Digit %d, parent %s, loc %s not in tree", digi, pData.rowCol, loc));
+									// A child should not see another node in the tree that is the same color
+									List<int[]> seesSameColor = childSeesSameType1Wrap( candidates, root, cData );
+									if ( 0 == seesSameColor.size() ) {
+										// Add as child. Recurse to child node.
+										parentNode.setChild(cData, unit.ordinal());
+										childAdded[unit.ordinal()] = true;
+										// System.out.println( format("Rule %s, node %s added %s candidate at %s, seen by %d tree nodes (no color clash) %s",
+										// 	ruleName(), pData.toString(), unit.name(), Utils.locationString(loc), sameUnitNodes.size(), sameUnitNodes ));
+										// Depth first recursion
+										List<int[]> colorClashes = buildPairTree(candidates,parentNode.getChild(unit.ordinal()), digits, pairLocs);
+										matched.addAll(colorClashes);
+
+									} else {
+										matched.addAll(seesSameColor);
+									}
 								}
 							}
+
 						}
 					}
 				} else {
@@ -247,14 +237,42 @@ public class RemotePairs implements FindUpdateRule {
 	}
 
 	/**
+	 * Check for new child being able to see two colors of this tree.
+	 * Color Wrap (type 1): A new child (inside tree) that sees cells of opposite colors.
+	 *
+	 * @param candidates
+	 * @param root
+	 * @param proposedChild
+	 * @return int [] of candidates to remove
+	 */
+	public List<int[]> childSeesSameType1Wrap(Candidates candidates, TreeNode<PairData> root, PairData proposedChild ) {
+		List<int[]> seesSame = new LinkedList<>();
+		List<TreeNode<PairData>> sameUnitNodes = root.findTreeNodes(new PairData.AnyUnitMatch(proposedChild));
+		for ( int nodei = 0; nodei < sameUnitNodes.size(); nodei++) {
+			TreeNode<PairData> sameUnit = sameUnitNodes.get(nodei);
+			if ( proposedChild.color == sameUnit.data.color ) {
+				// System.out.println(format("Color wrap (type 1 int) proposed child %s sees same color tree node %s",
+				// proposedChild, sameUnit.data ));
+				// Just repeat sameUnit for second color and rowCol
+				int[] enc = encode(Utils.listToArray(root.data.digits), 1, root.data.rowCol, proposedChild.rowCol,
+						sameUnit.data.color, sameUnit.data.rowCol,
+						sameUnit.data.color, sameUnit.data.rowCol );
+				seesSame.add( enc );
+			}
+		}
+		return seesSame;
+	}
+
+	/**
 	 * Check for non tree candidates that can see two colors of this tree.
+	 * Color Trap (type 0): An uncolored cell (outside tree) that sees cells of opposite colors.
 	 *
 	 * @param candidates
 	 * @param tree
 	 * @param digits
 	 * @return int [] of candidates to remove
 	 */
-	public List<int[]> seesTwoDifferent(Candidates candidates, TreeNode<PairData> tree, List<Integer> digits ) {
+	public List<int[]> cellSeesTwoDifferentType0Trap(Candidates candidates, TreeNode<PairData> tree, List<Integer> digits ) {
 		List<int[]> seesTwo = new LinkedList<>();
 		for (int digi = 0; digi < digits.size(); digi++) {
 			int digit = digits.get(digi);
@@ -273,10 +291,11 @@ public class RemotePairs implements FindUpdateRule {
 							TreeNode<PairData> sameUnitNode = sameUnitNodes.get(sameUniti);
 							if (null == firstColorData) firstColorData = sameUnitNode.data;
 							if (firstColorData.color != sameUnitNode.data.color) {
-								// System.out.println( format( "Color Trap digit %d at %s, can see %s",
-								// 		digi, rowCol, ColorData.toString( sameUnitNodes )));
+								// System.out.println( format( "Color Trap (type 0 ext) digit %d at %s, can see %s",
+								// 		digit, rowCol, PairData.toString( sameUnitNodes )));
 								// Add enc data.
-								int[] enc = encode(digi, 0, tree.data.rowCol, pData.rowCol,
+								// Warning, two digits or one of the two digits might see same color.
+								int[] enc = encode( Utils.listToArray(digits), 0, tree.data.rowCol, pData.rowCol,
 										firstColorData.color, firstColorData.rowCol,
 										sameUnitNode.data.color, sameUnitNode.data.rowCol);
 								seesTwo.add(enc);
@@ -289,48 +308,24 @@ public class RemotePairs implements FindUpdateRule {
 		return seesTwo;
 	}
 
-	/**
-	 * Color Trap
-	 * Check for new child being able to see the same color of this tree.
-	 *
-	 * @param candidates
-	 * @param root
-	 * @param proposedChild
-	 * @return int [] of candidates to remove
-	 */
-	public List<int[]> childSeesSame(Candidates candidates, TreeNode<PairData> root, PairData proposedChild ) {
-		List<int[]> seesSame = new LinkedList<>();
-		List<TreeNode<PairData>> sameUnitNodes = root.findTreeNodes(new PairData.AnyUnitMatch(proposedChild));
-		for ( int nodei = 0; nodei < sameUnitNodes.size(); nodei++) {
-			TreeNode<PairData> sameUnit = sameUnitNodes.get(nodei);
-			if ( proposedChild.color == sameUnit.data.color ) {
-				// System.out.println(format("Rule %s color wrap. Proposed child %s sees same color tree node %s",
-				// ruleName(), proposedChild, sameUnit.data ));
-				// Just repeat sameUnit for second color and rowCol
-//				int[] enc = encode( proposedChild.digit, 1, root.data.rowCol, proposedChild.rowCol,
-//						sameUnit.data.color, sameUnit.data.rowCol,
-//						sameUnit.data.color, sameUnit.data.rowCol );
-//				seesSame.add( enc );
-			}
-		}
-		return seesSame;
-	}
-
 	// Encode tree as int[]
-	// - 0 digit
-	// - 1 type						0=ColorTrap,1=ColorWrap
-	// - 23 tree root rowCol
-	// - 45 cand rowCol
-	// - 6 first color
-	// - 78 first RowCol
-	// - 9 second color
-	// - AB second RowCOl
-	public static int [] encode( int digi, int type, RowCol root, RowCol cand,
+	// - 01 two one-based digits
+	// - 2 type						0=ColorTrap,1=ColorWrap
+	// - 34 tree root rowCol
+	// - 56 cand rowCol
+	// - 7 first color
+	// - 89 first RowCol
+	// - A second color
+	// - BC second RowCOl
+	public static int [] encode( int[] digits, int type, RowCol root, RowCol cand,
 								 int firstColor, RowCol first, int secondColor, RowCol second ) {
-		if ( digi < 1 || digi > 9)
-			throw new IllegalArgumentException( "digit=" + digi);
+		if ( null == digits )
+			throw new NullPointerException();
+		if ( digits.length != 2 || digits[0] < 1 || digits[1] > 9 || digits[1] < 1 || digits[1] > 9)
+			throw new IllegalArgumentException( "digits=" + Utils.digitsToString(digits));
 		// perhaps more validation later
-		return new int[] {digi, type,
+		return new int[] {digits[0],digits[1],
+				type,
 				root.row(), root.col(),
 				cand.row(), cand.col(),
 				firstColor, first.row(), first.col(),
@@ -339,17 +334,17 @@ public class RemotePairs implements FindUpdateRule {
 
 	@Override
 	public String encodingToString( int[] enc) {
-		String typeString = (0 == enc[1]) ? "color trap" : "color wrap";
-		if ( 0 == enc[1] )
-			return format( "digit %d %s, tree %s, cand %s sees %d at %s and %d at %s" ,
-					enc[0], typeString,
-					ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]],
-					enc[6], ROWCOL[enc[7]][enc[8]],
-					enc[9], ROWCOL[enc[10]][enc[11]]);
+		String typeString = (0 == enc[2]) ? "color trap" : "child sees same (wrap)";
+		if ( 0 == enc[2] )
+			return format( "digits %d,%d %s, root %s, cands at %s sees %d at %s and %d at %s" ,
+					enc[0], enc[1], typeString,
+					ROWCOL[enc[3]][enc[4]], ROWCOL[enc[5]][enc[6]],
+					enc[7], ROWCOL[enc[8]][enc[9]],
+					enc[10], ROWCOL[enc[11]][enc[12]]);
 		else
-			return format( "digit %d %s, tree %s, child %s color %d sees %s color %d" ,
-					enc[0], typeString,
-					ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]], enc[6], ROWCOL[enc[7]][enc[8]], enc[6] );
+			return format( "digits %d,%d %s, root %s, cand %s color %d sees %s color %d" ,
+					enc[0], enc[1], typeString,
+					ROWCOL[enc[3]][enc[4]], ROWCOL[enc[5]][enc[6]], enc[7], ROWCOL[enc[8]][enc[9]], enc[7] );
 	}
 
 	@Override

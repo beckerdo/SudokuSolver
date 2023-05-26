@@ -160,21 +160,30 @@ public class SudokuSolver {
 		// To do, allow command line to list rules or rule groups
 		FindUpdateRule[] rules = {
 			new LegalCandidates(),
+			// Singles
 			new SingleCandidates(),
 			new SinglePositions(),
+			// Intersections
 			new CandidateLines(),
 			new MultipleLines(),
+			// Subsets
 			new NakedSubsets(2), // NakedPairs
 			new NakedSubsets(3), // NakedTriples
 			new DoublePairs(),
 			new HiddenSubsets(2), // HiddenPairs
 			new HiddenSubsets(3), // HiddenTriples
-			new XWings(), // XWings is a fish and not a wing
-			new Swordfish(),
+			// Fish
+			new XWings(), // XWing is a 2 set fish and not a wing
+			new Swordfish(), // Swordfish is a 3 set fish
+			// Chains
 			new Skyscraper(),
 			new TwoStringKite(),
+			// Wings
 			new XYWing(),
+			// Colors
 			new SimpleColors(),
+			// Chains
+			new RemotePairs(),
 			// new ForcingChains(),		// bugs
 		};
 		

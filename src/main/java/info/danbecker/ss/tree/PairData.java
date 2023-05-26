@@ -13,7 +13,7 @@ import java.util.List;
  * TODO - make immutable or record class
  */
 public class PairData implements Comparable<PairData>{
-    List<Integer> digits;
+    public List<Integer> digits; // ones based
 	public RowCol rowCol;
 	public int color; // -1 for no color, 0,1,... for other colors
 
@@ -27,7 +27,8 @@ public class PairData implements Comparable<PairData>{
 	public int compareTo(PairData that) {
 		//System.out.println( "compareTo");
 		if (null == that) return 1;
-		int compare = Candidates.compareCandidates( this.digits, that.digits );
+		// Arrays.equals( this.digits, that.digits )
+		int compare = Utils.compareTo( this.digits, that.digits);
 		if ( 0 != compare ) return compare;
 
 		compare = RowCol.RowColComparator.compare( this.rowCol, that.rowCol );

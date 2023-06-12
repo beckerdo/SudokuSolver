@@ -1,5 +1,6 @@
 package info.danbecker.ss.tree;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import info.danbecker.ss.RowCol;
  * a hypothetical set of candidate changes.
  * at a given location and digit.
  */
-public class HypoTreeData implements Comparable<HypoTreeData>{
+public class HypoTreeData implements Comparable<HypoTreeData>, Cloneable {
 
 	public int digit; // ones-based digit
 	public RowCol rowCol;
@@ -27,7 +28,21 @@ public class HypoTreeData implements Comparable<HypoTreeData>{
 		// Clone given  candidates so  changes can be made.
 		this.candidates = new Candidates( candidates );
 	}
-	
+
+	public HypoTreeData( int digit, RowCol rowCol, Candidates candidates, List<ChangeData> actions) {
+		this( digit, rowCol, candidates);
+		this.actions = new ArrayList<>( actions );
+	}
+
+	@Override
+	public Object clone() {
+		try {
+			return (HypoTreeData) super.clone();
+		} catch (CloneNotSupportedException e) {
+			return new HypoTreeData( digit, rowCol, new Candidates( candidates ), actions);
+		}
+	}
+
 	public Comparable<HypoTreeData> compareRowCol = new Comparable<HypoTreeData>() {
 		@Override
 		public int compareTo(HypoTreeData that) {
@@ -39,7 +54,8 @@ public class HypoTreeData implements Comparable<HypoTreeData>{
 			return rowCol.compareTo( that.rowCol );
 		}
 	};
-	
+
+
 	@Override
 	public int compareTo(HypoTreeData that) {
 		//System.out.println( "compareTo");

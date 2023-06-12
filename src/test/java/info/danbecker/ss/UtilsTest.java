@@ -65,6 +65,6 @@ public class UtilsTest {
 
 	@Test
 	public void testMisc() {
-		assertEquals( "         ", Utils.createIndent(3));
+		assertEquals( "         ", Utils.indent(3));
 	}
 }

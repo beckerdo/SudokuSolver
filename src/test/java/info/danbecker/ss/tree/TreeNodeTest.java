@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.BeforeEach;
 
+import java.util.Arrays;
 import java.util.List;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TreeNodeTest {
@@ -85,6 +87,34 @@ public class TreeNodeTest {
 		assertTrue( treeRoot.toString().contains("root") );
 		assertEquals( 3, treeRoot.getChildren().size() );
 		assertEquals( 3, treeRoot.getChild(0).getChildren().size() ); // 3 nodes with null data
+	}
+
+	@Test
+	public void testStringCloneable() {
+		TreeNode<String> tree = getGeneralTree();
+		TreeNode<String> treeClone = (TreeNode<String>) tree.clone();
+
+		assertNotSame( tree, treeClone );
+		assertEquals( tree.size(), treeClone.size() );
+		assertEquals( tree.nodeCount(), treeClone.nodeCount() );
+//		System.out.println( "Tree1=" );
+//		tree.printTree();
+//		System.out.println( "Clone=" );
+//		treeClone.printTree();
+	}
+
+	@Test
+	public void testColorDataCloneable() {
+		TreeNode<ColorData> tree = new TreeNode<>(new ColorData( 3, ROWCOL[5][5], 0), 3);
+		TreeNode<ColorData> treeClone = (TreeNode<ColorData>) tree.clone();
+
+		assertNotSame( tree, treeClone );
+		assertEquals( tree.size(), treeClone.size() );
+		assertEquals( tree.nodeCount(), treeClone.nodeCount() );
+//		System.out.println( "Tree1=" );
+//		tree.printTree();
+//		System.out.println( "Clone=" );
+//		treeClone.printTree();
 	}
 
 	@Test

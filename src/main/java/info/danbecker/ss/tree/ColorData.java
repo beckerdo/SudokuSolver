@@ -12,7 +12,7 @@ import java.util.List;
  * <p>
  * TODO - make immutable or record class
  */
-public class ColorData implements Comparable<ColorData>{
+public class ColorData implements Comparable<ColorData>, Cloneable {
 	public int digit; // ones-based digit
 	public RowCol rowCol;
 	public int color; // -1 for no color, 0,1,... for other colors
@@ -21,6 +21,15 @@ public class ColorData implements Comparable<ColorData>{
 		this.digit = digit;
 		this.rowCol = rowCol;
 		this.color = color;		
+	}
+
+	@Override
+	public Object clone() {
+		try {
+			return (ColorData) super.clone();
+		} catch (CloneNotSupportedException e) {
+			return new ColorData(this.digit, this.rowCol, this.color);
+		}
 	}
 
 	public Comparable<ColorData> compareRowCol = new Comparable<ColorData>() {

@@ -27,10 +27,15 @@ public class SimpleColorsTest {
 	// candidates in r7c678 go not match website. Naked triple in r7.
 	public static String SIMPLECOLORS_DIGIT3CHAIN_DIGIT3GONE =
 			"214..6.....79.2..4...4.7.....187..32..269.....48.21..642.7.9861..9168...18624...9";
+	public static String SIMPLECOLORS_DIGIT3_SOLUTION =
+			"214586397867932514935417628691875432372694185548321976423759861759168243186243759";
+
 	// SimpleColors example 2 from
 	//  * https://hodoku.sourceforge.net/en/tech_col.php
 	public static String SIMPLECOLORS_DIGIT8CHAIN_DIGIT8GONE =
 			"659...13...1.3.6252.3165.49.2..9631.36.7..59.91.3.4.6279.6..2535.6...9811.2...476";
+	public static String SIMPLECOLORS_DIGIT8_SOLUTION =
+			"659428137481937625273165849827596314364712598915384762798641253546273981132859476";
 
 	@Test
 	public void testValidColorTree() throws ParseException {
@@ -78,7 +83,7 @@ public class SimpleColorsTest {
 		candidates.removeCandidates(ROWCOL[0][4], new int[]{8});
 		candidates.removeCandidates(ROWCOL[1][3], new int[]{4});
 		candidates.removeCandidates(ROWCOL[1][5], new int[]{8});
-		candidates.removeCandidates(ROWCOL[3][2], new int[]{4, 8});
+		candidates.removeCandidates(ROWCOL[3][2], new int[]{4,8});
 		candidates.removeCandidates(ROWCOL[3][8], new int[]{8});
 		candidates.removeCandidates(ROWCOL[4][4], new int[]{8});
 		candidates.removeCandidates(ROWCOL[4][5], new int[]{8});
@@ -319,11 +324,12 @@ public class SimpleColorsTest {
 		assertTrue(board.legal());
 
 		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).update(board, null, candidates, null);
+		(new LegalCandidates()).update(board, new Board(suite[2]), candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		int[] results = runOnce(board, candidates, suite[2], new SimpleColors());
 		assertEquals(Integer.parseInt(suite[3]), results[0]); // find count
 		assertEquals(Integer.parseInt(suite[4]), results[1]); // update count
 	}
+
 }

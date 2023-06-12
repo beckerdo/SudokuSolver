@@ -50,6 +50,7 @@ import static java.lang.String.format;
  *    All rule updates should report occupy and candidate location changes to aid in debugging.
  *    Change int updateCandidates to something that encodes actions occupy/add/remove, digit, and location.
  *    Should rule perform validation, or the solver (seems like less code to put it in SudokuSolver than X Rules).
+ *    Add solution checking to all rules.
  * Refactor APIs to use Units and remove APIs that have Row/Col/Box in name.
  * Consider matchers for use with lists of locations. Match by candidate count, combo, etc.
  *    This might cut down on the number of candidate row col box methods.
@@ -58,6 +59,7 @@ import static java.lang.String.format;
  *    LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
  * Move json resources from main to test
  * Replace glut of comparators with Comparator lambdas based on compareTo.
+ * Refactor ColorData (one digit) and PairData (many digits) and encodings to have better naming and reuse.
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
@@ -80,13 +82,13 @@ public class SudokuSolver {
 			// The current recommendation (with JDK 1.7+) is to convert URL → URI → Path/File/String. 
 			// So to convert a URL to File, you would say Paths.get(url.toURI()).toFile()
 	        // Note that URI strings have leading slash, and file strings are normalized to local file system (/ versus \)
-	        System.out.println( format( "inp option given=%s", inputPuzzleFile ));
+	        System.out.printf( "inp option given=%s\n", inputPuzzleFile );
 	        if ( Files.exists( Path.of( inputPuzzleFile ) )) {
 	        	inputPuzzleFile = Path.of( inputPuzzleFile ).normalize().toString();
 	        } else	{
 	        	inputPuzzleFile = Paths.get( ClassLoader.getSystemClassLoader().getResource(inputPuzzleFile).toURI() ).toFile().toString();
 
-	            System.out.println( format( "inp option normalized=%s", inputPuzzleFile ));
+	            System.out.printf( "inp option normalized=%s\n", inputPuzzleFile );
 	            JSONObject jsonPuzzle = Utils.parseJSON( inputPuzzleFile );
 	            System.out.println( "JSON puzzle=" + jsonPuzzle );
 
@@ -184,6 +186,7 @@ public class SudokuSolver {
 			new SimpleColors(),
 			// Chains
 			new RemotePairs(),
+			new XChain(),
 			// new ForcingChains(),		// bugs
 		};
 		
@@ -195,15 +198,15 @@ public class SudokuSolver {
 		int iterations = 0;
 		int rulesRun = 0;
 		long cumStartTime = System.currentTimeMillis();
-		boolean updated = false;
+		boolean updated;
 		int startingEntries = candidates.getAllOccupiedCount();
 		int startingCandidates = candidates.getAllCandidateCount();
 		do {
 			updated = false;
 			// Go through each rule.
 			for ( int rulei = 0; rulei < rules.length; rulei++ ) {
-			   System.out.println(format("i%d.%d Board entries=%d, candidates=%d", iterations, rulei,
-				  candidates.getAllOccupiedCount(), candidates.getAllCandidateCount()));
+			   System.out.printf("i%d.%d Board entries=%d, candidates=%d\n", iterations, rulei,
+				  candidates.getAllOccupiedCount(), candidates.getAllCandidateCount());
 			   // System.out.println( "Board=\n" + board );		
                // System.out.println( "Candidates=\n" + candidates.toStringCompact() );
 			   FindUpdateRule rule = rules[ rulei ];
@@ -212,7 +215,7 @@ public class SudokuSolver {
 			   // Cannot assume value of each location since each rule reports it separately
 			   if ( 0 != rulei ) {
 				   // Rule 0 (ValidateLegalCandidates) never reports a location, only updates
-				   System.out.print(format("Rule %s reports %d possibles", rule.ruleName(), encs.size()));
+				   System.out.printf("Rule %s reports %d possibles", rule.ruleName(), encs.size());
 				   if ( encs.size() > 0  ) {
 					   possibles[ rulei ] += encs.size();
 	   				   System.out.println( ": " + rule.encodingToString(encs.get(0)));
@@ -243,8 +246,8 @@ public class SudokuSolver {
 				   throw new IllegalStateException( "***Warning, rule=" + rule.ruleName() + " illegal board");
 			   List<RowCol> emptyLocs = candidates.emptyLocations();
 			   if ( 0 < emptyLocs.size()) {
-				   System.out.println( format("***Warning, rule=%s, %d empty locations at %s", 
-					rule.ruleName(), emptyLocs.size(), RowCol.toString(candidates.emptyLocations()) ));
+				   System.out.printf("***Warning, rule=%s, %d empty locations at %s\n",
+					rule.ruleName(), emptyLocs.size(), RowCol.toString(candidates.emptyLocations()));
 				   // No need to iterate through rules.
 				   break;
 			   }		   
@@ -264,17 +267,17 @@ public class SudokuSolver {
 			System.out.println( "Sudoku file " + inputPuzzleFile );
 		else
 			System.out.println( "Sudoku text " + inputPuzzleText );
-		System.out.println( format( "Solving %s successful after %d rules, %d iterations, %dmS", 
-			solvedText, rulesRun, iterations, (System.currentTimeMillis() - cumStartTime) ));
-		System.out.println( format( "Entry count went from %d to %d. Candidate count went from %d to %d.", 
-			startingEntries, candidates.getAllOccupiedCount(), startingCandidates, candidates.getAllCandidateCount() ));
+		System.out.printf( "Solving %s successful after %d rules, %d iterations, %dmS\n",
+			solvedText, rulesRun, iterations, (System.currentTimeMillis() - cumStartTime) );
+		System.out.printf( "Entry count went from %d to %d. Candidate count went from %d to %d.\n",
+			startingEntries, candidates.getAllOccupiedCount(), startingCandidates, candidates.getAllCandidateCount());
 		System.out.println("Board=" + board.toSudokuString("-"));
 		if (!solved) {
 			System.out.println("Remaining candidates=\n" + candidates.toStringBoxed());
 			List<RowCol> emptyLocs = candidates.emptyLocations();
 			if (0 < emptyLocs.size()) {
-				System.out.println(format("***Warning, %d empty locations at %s", 
-						emptyLocs.size(), RowCol.toString(candidates.emptyLocations())));
+				System.out.printf("***Warning, %d empty locations at %s\n",
+						emptyLocs.size(), RowCol.toString(candidates.emptyLocations()));
 			}
 		}
 		if ( null != statedPuzzleRules ) {
@@ -282,16 +285,16 @@ public class SudokuSolver {
 		}
 		
 		// Print metrics
-		System.out.println( format("%-18s, %10s, %10s, %10s", "Rule", "Locations", "Updates", "Time (uS)" ));
+		System.out.printf( "%-18s, %10s, %10s, %10s", "Rule", "Locations", "Updates", "Time (uS)\n" );
 		int [] totals = new int[]{ 0, 0, 0 };
 		for ( int rulei = 0; rulei < rules.length; rulei++ ) {
-			System.out.println( format("%-18s, %10d, %10d, %10d", 
-				rules[ rulei ].ruleName(), possibles[ rulei ], updates[ rulei ], timings[ rulei ] ));
+			System.out.printf( "%-18s, %10d, %10d, %10d\n",
+				rules[ rulei ].ruleName(), possibles[ rulei ], updates[ rulei ], timings[ rulei ] );
 			    totals[ 0 ] += possibles[ rulei ];
 				totals[ 1 ] += updates[ rulei ];
 			    totals[ 2 ] += timings[ rulei ];
 		}
-		System.out.println( format("%-18s, %10d, %10d, %10d", "Total", totals[0], totals[1], totals[2] ));
+		System.out.printf("%-18s, %10d, %10d, %10d\n", "Total", totals[0], totals[1], totals[2] );
 
 		return solved;
 	}
@@ -301,10 +304,10 @@ public class SudokuSolver {
 		int [] results = new int[]{0,0};
         List<int []> locations = rule.find( board, candidates );
 		results[ 0 ] = locations.size();
-        System.out.println(format("Rule %s reports %d possible locations", rule.ruleName(), locations.size()));
+        System.out.printf("Rule %s reports %d possible locations\n", rule.ruleName(), locations.size());
    	    int changes = rule.update( board, new Board(solution), candidates, locations);
 		results[ 1 ] = changes;
-        System.out.println(format("Rule %s made %d changes", rule.ruleName(), changes));
+        System.out.printf("Rule %s made %d changes\n", rule.ruleName(), changes);
 		(new LegalCandidates()).update(board, null, candidates, null);
         return results;
 	}

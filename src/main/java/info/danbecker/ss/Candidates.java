@@ -177,7 +177,12 @@ public class Candidates implements Comparable<Candidates> {
 		return NOT_CANDIDATE;
 	}
 
-	/** Returns if this ones-based digit is a candidate in this cell. */
+	/** Returns if this ones-based digit is a candidate in this cell.
+	 *
+	 * @param rowCol
+	 * @param digi one based digit
+	 * @return
+	 */
 	public boolean isCandidate( RowCol rowCol, int digi) {
 		return candidates[rowCol.row()][rowCol.col()][digi - 1] == digi;
 	}
@@ -817,9 +822,13 @@ public class Candidates implements Comparable<Candidates> {
 			case BOX -> candidateBoxGroupCount(uniti, digi, groupSize);
 		};
 	}
-	
-	
-	/** Returns a 3 unit by 9 cell digit counts. */
+
+
+	/** Returns a 3 unit by 9 cell digit counts.
+	 *
+	 * @param digi on based digit
+	 * @return
+	 */
 	public int[][] candidateUnitCounts( int digi ) {
 		// Create 3 unit by 9 cell counts.
 		int [][] digitCounts = new int [][] {
@@ -827,13 +836,11 @@ public class Candidates implements Comparable<Candidates> {
 			new int [] {0,0,0,0,0,0,0,0,0},
 			new int [] {0,0,0,0,0,0,0,0,0},
 		};
-		
 		for (Unit unit : Unit.values()){
 			for ( int celli = 0; celli < DIGITS; celli++) {
 				digitCounts[unit.ordinal()][celli] = candidateUnitCount( unit, celli, digi );
 			}
 		}
-
 		return digitCounts;
 	}
 
@@ -854,7 +861,7 @@ public class Candidates implements Comparable<Candidates> {
 		
 		return digitPairCounts;
 	}
-	
+
 	/** Returns the nth group with this number of candidates for this digit in this unit.
 	 *  For example a groupSize of 2 will return the nth count of pairs in this unit with this candidate. */
 	public int candidateGroupFind( Utils.Unit unit, int uniti, int digi, int groupSize, int groupi) {
@@ -862,6 +869,17 @@ public class Candidates implements Comparable<Candidates> {
 			case ROW -> candidateRowGroupFind(uniti, digi, groupSize, groupi);
 			case COL -> candidateColGroupFind(uniti, digi, groupSize, groupi);
 			case BOX -> candidateBoxGroupFind(uniti, digi, groupSize, groupi);
+		};
+	}
+
+	/**
+	 * Returns location of the digit in a given group size in the given unit/uniti
+	 */
+	public List<RowCol> candidateGroupLocs( Utils.Unit unit, int uniti, int digi, int groupSize ) {
+		return switch (unit) {
+			case ROW -> candidateRowGroupLocs(uniti, digi, groupSize);
+			case COL -> candidateColGroupLocs(uniti, digi, groupSize);
+			case BOX -> candidateBoxGroupLocs(uniti, digi, groupSize);
 		};
 	}
 
@@ -1671,6 +1689,4 @@ public class Candidates implements Comparable<Candidates> {
  	   compact.append( "}" );
        return compact.toString();    		   
 	}
-
-
 }

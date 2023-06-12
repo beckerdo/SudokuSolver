@@ -4,7 +4,11 @@ import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -12,7 +16,7 @@ import java.util.List;
  * <p>
  * TODO - make immutable or record class
  */
-public class PairData implements Comparable<PairData>{
+public class PairData implements Comparable<PairData>, Cloneable {
     public List<Integer> digits; // ones based
 	public RowCol rowCol;
 	public int color; // -1 for no color, 0,1,... for other colors
@@ -21,6 +25,11 @@ public class PairData implements Comparable<PairData>{
 		this.digits = digits;
 		this.rowCol = rowCol;
 		this.color = color;
+	}
+
+	@Override
+	public Object clone() {
+		return new PairData( new LinkedList<>(this.digits), this.rowCol, this.color);
 	}
 
 	@Override

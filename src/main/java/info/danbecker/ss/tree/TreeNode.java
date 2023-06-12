@@ -8,6 +8,8 @@ import static info.danbecker.ss.Candidates.FULL_COMBI_MATCH;
 import static info.danbecker.ss.Candidates.NAKED;
 import static java.lang.String.format;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -24,11 +26,10 @@ import java.util.List;
  * https://stackoverflow.com/questions/3522454/how-to-implement-a-tree-data-structure-in-java
  * https://github.com/gt4dev/yet-another-tree-structure
  * <p>
- * Original implementation had an index on every node for search , but
+ * Original implementation had an index on every node for search, but
  * this implementation removes that and has tree traversal.
  */
-public class TreeNode<T> implements Iterable<TreeNode<T>>{
-
+public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 	public T data;
 	public int nAry;
 	public TreeNode<T> parent;
@@ -42,7 +43,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		this.nAry = 0;
 		this.children = new LinkedList<>();
 	}
-	
+
 	public TreeNode(T data, int nAry) {
 		// Creates the N-ary tree with linked list.
 		this.data = data;
@@ -51,7 +52,46 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		this.nAry = nAry;
 		this.children = new ArrayList<>( nAry );
 	}
-	
+
+	/** Makes an initialized copy of the given data.
+	 * The user must clone/deepCopy the list if desired.
+	 * @param data
+	 * @param nAry
+	 * @param children
+	 */
+	public TreeNode(T data, int nAry, List<TreeNode<T>> children ) {
+		// Creates the N-ary tree with linked list.
+		this.data = data;
+		if (nAry < 0)
+			throw new IllegalArgumentException( "TreeNode with nAry=" + nAry );
+		this.nAry = nAry;
+		this.children = children;
+	}
+
+	/** Clones a TreeNode
+	 *
+	 * @return
+	 */
+	@Override
+	public Object clone() {
+		// See https://stackoverflow.com/questions/1138769/why-is-the-clone-method-protected-in-java-lang-object
+		// This use of TreeNode should be used with Cloneable data.
+		T cData = data; // for String
+		try {
+			// Will do NoSuchMethodException for String
+			// Will call clone for classes that implement that.
+			Method clone = Object.class.getMethod("clone");
+			cData = (T) clone.invoke( this.data );
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+			System.out.println( "Clone exception=" + e );
+		}
+		if ( 0 == nAry )
+			return new TreeNode<T>( cData, this.nAry, new LinkedList<>( this.children ) );
+		else
+			return new TreeNode<T>( cData, this.nAry, new ArrayList<>( this.children ) );
+		// TODO Recurse and make deep copy.
+	}
+
 	public boolean isRoot() {
 		return parent == null;
 	}
@@ -119,18 +159,6 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 			// String nodeInfo = (null == node.data ) ? "no " + Utils.Unit.values()[i].toString().toLowerCase(): node.data.toString();
 			System.out.println(format("%s%d-%d-%s", indent, nodeLevel, nodeCount++, node.data));
 		}
-	}
-	
-	/** Returns a string of parent info. */
-	public String parentString() {
-		StringBuilder sb = new StringBuilder();
-		TreeNode<T> parent = this.parent;
-		while ( null != parent ) {
-			sb.append( ", ");
-			sb.append( parent.data );
-			parent = parent.parent;			
-		}
-		return sb.toString();
 	}
 
 	public boolean isLeaf() {
@@ -230,7 +258,8 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	}
 
 	/** This searches the given node and below,
-	 * and returns the first non-null node with matching data.
+	 * and returns the FIRST non-null node with matching data.
+	 * <p></p>
 	 * If this is a node in the middle of the tree,
 	 * it will not find the higher nodes. 
 	 * Use root to search entire tree. 
@@ -255,7 +284,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	}
 
 	/** This searches the given node and below,
-	 * and returns a list of all non-null nodes with matching data.
+	 * and returns a list of ALL non-null nodes with matching data.
 	 */ 
 	public List<TreeNode<T>> findTreeNodes(Comparable<T> cmp) {
 		List<TreeNode<T>> list = new LinkedList<> ();
@@ -295,7 +324,6 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 	public Iterator<TreeNode<T>> iterator() {
 		return new TreeNodeIter<>(this);
 	}
-
 
 	/**
 	 * Looks for an endpoint to a chain, which sees only one location.
@@ -344,4 +372,5 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>{
 		}
 		return -1;
 	}
+
 }

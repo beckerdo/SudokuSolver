@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import static info.danbecker.ss.Board.NOT_FOUND;
 import static info.danbecker.ss.Board.ROWCOL;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,6 +46,19 @@ public class RowColTest {
 
 		assertEquals( "[1,1]", b0.toString());
 		assertEquals( "[5,5,4]", b4.toStringWithBox());
+	}
+
+	@Test
+	public void testStatics() {
+		List<List<RowCol>> links = new LinkedList<>();
+		links.add( Arrays.asList( ROWCOL[2][1],ROWCOL[2][2] ));
+		links.add( Arrays.asList( ROWCOL[5][4],ROWCOL[6][4] ));
+		links.add( Arrays.asList( ROWCOL[4][5],ROWCOL[5][4] ));
+
+		assertEquals( NOT_FOUND, RowCol.indexOf( links, Arrays.asList( ROWCOL[2][1] ))); // size matters
+		assertEquals( NOT_FOUND, RowCol.indexOf( links, Arrays.asList( ROWCOL[1][1], ROWCOL[2][1] )));
+		assertEquals( NOT_FOUND, RowCol.indexOf( links, Arrays.asList( ROWCOL[2][2], ROWCOL[2][1] ))); // order matters
+		assertEquals( 0, RowCol.indexOf( links, Arrays.asList( ROWCOL[2][1], ROWCOL[2][2] )));
 	}
 
 	@Test

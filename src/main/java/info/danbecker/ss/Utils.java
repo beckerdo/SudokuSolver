@@ -24,6 +24,7 @@ public class Utils {
 	public static short COLS = 9;
 	public static short BOXES = 9; 
 	public static short DIGITS = 9;
+	public static short UNITS= 9;
 
 	/** Enum for different divisions of a Sudoku Board */
 	public enum Unit { ROW, COL, BOX }
@@ -194,7 +195,7 @@ public class Utils {
 		return sb.toString();
 	}
 
-	public static String createIndent(int repeats) {
+	public static String indent(int repeats) {
 		return "   ".repeat(repeats);
 	}
 
@@ -221,6 +222,26 @@ public class Utils {
 			digits.add( combo[i] + 1 );
 		}
 		return digits;
+	}
+
+	public static boolean deepEquals( int[] i1, int[] i2 ) {
+		if (i1 == i2) return true;
+		if ((null == i1) || (null == i2)) return false;
+		if (i1.length != i2.length) return false;
+		for ( int i = 0; i < i1.length; i++) {
+			if (i1[i] != i2[i]) return false;
+		}
+		return true;
+	}
+
+	public static int findFirst( List<int[]> list, int[] item ) {
+		for ( int listi = 0; listi < list.size(); listi++ ) {
+			int[] test = list.get(listi);
+			if (Utils.deepEquals( test, item)) {
+				return listi;
+			}
+		}
+        return Board.NOT_FOUND;
 	}
 
 	/**

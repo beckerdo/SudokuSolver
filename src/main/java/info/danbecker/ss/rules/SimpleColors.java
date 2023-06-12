@@ -3,10 +3,12 @@ package info.danbecker.ss.rules;
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
+import info.danbecker.ss.Utils;
 import info.danbecker.ss.tree.ColorData;
 import info.danbecker.ss.tree.TreeNode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,6 +32,9 @@ import static java.lang.String.format;
  * colors are applied to conjugate pairs (another cell
  * with this digit and there are only two candidate cells
  * in the unit.
+ * <p>
+ * SimpleColors is similar to X-Chain. SimpleColors matches
+ * conjugate pairs. X-Chain matches strong links.
  * <ol>
  * <li> An uncolored cell that sees cells of opposite colors (<b>Color Trap</b>):
  * Since the cells with the same color are either all true or all false, one of the two colored cells has to be true, and the uncolored cell can never have the color candidate placed.
@@ -71,7 +76,7 @@ public class SimpleColors implements FindUpdateRule {
 				int cellStatus = solution.get(cLoc);
 				if ( cellStatus == digit ) {
 					throw new IllegalArgumentException( format("Rule %s would like to remove solution digit %d at loc %s.",
-						ruleName(), digit, cLoc));
+							ruleName(), digit, cLoc));
 				}
 			}
 
@@ -80,7 +85,7 @@ public class SimpleColors implements FindUpdateRule {
 				updates++;
 				String cStr = candidates.getCandidatesStringCompact( cLoc );
 				System.out.println( format( "%s %s removed digit %d from %s, remaining candidates %s",
-					ruleName(), typeString, digit, cLoc, cStr ));
+						this.ruleName(), typeString, digit, cLoc, cStr ));
 			}
 		}
 		return updates;
@@ -148,7 +153,7 @@ public class SimpleColors implements FindUpdateRule {
 
 							// Color Trap. Check for non tree candidates that can see two colors of this tree.
 							if ( 0 == treeClashes.size() ) {
-								List<int[]> seesTwo = outsideSeesTwoDifferent(candidates, tree, digit);
+								List<int[]> seesTwo = outsideSeesTwoDifferentType0Trap(candidates, tree, digit);
 								matched.addAll(seesTwo);
 								doNotSearch(doNotSearch, seesTwo);
 							}
@@ -228,7 +233,7 @@ public class SimpleColors implements FindUpdateRule {
 								// unitNode not in tree
 								// System.out.println( format("   Digit %d, parent %s, loc %s not in tree", digi, pData.rowCol, loc));
 								// A child should not see another node in the tree that is the same color
-								List<int[]> seesSameColor = childSeesSame( candidates, root, cData );
+								List<int[]> seesSameColor = childSeesSameType1Wrap( candidates, root, cData );
 								if ( 0 == seesSameColor.size() ) {
 									// Add as child. Recurse to child node.
 									parentNode.setChild(cData, unit.ordinal());
@@ -259,20 +264,20 @@ public class SimpleColors implements FindUpdateRule {
 	}
 
 	/**
-	 * Color Trap
 	 * Check for non tree candidates that can see two colors of this tree.
+	 * Color Trap (type 0): An uncolored cell (outside tree) that sees cells of opposite colors.
 	 *
 	 * @param candidates
 	 * @param tree
-	 * @param digi
+	 * @param digit
 	 * @return int [] of candidates to remove
 	 */
-	public List<int[]> outsideSeesTwoDifferent(Candidates candidates, TreeNode<ColorData> tree, int digi ) {
+	public static List<int[]> outsideSeesTwoDifferentType0Trap(Candidates candidates, TreeNode<ColorData> tree, int digit ) {
 		List<int[]> seesTwo = new LinkedList<>();
-		List<RowCol> locs = candidates.getGroupLocations( digi, ALL_COUNTS);
+		List<RowCol> locs = candidates.getGroupLocations(digit, ALL_COUNTS);
 		for ( int loci = 0; loci < locs.size(); loci++) {
 			RowCol rowCol = locs.get(loci);
-			ColorData cData = new ColorData(digi,rowCol,-1);
+			ColorData cData = new ColorData(digit,rowCol,-1);
 			if ( null == tree.findTreeNode( new ColorData.RowColMatch(cData))) {
 				// RowCol is not in given tree
 				List<TreeNode<ColorData>> sameUnitNodes = tree.findTreeNodes(new ColorData.AnyUnitMatch(cData));
@@ -287,10 +292,14 @@ public class SimpleColors implements FindUpdateRule {
 							// System.out.println( format( "Color Trap digit %d at %s, can see %s",
 							// 		digi, rowCol, ColorData.toString( sameUnitNodes )));
 							// Add enc data.
-							int[] enc = encode(digi, 0, tree.data.rowCol,cData.rowCol,
+							int[] enc = encode(digit, 0, tree.data.rowCol,cData.rowCol,
 									firstColorData.color, firstColorData.rowCol,
 									sameUnitNode.data.color, sameUnitNode.data.rowCol );
-							seesTwo.add(enc);
+							// Manually search for same int[] enc
+							if ( NOT_FOUND != Utils.findFirst( seesTwo, enc) )
+								System.out.println( format( "SeesTwo contains digit %d at %s", digit, cData.rowCol));
+							else
+								seesTwo.add(enc);
 						}
 					}
 				}
@@ -300,15 +309,15 @@ public class SimpleColors implements FindUpdateRule {
 	}
 
 	/**
-	 * Color Trap
-	 * Check for new child being able to see the same color of this tree.
+	 * Check for new child being able to see two colors of this tree.
+	 * Color Wrap (type 1): A new child (inside tree) that sees cells of opposite colors.
 	 *
 	 * @param candidates
 	 * @param root
 	 * @param proposedChild
 	 * @return int [] of candidates to remove
 	 */
-	public List<int[]> childSeesSame(Candidates candidates, TreeNode<ColorData> root, ColorData proposedChild ) {
+	public static List<int[]> childSeesSameType1Wrap(Candidates candidates, TreeNode<ColorData> root, ColorData proposedChild ) {
 		List<int[]> seesSame = new LinkedList<>();
 		List<TreeNode<ColorData>> sameUnitNodes = root.findTreeNodes(new ColorData.AnyUnitMatch(proposedChild));
 		for ( int nodei = 0; nodei < sameUnitNodes.size(); nodei++) {
@@ -352,14 +361,14 @@ public class SimpleColors implements FindUpdateRule {
 		String typeString = (0 == enc[1]) ? "color trap" : "color wrap";
 		if ( 0 == enc[1] )
 			return format( "digit %d %s, tree %s, cand %s sees %d at %s and %d at %s" ,
-				enc[0], typeString,
-				ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]],
-				enc[6], ROWCOL[enc[7]][enc[8]],
-				enc[9], ROWCOL[enc[10]][enc[11]]);
+					enc[0], typeString,
+					ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]],
+					enc[6], ROWCOL[enc[7]][enc[8]],
+					enc[9], ROWCOL[enc[10]][enc[11]]);
 		else
 			return format( "digit %d %s, tree %s, child %s color %d sees %s color %d" ,
-				enc[0], typeString,
-				ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]], enc[6], ROWCOL[enc[7]][enc[8]], enc[6] );
+					enc[0], typeString,
+					ROWCOL[enc[2]][enc[3]], ROWCOL[enc[4]][enc[5]], enc[6], ROWCOL[enc[7]][enc[8]], enc[6] );
 	}
 
 	@Override

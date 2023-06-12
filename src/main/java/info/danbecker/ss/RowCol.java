@@ -1,9 +1,7 @@
 package info.danbecker.ss;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -93,15 +91,47 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		return matching;
 	}
 
+	/** Return first matching unit or null for no match
+	 *
+	 * @param rc1 first rowCol
+	 * @param rc2 second rowCol
+	 * @return first matching unit or null for no match
+	 */
+	public static Utils.Unit firstUnitMatch(RowCol rc1, RowCol rc2 ){
+		if ( rc1.row() == rc2.row() )
+			return Utils.Unit.ROW;
+		if ( rc1.col() == rc2.col() )
+			return Utils.Unit.COL;
+		if ( rc1.box() == rc2.box() )
+			return Utils.Unit.BOX ;
+		return null;
+	}
+
+	/** Return first matching unit index or null for no match
+	 *
+	 * @param rc1 first rowCol
+	 * @param rc2 second rowCol
+	 * @return first matching unit index or -1 for no match
+	 */
+	public static int firstUnitMatchIndex(RowCol rc1, RowCol rc2 ){
+		if ( rc1.row() == rc2.row() )
+			return rc1.row();
+		if ( rc1.col() == rc2.col() )
+			return rc1.col();
+		if ( rc1.box() == rc2.box() )
+			return rc1.box();
+		return -1;
+	}
+
 	/**
 	 * Return 0, 1, 2, or 3 matching units of the two locations.
 	 * If rc1.equals(rc2), the list will be length 3.
-	 * @param rc1
-	 * @param rc2
+	 * @param rc1 first rowCol
+	 * @param rc2 second rowCol
 	 * @return list of units that match these two locations
 	 */
 	public static List<Utils.Unit> getMatchingUnits(RowCol rc1, RowCol rc2 ){
-		List<Utils.Unit> matching = new ArrayList<>();
+		List<Utils.Unit> matching = new LinkedList<>();
 		if ( rc1.row() == rc2.row() )
 			matching.add( Utils.Unit.ROW );
 		if ( rc1.col() == rc2.col() )
@@ -243,12 +273,19 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * Create a String of row,cols from List<RowCol>
 	 * More compact than Arrays.toString() */
 	public static String toString( List<RowCol> locations ) {
-		StringBuilder sb = new StringBuilder();
-		for (int loci = 0; loci < locations.size(); loci++) {
-			if (loci > 0) sb.append(",");
-			sb.append(locations.get(loci));
-		}
-		return sb.toString();
+		return locations.stream().map(Object::toString).collect(Collectors.joining(","));
+	}
+
+	/**
+	 * Create a String of rowCols from the List<List<RowCol>>
+	 * with the provided delimiter
+	 * @param lists
+	 * @param delimiter
+	 * @return
+	 */
+	public static String toString(List<List<RowCol>> lists, String delimiter) {
+		// return lists.stream().map(l->RowCol.toString(l)).collect(Collectors.joining(delimiter));
+		return lists.stream().map(RowCol::toString).collect(Collectors.joining(delimiter));
 	}
 
 	/**
@@ -258,7 +295,42 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		return toString( toList(rowCols) );
 	}
 
-	public static class AnyUnitMatch implements Comparable<RowCol> {
+	/**
+     * Returns first index of list in lists List or NOT_FOUND.
+     * Note that order of the lists matters!
+     * @param lists a list of RowCol lists
+     * @param list a list of RowCols
+     * @return index of list or NOT_FOUND
+     */
+	public static int indexOf(List<List<RowCol>> lists, List<RowCol> list) {
+		for( int listi = 0; listi < lists.size(); listi++ ) {
+			List<RowCol> test = lists.get( listi );
+			if ( test.equals( list )) {
+				return listi;
+			}
+		}
+		return Board.NOT_FOUND;
+	}
+
+	/** Returns the index of the first list that contains the location
+	 *
+	 * @param lists
+	 * @param loc
+	 * @return index of the first list that contains the location or NOT_FOUND
+	 */
+	public static int indexOf( List<List<RowCol>> lists, RowCol loc) {
+		for (int linki = 0; linki < lists.size(); linki++) {
+			List<RowCol> list = lists.get(linki);
+			for (int listi = 0; listi < list.size(); listi++) {
+				if (loc.equals(list.get(listi))) {
+					return linki;
+				}
+			}
+		}
+		return Board.NOT_FOUND;
+	}
+
+	class AnyUnitMatch implements Comparable<RowCol> {
 		RowCol rowCol;
 
 		public AnyUnitMatch( RowCol rowCol ) {
@@ -268,6 +340,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		@Override
 		public int compareTo(RowCol that) {
 			if (null == that) return 1;
+			if (this.rowCol == that) return 0;
 			if ( this.rowCol.row() == that.row()) return 0;
 			if ( this.rowCol.col() == that.col()) return 0;
 			if ( this.rowCol.box() == that.box()) return 0;
@@ -275,7 +348,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		}
 	}
 
-	public static class UnitMatch implements Comparable<RowCol> {
+	class UnitMatch implements Comparable<RowCol> {
 		Utils.Unit unit;
 		RowCol rowCol;
 
@@ -287,6 +360,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		@Override
 		public int compareTo(RowCol that) {
 			if (null == that) return 1;
+			if (this.rowCol == that) return 0;
 			if (Utils.Unit.ROW == unit) {
 				if ( this.rowCol.row() == that.row()) return 0;
 			} else if (Utils.Unit.COL == unit) {
@@ -296,5 +370,18 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 			}
 			return -1;
 		}
+	}
+
+	/**
+	 * Return a list of rowCols from the list RowCols in the same unit as this.
+	 * @param rowCols the starting pool of rowCols
+	 * @return the subset of rowCols (not including this) that rowCol can see
+	 */
+	public List<RowCol> sameUnit(  List<RowCol> rowCols ) {
+		List<RowCol> canSee = rowCols.stream()
+				.filter( item -> new AnyUnitMatch( item ).compareTo( this ) == 0 )
+				.collect(Collectors.toList());
+		canSee.remove( this );
+		return canSee;
 	}
 }

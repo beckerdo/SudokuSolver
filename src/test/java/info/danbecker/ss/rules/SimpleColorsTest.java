@@ -3,13 +3,12 @@ package info.danbecker.ss.rules;
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
-import info.danbecker.ss.tree.ColorData;
+import info.danbecker.ss.tree.DigitData;
 import info.danbecker.ss.tree.TreeNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.List;
 
 import static info.danbecker.ss.Board.ROWCOL;
@@ -55,7 +54,7 @@ public class SimpleColorsTest {
 		// No color clash in pairs tree
 		int digit = 3;
 		RowCol rootLoc = ROWCOL[0][3];
-		TreeNode<ColorData> tree = new TreeNode<>(new ColorData(digit, rootLoc, 0), 3);
+		TreeNode<DigitData> tree = new TreeNode<>(new DigitData(digit, rootLoc, 0), 3);
 		List<int[]> colorClash = rule.buildColorTree(candidates, tree, digit, ALL_COUNTS);
 
 		assertNotNull(colorClash);
@@ -63,10 +62,10 @@ public class SimpleColorsTest {
 
 		// tree.printTree();
 		assertEquals(10, tree.size());
-		assertEquals(1, tree.findTreeNodes(new ColorData.RowColMatch(new ColorData(digit, ROWCOL[0][3], 0))).size());
-		assertEquals(1, tree.findTreeNodes(new ColorData.RowColMatch(new ColorData(digit, ROWCOL[8][6], 0))).size());
-		assertEquals(1, tree.findTreeNodes(new ColorData.RowColMatch(new ColorData(digit, ROWCOL[8][5], 1))).size());
-		assertEquals(1, tree.findTreeNodes(new ColorData.RowColMatch(new ColorData(digit, ROWCOL[7][8], 1))).size());
+		assertEquals(1, tree.findTreeNodes(new DigitData.RowColMatch(new DigitData(digit, ROWCOL[0][3], 0))).size());
+		assertEquals(1, tree.findTreeNodes(new DigitData.RowColMatch(new DigitData(digit, ROWCOL[8][6], 0))).size());
+		assertEquals(1, tree.findTreeNodes(new DigitData.RowColMatch(new DigitData(digit, ROWCOL[8][5], 1))).size());
+		assertEquals(1, tree.findTreeNodes(new DigitData.RowColMatch(new DigitData(digit, ROWCOL[7][8], 1))).size());
 	}
 
 	@Test
@@ -100,7 +99,7 @@ public class SimpleColorsTest {
 		RowCol rootLoc = ROWCOL[0][5];
 		RowCol candLoc = ROWCOL[2][1];
 		RowCol sameLoc = ROWCOL[8][1];
-		TreeNode<ColorData> tree = new TreeNode<>(new ColorData(digit, rootLoc, 0), 3);
+		TreeNode<DigitData> tree = new TreeNode<>(new DigitData(digit, rootLoc, 0), 3);
 		List<int[]> colorClash = rule.buildColorTree(candidates, tree, digit, ALL_COUNTS);
 
 		assertNotNull(colorClash);
@@ -127,7 +126,7 @@ public class SimpleColorsTest {
 		// Validate mishappen tree with color clashes? Just root.
 		// tree.printTree();
 		assertEquals(13, tree.size());
-		assertEquals(1, tree.findTreeNodes(new ColorData.RowColMatch(new ColorData(digit, ROWCOL[0][5], 0))).size());
+		assertEquals(1, tree.findTreeNodes(new DigitData.RowColMatch(new DigitData(digit, ROWCOL[0][5], 0))).size());
 	}
 
 	@Test

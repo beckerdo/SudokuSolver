@@ -4,8 +4,8 @@ import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
+import info.danbecker.ss.tree.DigitsData;
 import info.danbecker.ss.tree.TreeNode;
-import info.danbecker.ss.tree.PairData;
 
 import java.util.*;
 
@@ -142,7 +142,7 @@ public class RemotePairs implements FindUpdateRule {
 			if ( -1 != mini ) {
 				RowCol treeLoc = pairLocs.get( mini );
 				// System.out.println( format( "   tree of digits %s starting at %s", obDigitPair, pairLocs.get(mini) ));
-				TreeNode<PairData> tree = new TreeNode<>(new PairData(obDigitPair, treeLoc, 0), 3);
+				TreeNode<DigitsData> tree = new TreeNode<>(new DigitsData(obDigitPair, treeLoc, 0), 3);
 				List<int[]> treeClashes = buildPairTree(candidates, tree, obDigitPair, pairLocs );
 				// System.out.println(format("Digit pair %s tree at %s has %d nodes and %d clashes",
 				// 		obDigitPair.toString(), treeLoc, tree.size(), treeClashes.size()));
@@ -165,21 +165,21 @@ public class RemotePairs implements FindUpdateRule {
 	 * Tree building should end when a node has multiple children because that will be shorter
 	 * than a single child chain.
      */
-	public List<int[]> buildPairTree(Candidates candidates, TreeNode<PairData> parentNode, List<Integer> digits, List<RowCol> pairLocs ) {
+	public List<int[]> buildPairTree(Candidates candidates, TreeNode<DigitsData> parentNode, List<Integer> digits, List<RowCol> pairLocs ) {
 		if (null == parentNode )
 			throw new NullPointerException( "parent node is null");
 		if (null == parentNode.data )
 			throw new NullPointerException( "parent node data is null");
 		List<int[]> matched = new ArrayList<>();
-		PairData pData = parentNode.data;
-		TreeNode<PairData> root = parentNode.getRoot();
+		DigitsData pData = parentNode.data;
+		TreeNode<DigitsData> root = parentNode.getRoot();
 
 		// For each unit, find visible locations with this digit, group size.
 		boolean [] childAdded = new boolean[] { false, false, false };
 		for ( Unit unit : Unit.values() ) {
-			TreeNode<PairData> child = parentNode.getChild( unit.ordinal() );
+			TreeNode<DigitsData> child = parentNode.getChild( unit.ordinal() );
 			if ( null != child ) {
-				PairData cData = child.data;
+				DigitsData cData = child.data;
 				if ( null == cData) {
 					// child data is null, let's look for children;
 					// System.out.println( format("Rule %s, rowCol [%d,%d], digit %d, unit %s has child node, null child data.",
@@ -198,8 +198,8 @@ public class RemotePairs implements FindUpdateRule {
 							RowCol loc = unitLocs.get(loci);
 							if ( !loc.equals(pData.rowCol)) {
 								int nextColor = (0 == pData.color) ? 1 : 0;
-								cData = new PairData(digits, loc, nextColor);
-								TreeNode<PairData> foundNode = root.findTreeNode( new info.danbecker.ss.tree.PairData.RowColMatch(cData));
+								cData = new DigitsData(digits, loc, nextColor);
+								TreeNode<DigitsData> foundNode = root.findTreeNode( new DigitsData.RowColMatch(cData));
 								if (null == foundNode) {
 									// unitNode not in tree
 									// System.out.println( format("   Digit %d, parent %s, loc %s not in tree", digi, pData.rowCol, loc));
@@ -245,11 +245,11 @@ public class RemotePairs implements FindUpdateRule {
 	 * @param proposedChild
 	 * @return int [] of candidates to remove
 	 */
-	public List<int[]> childSeesSameType1Wrap(Candidates candidates, TreeNode<PairData> root, PairData proposedChild ) {
+	public List<int[]> childSeesSameType1Wrap(Candidates candidates, TreeNode<DigitsData> root, DigitsData proposedChild ) {
 		List<int[]> seesSame = new LinkedList<>();
-		List<TreeNode<PairData>> sameUnitNodes = root.findTreeNodes(new PairData.AnyUnitMatch(proposedChild));
+		List<TreeNode<DigitsData>> sameUnitNodes = root.findTreeNodes(new DigitsData.AnyUnitMatch(proposedChild));
 		for ( int nodei = 0; nodei < sameUnitNodes.size(); nodei++) {
-			TreeNode<PairData> sameUnit = sameUnitNodes.get(nodei);
+			TreeNode<DigitsData> sameUnit = sameUnitNodes.get(nodei);
 			if ( proposedChild.color == sameUnit.data.color ) {
 				// System.out.println(format("Color wrap (type 1 int) proposed child %s sees same color tree node %s",
 				// proposedChild, sameUnit.data ));
@@ -272,27 +272,27 @@ public class RemotePairs implements FindUpdateRule {
 	 * @param digits
 	 * @return int [] of candidates to remove
 	 */
-	public List<int[]> cellSeesTwoDifferentType0Trap(Candidates candidates, TreeNode<PairData> tree, List<Integer> digits ) {
+	public List<int[]> cellSeesTwoDifferentType0Trap(Candidates candidates, TreeNode<DigitsData> tree, List<Integer> digits ) {
 		List<int[]> seesTwo = new LinkedList<>();
 		for (int digi = 0; digi < digits.size(); digi++) {
 			int digit = digits.get(digi);
 			List<RowCol> locs = candidates.getGroupLocations(digit, ALL_COUNTS);
 			for (int loci = 0; loci < locs.size(); loci++) {
 				RowCol rowCol = locs.get(loci);
-				PairData pData = new PairData( digits, rowCol, -1);
-				if (null == tree.findTreeNode(new PairData.RowColMatch(pData))) {
+				DigitsData pData = new DigitsData( digits, rowCol, -1);
+				if (null == tree.findTreeNode(new DigitsData.RowColMatch(pData))) {
 					// RowCol is not in given tree
-					List<TreeNode<PairData>> sameUnitNodes = tree.findTreeNodes(new PairData.AnyUnitMatch(pData));
+					List<TreeNode<DigitsData>> sameUnitNodes = tree.findTreeNodes(new DigitsData.AnyUnitMatch(pData));
 					// Check is all nodes have same color.
 					boolean colorClashAnyUnit = false;
 					if (1 < sameUnitNodes.size()) {
-						PairData firstColorData = null;
+						DigitsData firstColorData = null;
 						for (int sameUniti = 0; sameUniti < sameUnitNodes.size(); sameUniti++) {
-							TreeNode<PairData> sameUnitNode = sameUnitNodes.get(sameUniti);
+							TreeNode<DigitsData> sameUnitNode = sameUnitNodes.get(sameUniti);
 							if (null == firstColorData) firstColorData = sameUnitNode.data;
 							if (firstColorData.color != sameUnitNode.data.color) {
 								// System.out.println( format( "Color Trap (type 0 ext) digit %d at %s, can see %s",
-								// 		digit, rowCol, PairData.toString( sameUnitNodes )));
+								// 		digit, rowCol, DigitsData.toString( sameUnitNodes )));
 								// Add enc data.
 								// Warning, two digits or one of the two digits might see same color.
 								int[] enc = encode( Utils.listToArray(digits), 0, tree.data.rowCol, pData.rowCol,

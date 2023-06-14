@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static info.danbecker.ss.Board.ROWCOL;
@@ -105,8 +104,8 @@ public class TreeNodeTest {
 
 	@Test
 	public void testColorDataCloneable() {
-		TreeNode<ColorData> tree = new TreeNode<>(new ColorData( 3, ROWCOL[5][5], 0), 3);
-		TreeNode<ColorData> treeClone = (TreeNode<ColorData>) tree.clone();
+		TreeNode<DigitData> tree = new TreeNode<>(new DigitData( 3, ROWCOL[5][5], 0), 3);
+		TreeNode<DigitData> treeClone = (TreeNode<DigitData>) tree.clone();
 
 		assertNotSame( tree, treeClone );
 		assertEquals( tree.size(), treeClone.size() );

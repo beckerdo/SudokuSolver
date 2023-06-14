@@ -59,7 +59,6 @@ import static java.lang.String.format;
  *    LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
  * Move json resources from main to test
  * Replace glut of comparators with Comparator lambdas based on compareTo.
- * Refactor ColorData (one digit) and PairData (many digits) and encodings to have better naming and reuse.
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */

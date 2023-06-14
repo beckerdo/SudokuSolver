@@ -4,9 +4,8 @@ import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
-import info.danbecker.ss.tree.PairData;
+import info.danbecker.ss.tree.DigitsData;
 import info.danbecker.ss.tree.TreeNode;
-import info.danbecker.ss.tree.TreeNodeIter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +54,7 @@ public class RemotePairsTest {
 
 		// Test tree (no clashes)
 		RowCol rootLoc = ROWCOL[1][6];
-		TreeNode<info.danbecker.ss.tree.PairData> pairRoot = new TreeNode<>( new PairData(pair45List, rootLoc, 0 ),  3 );
+		TreeNode<DigitsData> pairRoot = new TreeNode<>( new DigitsData(pair45List, rootLoc, 0 ),  3 );
 		List<RowCol> pairLocs = candidates.candidateComboAllLocations( zbpair45, Candidates.FULL_COMBI_MATCH);
 		assertEquals( 5, pairLocs.size());
         List<int[]> encs = rule.buildPairTree( candidates, pairRoot, pair45List, pairLocs );
@@ -65,11 +64,11 @@ public class RemotePairsTest {
 		// Test tree contents
 		// pairRoot.printTree();
 		assertEquals( 5, pairRoot.size());
-		assertEquals( 1, pairRoot.findTreeNodes(new PairData.RowColMatch( new PairData(pair45List,ROWCOL[1][6],0) )).size() );
-		assertEquals( 1, pairRoot.findTreeNodes(new PairData.RowColMatch( new PairData(pair45List,ROWCOL[1][1],1) )).size() );
-		assertEquals( 1, pairRoot.findTreeNodes(new PairData.RowColMatch( new PairData(pair45List,ROWCOL[2][0],0))).size() );
-		assertEquals( 1, pairRoot.findTreeNodes(new PairData.RowColMatch( new PairData(pair45List,ROWCOL[2][8],1))).size() );
-		assertEquals( 1, pairRoot.findTreeNodes(new PairData.RowColMatch( new PairData(pair45List,ROWCOL[5][0],1))).size() );
+		assertEquals( 1, pairRoot.findTreeNodes(new DigitsData.RowColMatch( new DigitsData(pair45List,ROWCOL[1][6],0) )).size() );
+		assertEquals( 1, pairRoot.findTreeNodes(new DigitsData.RowColMatch( new DigitsData(pair45List,ROWCOL[1][1],1) )).size() );
+		assertEquals( 1, pairRoot.findTreeNodes(new DigitsData.RowColMatch( new DigitsData(pair45List,ROWCOL[2][0],0))).size() );
+		assertEquals( 1, pairRoot.findTreeNodes(new DigitsData.RowColMatch( new DigitsData(pair45List,ROWCOL[2][8],1))).size() );
+		assertEquals( 1, pairRoot.findTreeNodes(new DigitsData.RowColMatch( new DigitsData(pair45List,ROWCOL[5][0],1))).size() );
 	}
 
 	@Test
@@ -96,7 +95,7 @@ public class RemotePairsTest {
 
 		// Test tree (no clashes)
 		RowCol rootLoc = ROWCOL[6][7];
-		TreeNode<info.danbecker.ss.tree.PairData> pairRoot = new TreeNode<>( new PairData(pair28List, rootLoc, 0 ),  3 );
+		TreeNode<DigitsData> pairRoot = new TreeNode<>( new DigitsData(pair28List, rootLoc, 0 ),  3 );
 		List<RowCol> pairLocs = candidates.candidateComboAllLocations( zbpair28, Candidates.FULL_COMBI_MATCH);
 		assertEquals( 8, pairLocs.size());
 		List<int[]> encs = rule.buildPairTree( candidates, pairRoot, pair28List, pairLocs );
@@ -106,14 +105,14 @@ public class RemotePairsTest {
 		// Test tree contents
 		// pairRoot.printTree();
 		assertEquals( 8, pairRoot.size());
-		PairData test1 = new PairData(pair28List,ROWCOL[6][7],0);
-		PairData test2 = pairRoot.findTreeNodes(new PairData.RowColMatch( test1 )).get(0).data;
+		DigitsData test1 = new DigitsData(pair28List,ROWCOL[6][7],0);
+		DigitsData test2 = pairRoot.findTreeNodes(new DigitsData.RowColMatch( test1 )).get(0).data;
 		assertEquals( test1, test2 );
 		int count = 0;
-		for (TreeNode<PairData> treeNode : pairRoot ) {
+		for (TreeNode<DigitsData> treeNode : pairRoot ) {
 			switch ( count ) {
 				case 0: { assertEquals( test1, treeNode.data ); break; }
-				case 6: { assertEquals( new PairData(pair28List,ROWCOL[3][6],0), treeNode.data ); break ; }
+				case 6: { assertEquals( new DigitsData(pair28List,ROWCOL[3][6],0), treeNode.data ); break ; }
 			}
 			count++;
 		}

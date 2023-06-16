@@ -181,6 +181,7 @@ public class SudokuSolver {
 			new TwoStringKite(),
 			// Wings
 			new XYWing(),
+			new WWing(),
 			// Colors
 			new SimpleColors(),
 			// Chains

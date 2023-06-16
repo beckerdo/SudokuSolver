@@ -269,6 +269,23 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		return true;
 	}
 
+	/** Add non-duplicate RowCols from potentials to the bigList
+	 *
+	 * @param bigList
+	 * @param potentials
+	 * @return number of new potentials added.
+	 */
+	public static int addUniques( List<RowCol> bigList, List<RowCol> potentials ) {
+		int added = 0;
+		for ( RowCol rowCol : potentials ) {
+			if (!bigList.contains( rowCol )) {
+				bigList.add( rowCol );
+				added++;
+			}
+		}
+		return added;
+	}
+
 	/**
 	 * Create a String of row,cols from List<RowCol>
 	 * More compact than Arrays.toString() */

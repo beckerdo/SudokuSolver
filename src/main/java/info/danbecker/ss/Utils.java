@@ -262,6 +262,30 @@ public class Utils {
 		return list;
 	}
 
+	/** Add non-duplicate encodings from potentials to the bigList
+	 *
+	 * @param bigList
+	 * @param potentials
+	 * @return number of new potentials added.
+	 */
+	public static int addUniques( List<int[]> bigList, List<int[]> potentials ) {
+		int added = 0;
+		for (int loci = 0; loci < potentials.size(); loci++) {
+			int [] enc = potentials.get(loci);
+			added += addUnique( bigList, enc );
+		}
+		return added;
+	}
+	public static int addUnique( List<int[]> bigList, int[] enc ) {
+		int added = 0;
+		// if (!bigList.contains( enc )) { // bad, equals of two arrays (addresses)
+		if (!bigList.stream().anyMatch(a -> Arrays.equals(a, enc))) { // good, tests all array members
+			bigList.add(enc);
+			added++;
+		}
+		return added;
+	}
+
 	public static int compareTo( List<Integer> list1, List<Integer> list2) {
 		if (null == list1 && null == list2) return 0;
 		if (null == list1) return -1;

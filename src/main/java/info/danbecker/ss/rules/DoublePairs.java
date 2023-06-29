@@ -4,17 +4,14 @@ import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
 
-import static info.danbecker.ss.Board.ROWCOL;
-import static java.lang.String.format;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static info.danbecker.ss.Utils.ROWS;
-import static info.danbecker.ss.Utils.DIGITS;
-import static info.danbecker.ss.Utils.contains;
-
 import static info.danbecker.ss.Board.NOT_FOUND;
+import static info.danbecker.ss.Board.ROWCOL;
+import static info.danbecker.ss.Utils.*;
+import static java.lang.String.format;
 
 /**
  * DoublePairs occurs when a board has
@@ -22,10 +19,10 @@ import static info.danbecker.ss.Board.NOT_FOUND;
  * The candidate digits should be the only one in the cell.
  * If these form a rectangle, the other digits inside or out can be removed.
  * (Notice one rowCol direction will be a Candidate line, the other rowCol direction will be a Double Pair line.)
- * 
+ * <p>
  * Info based on clues given at
  * https://www.sudokuoftheday.com/techniques/double-pairs
- * 
+ * <p>
  * Note that https://www.thonky.com/sudoku/unique-rectangle says
  * the corners of the double pair must be in two boxes, not four.
  * 
@@ -42,27 +39,75 @@ public class DoublePairs implements FindUpdateRule {
 	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
 		if ( null == encs) return updates;
-		if (encs.size() > 0) {
+		for ( int enci = 0; enci < encs.size(); enci++ ) {
 			// Just correct 1 location (which might update multiple candidates.)
-			int[] loc = encs.get(0);
-			int digit = loc[ 0 ];
-			int rowA = loc[ 1 ]; int rowB = loc[ 5 ];
-			int colA = loc[ 2 ]; int colB = loc[ 8 ];
-			// if rows match, remove row candidates not in these cols
-			updates += candidates.removeRowCandidatesNotIn(digit, rowA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowA][colB] });
-			updates += candidates.removeRowCandidatesNotIn(digit, rowB, new RowCol[] {ROWCOL[rowB][colA], ROWCOL[rowB][colB] });
-			// if cols match, remove col candidates not in these rows.
-			updates += candidates.removeColCandidatesNotIn(digit, colA, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowB][colB] });
-			updates += candidates.removeColCandidatesNotIn(digit, colB, new RowCol[] {ROWCOL[rowA][colA], ROWCOL[rowB][colB] });
-			// CandidateLines does similar, but just for one row or col pair, not double pair box
-			System.out.println( format("%s removed %d digit %d candidates not in rowCols [%d,%d],[%d,%d]", 
-				ruleName(), updates, digit, rowA, colA, rowB, colB ) );
+			int[] enc = encs.get(enci);
+			int digit = enc[ 0 ];
+			int[] zbDigit = { digit - 1 };
+			Unit unit  = Unit.values()[enc[ 1 ] ];
+			Unit otherUnit  = (unit == Unit.ROW) ? Unit.COL: Unit.ROW;
+			RowCol ul = ROWCOL[enc[2]][enc[3]];
+			RowCol ur = ROWCOL[enc[4]][enc[5]];
+			RowCol ll = ROWCOL[enc[6]][enc[7]];
+			RowCol lr = ROWCOL[enc[8]][enc[9]];
+			// System.out.println( ruleName() + " update enc=" + encodingToString( enc ));
+
+			switch( unit ) {
+				case ROW: {
+					List<RowCol> rowCol1OtherLocs = candidates.findUnitDigitsNotInLocs( otherUnit, ul.col(), zbDigit, Arrays.asList( ul, ll ));
+					checkRemove( ruleName(), solution, candidates, zbDigit, rowCol1OtherLocs );
+					List<RowCol> rowCol2OtherLocs = candidates.findUnitDigitsNotInLocs( otherUnit, lr.col(), zbDigit, Arrays.asList( ur, lr ));
+					checkRemove( ruleName(), solution, candidates, zbDigit, rowCol2OtherLocs );
+
+					int count = candidates.removeColCandidatesNotIn(digit, ul.col(), new RowCol[] {ul, ll});
+					count += candidates.removeColCandidatesNotIn(digit, lr.col(), new RowCol[] {ur, lr});
+					updates += count;
+
+					System.out.printf( "%s removed digit %d of double pair %s,%s,%s,%s in %ss at %s%s, count %d%n",
+							ruleName(), digit, ul, ur, ll, lr, otherUnit,
+							RowCol.toString(rowCol1OtherLocs), RowCol.toString(rowCol2OtherLocs), count);
+					break;
+				}
+				case COL: {
+					// Strange naming of ul,ur,ll,lr for columns
+					List<RowCol> colRow1OtherLocs = candidates.findUnitDigitsNotInLocs( otherUnit, ul.row(), zbDigit, Arrays.asList( ul, ll ));
+					checkRemove( ruleName(), solution, candidates, zbDigit, colRow1OtherLocs );
+					List<RowCol> colRow2OtherLocs = candidates.findUnitDigitsNotInLocs( otherUnit, lr.row(), zbDigit, Arrays.asList( ur, lr ));
+					checkRemove( ruleName(), solution, candidates, zbDigit, colRow2OtherLocs );
+
+					int count = candidates.removeRowCandidatesNotIn(digit, ul.row(), new RowCol[] {ul, ll});
+					count += candidates.removeRowCandidatesNotIn(digit, lr.row(), new RowCol[] {ur, lr});
+					updates += count;
+
+					System.out.printf( "%s removed digit %d of double pair %s,%s,%s,%s in %ss at %s%s, count %d%n",
+							ruleName(), digit, ul, ur, ll, lr, otherUnit,
+							RowCol.toString(colRow1OtherLocs), RowCol.toString(colRow2OtherLocs), count);
+					break;
+				}
+			}
 		}
 		return updates;
 	}
 
-	@Override
-	/** 
+	public static void checkRemove( String ruleName, Board solution, Candidates candidates, int[] zbDigits, List<RowCol> locs ) {
+		if ( null == solution ) return;
+		// Test if digit candidate removal, removes a solution digit
+		for (int loci = 0; loci < locs.size(); loci++) {
+			RowCol loc = locs.get( loci );
+			for (int digi = 0; digi < zbDigits.length; digi++) {
+				int digit = zbDigits[digi] + 1;
+				int cellSolution = solution.get(loc);
+				if (cellSolution == digit) {
+					System.out.println("Candidates=\n" + candidates.toStringBoxed());
+					throw new IllegalArgumentException(format("Rule %s wants to remove solution digit %d at loc %s.%n",
+							ruleName, cellSolution, loc));
+				}
+			}
+		}
+
+	}
+
+	/**
      * a candidate digit twice in a rowCol and that rowCol is repeated on a different rowCol.
 	 * can knock out candidates in other boxes in the same row/col
 	 * 
@@ -71,83 +116,133 @@ public class DoublePairs implements FindUpdateRule {
      * if row match, see if other candidates exist on same row outside of box
 	 * if col match, see if other candidates exist on same col outside of box
 	 */
+	@Override
 	public List<int[]> find(Board board, Candidates candidates) {
-		if (null == candidates)
-			return null;
-		ArrayList<int[]> locations = new ArrayList<>();
+		ArrayList<int[]> encs = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if ( !board.digitCompleted( digi )) {
-				// If found, record int[]{ digit, firstRow, firstCol, secondRow, secondCol
-				int [] firstRow = new int[ 5 ]; firstRow[0] = NOT_FOUND;
-				int [] secondRow = new int[ 5 ]; secondRow[0] = NOT_FOUND;
-				for( int rowi = 0; rowi < ROWS && secondRow[0] == NOT_FOUND; rowi++ ) {
-				   int[] colLocs = candidates.candidateRowLocations(rowi, digi);
-				   // Need a first row, or the second row contains the first row columns
-				   if ((firstRow[ 0 ] == NOT_FOUND && 2 == colLocs.length ) || 
-					   (firstRow[ 0 ] != NOT_FOUND && contains( colLocs, firstRow[2] ) && contains( colLocs, firstRow[ 4 ]))) {
-					   // Box candidates for first row OR a second row with these candidates
-				       int boxi = (firstRow[ 0 ] == NOT_FOUND) ?  ROWCOL[rowi][colLocs[0]].box() : ROWCOL[rowi][firstRow[2]].box() ;
-				       if ( 2 == candidates.candidateBoxCount(boxi, digi)) {
-				          if ( NOT_FOUND == firstRow[0] ) {
-				             firstRow[0] = digi; 
-				             firstRow[1] = rowi; firstRow[2] = colLocs[0]; 
-				             firstRow[3] = rowi; firstRow[4] = colLocs[1]; 
-				          } else {
-			        		 secondRow[0] = digi; 
-			        		 secondRow[1] = rowi; secondRow[2] = firstRow[2];
-			        		 secondRow[3] = rowi; secondRow[4] = firstRow[4];
-				          }
-				       }					   
-				   }
-				}
-				if ((NOT_FOUND != firstRow[0]) && (NOT_FOUND != secondRow[0])) {
-         	        // We have a box. Should check for more candidates in this line
-					boolean moreCandFirstRow = candidates.candidateRowCount(firstRow[1], digi) > 2;
-					boolean moreCandSecondRow = candidates.candidateRowCount(secondRow[3], digi) > 2;
-					boolean moreCandFirstCol = candidates.candidateRowCount(firstRow[2], digi) > 2;
-					boolean moreCandSecondCol = candidates.candidateRowCount(secondRow[4], digi) > 2;
-					int [] loc = new int[] {digi,firstRow[1],firstRow[2],firstRow[3],firstRow[4],
-							secondRow[1],secondRow[2],secondRow[3],secondRow[4]};
-					if ( moreCandFirstRow || moreCandSecondRow || moreCandFirstCol || moreCandSecondCol ) {
-						locations.add( loc );
-						// Found two double pair rows
-						System.out.println( format( "Rule %s found double pair for %s" ,
-							ruleName(), encodingToString( loc )));
-					} else {
-						System.out.println( format( "Rule %s found double pair for %s with no more candidates" ,
-								ruleName(), encodingToString( loc )));
-					}
-				}
-			}		
-		}
-		return locations;
+				// Refactored
+				// If there are two rows with count 2, AND the cols match, knock out extra col candidates
+				// If there are two cols with count 2, AND the rows match, knock out extra row candidates
+				int[][] digitCounts = candidates.candidateUnitCounts( digi ); // [unit][uniti]
+				// Unit unit = Unit.ROW; {
+				for ( Unit unit : Unit.values()) {
+					if ( Unit.BOX != unit ) {
+						Unit otherUnit = (unit == Unit.ROW) ? Unit.COL : Unit.ROW;
+						int firstUniti = NOT_FOUND;
+						int secondUniti = NOT_FOUND;
+						for ( int uniti = 0; uniti < UNITS; uniti++) {
+							if ( 2 == digitCounts[unit.ordinal()][uniti] ) {
+								if ( NOT_FOUND == firstUniti ) {
+									// Warning, might not find pairs where first unit is non-matched row X
+									// and the matched pairs Y and Z come later. Must validate.
+									firstUniti = uniti;
+								} else if (( NOT_FOUND == secondUniti ) && nonUnitMatch(candidates, digi, unit, firstUniti, uniti, otherUnit )) {
+									secondUniti = uniti;
+								}
+							} // a pair
+						} // for each uniti
+
+						if ( NOT_FOUND != firstUniti && NOT_FOUND != secondUniti ) { // first units match, second units match
+							// We have a double pair. Check other-unit counts > 2, (excess candidates.
+							List<RowCol> firstLocs = candidates.getUnitDigitLocs( unit, firstUniti, digi );
+							List<RowCol> secondLocs = candidates.getUnitDigitLocs( unit, secondUniti, digi );
+							List<RowCol> moreDigitsFirst = candidates.getUnitDigitLocs( otherUnit, firstLocs.get(0).unitIndex( otherUnit ), digi );
+							List<RowCol> moreDigitsSecond = candidates.getUnitDigitLocs( otherUnit, firstLocs.get(1).unitIndex( otherUnit ), digi );
+							// We have a box. Check for more candidates on other unit
+							if ( 2 < moreDigitsFirst.size() || 2 < moreDigitsSecond.size()) {
+								int [] enc = new int[] { digi,unit.ordinal(),
+										firstLocs.get(0).row(),firstLocs.get(0).col(),firstLocs.get(1).row(),firstLocs.get(1).col(),
+										secondLocs.get(0).row(),secondLocs.get(0).col(),secondLocs.get(1).row(),secondLocs.get(1).col()};
+
+								addUnique( encs, enc );
+								// 	System.out.printf( "Rule %s added enc=%s%n" , ruleName(), encodingToString( enc ));
+								// Found two double pair rows
+								// System.out.printf( "Rule %s found digit %d via %s pairs at %s%s%s%s: counts row1 %d, row2 %d, col1 %d, col2 %d%n" ,
+								//		ruleName(), digi, unit,
+								//		firstLocs.get(0), firstLocs.get(1),
+								//		secondLocs.get(0), secondLocs.get(1),
+								//		candidates.getRowCount(firstLocs.get(0).row(), digi), 	candidates.getRowCount(secondLocs.get(0).row(), digi ),
+								//		candidates.getColCount(secondLocs.get(0).col(), digi), candidates.getColCount(secondLocs.get(1).col(), digi));
+ 							}  // excess candidates
+						} // first and second units with matching indexes
+					} // not unit BOX
+				} // unit values
+
+			} // digit not complete
+		} // each digit
+		return encs;
 	}
-	
-	
-	// Location int [] index map
+
+	/** We have two units with a count of 2 on the units.
+	 * See if the other unit matches indexes on the other unit
+	 * For instance, if digit 1 has 2 counts on rows 2 and 6,
+	 * check that the columns match on the 2 columns
+	 * @param candidates
+	 * @param digit
+	 * @param unit
+	 * @param firstUniti
+	 * @param secondUniti
+	 * @param otherUnit
+	 * @return whether the two sets of row/cols share the same col/rows
+	 */
+	public static boolean nonUnitMatch( Candidates candidates, int digit, Unit unit, int firstUniti, int secondUniti, Unit otherUnit ) {
+		List<RowCol> firstLocs = candidates.getUnitDigitLocs( unit, firstUniti, digit );
+		List<RowCol> secondLocs = candidates.getUnitDigitLocs( unit, secondUniti, digit );
+
+		int firstMatchi = RowCol.unitMatch(otherUnit, firstLocs.get(0), secondLocs.get(0));
+		int secondMatchi = RowCol.unitMatch(otherUnit, firstLocs.get(1), secondLocs.get(1));
+		// Other units match abnd different?
+		if ( NOT_FOUND != firstMatchi && NOT_FOUND != secondMatchi && firstUniti != secondUniti) {
+			return true;
+		}
+		return false;
+	}
+
+	// Encoding int [] index map
 	// digit plus four rowCols A, B, C, D
 	// digit at index 0 
+	// digit at index 0
 	// first pair AB rowCols at indexes 1,2 and 3,4
 	// second pair CD rowCols at indexes 5,6 and 7,8
 	// Because double pairs form a box, there should be a match of
 	//    - first pair rows, (A row == B row)
 	//    - second pair rows (C row == D row)
-	//    - first pair first col and second pair first col (A col == C col)
-	//    - first pair second col and second pair second col (B col == D col)
-
+	//    - first element cols (A col == C col)
+	//    - second element cols (B col == D col)
 	@Override
-	public String encodingToString( int[] loc) {
-		if ( null == loc) return "null";
-		if ( 9 != loc.length) return "length of " + loc.length + "!= 9";
+	public String encodingToString( int[] enc) {
+		if ( null == enc) return "null";
+		if ( 10 != enc.length) return "length of " + enc.length + "!= 10";
 		
 		String error = "";
-		if ( loc[ 1 ] != loc [ 3 ] ) error += " first row mismatch";
-		if ( loc[ 5 ] != loc [ 7 ] ) error += " second row mismatch";
-		if ( loc[ 2 ] != loc [ 6 ] ) error += " first col mismatch";
-		if ( loc[ 4 ] != loc [ 8 ] ) error += " second col mismatch";
-		
-		return format( "digit %d at [%d,%d],[%d,%d] and [%d,%d],[%d,%d]%s" ,
-				 loc[0],loc[1],loc[2],loc[3],loc[4],loc[5],loc[6],loc[7],loc[8], error);		
+		int digit = enc[0];
+		Unit unit = Unit.values()[enc[1]];
+		RowCol ul = ROWCOL[enc[2]][enc[3]];
+		RowCol ur = ROWCOL[enc[4]][enc[5]];
+		RowCol ll = ROWCOL[enc[6]][enc[7]];
+		RowCol lr = ROWCOL[enc[8]][enc[9]];
+		// Validate
+		switch ( unit ) {
+			case ROW: {
+				if ( ul.row() != ur.row() ) error += " upper row mismatch";
+				if ( ll.row() != lr.row() ) error += " lower row mismatch";
+				if ( ul.col() != ll.col() ) error += " left col mismatch";
+				if ( ur.col() != lr.col() ) error += " right col mismatch";
+				break;
+			}
+			case COL: {
+				if ( ul.col() != ur.col() ) error += " upper col mismatch";
+				if ( ll.col() != lr.col() ) error += " lower col mismatch";
+				if ( ul.row() != ll.row() ) error += " left row mismatch";
+				if ( ur.row() != lr.row() ) error += " right row mismatch";
+				break;
+			}
+			default: throw new IllegalArgumentException( "provided unit value index of " + enc[1]);
+		}
+
+		return format( "digit %d %s pairs at [%d,%d],[%d,%d] and [%d,%d],[%d,%d]%s" ,
+			 digit,unit,enc[2],enc[3],enc[4],enc[5],enc[6],enc[7],enc[8],enc[9], error);
 	}
 	
 	@Override

@@ -42,7 +42,7 @@ public class RemotePairsTest {
 		candidates.removeCandidates( ROWCOL[7][6], new int[]{3,5,7} );
 		candidates.removeCandidates( ROWCOL[7][7], new int[]{3,5,7} );
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-		assertEquals( 56, candidates.getAllCandidateCount());
+		assertEquals( 56, candidates.getAllCount());
 		int[] pair45 = new int[]{4,5}; // one-based
 		List<Integer> pair45List = Utils.arrayToList(pair45); // one-based
 		int[] zbpair45 = new int[]{3,4}; // zero-based
@@ -82,7 +82,7 @@ public class RemotePairsTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-		assertEquals( 57, candidates.getAllCandidateCount());
+		assertEquals( 57, candidates.getAllCount());
 		int[] pair28 = new int[]{2,8}; // one-based
 		List<Integer> pair28List = Utils.arrayToList(pair28); // one-based
 		int[] zbpair28 = new int[]{1,7}; // zero-based
@@ -129,7 +129,7 @@ public class RemotePairsTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-		assertEquals( 56, candidates.getAllCandidateCount());
+		assertEquals( 56, candidates.getAllCount());
 		int[] pair45 = new int[]{4,5}; // one-based
 		int[] zbpair45 = new int[]{3,4}; // zero-based
 		assertArrayEquals( pair45, candidates.getRemainingCandidates(ROWCOL[1][1]) );
@@ -158,13 +158,13 @@ public class RemotePairsTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(1, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	@Test
@@ -178,7 +178,7 @@ public class RemotePairsTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-		assertEquals( 56, candidates.getAllCandidateCount());
+		assertEquals( 56, candidates.getAllCount());
 		int[] pair45 = new int[]{4,5}; // one-based
 		assertArrayEquals( pair45, candidates.getRemainingCandidates(ROWCOL[1][6]) );
 		assertArrayEquals( pair45, candidates.getRemainingCandidates(ROWCOL[5][0]) );
@@ -191,13 +191,13 @@ public class RemotePairsTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(1, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	@Test
@@ -212,7 +212,7 @@ public class RemotePairsTest {
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
-		assertEquals( 57, candidates.getAllCandidateCount());
+		assertEquals( 57, candidates.getAllCount());
 		int[] pair28 = new int[]{2,8}; // one-based
 		int[] zbpair28 = new int[]{1,7}; // zero-based
 		assertArrayEquals( pair28, candidates.getRemainingCandidates(ROWCOL[1][5]));
@@ -249,13 +249,13 @@ public class RemotePairsTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals( 10, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 	@Test
 	public void testFindUpdate2() throws ParseException {
@@ -269,7 +269,7 @@ public class RemotePairsTest {
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
-		assertEquals( 57, candidates.getAllCandidateCount());
+		assertEquals( 57, candidates.getAllCount());
 		int[] pair28 = new int[]{2,8}; // one-based
 		assertArrayEquals( pair28, candidates.getRemainingCandidates(ROWCOL[1][5]));
 		assertArrayEquals( pair28, candidates.getRemainingCandidates(ROWCOL[1][7]));
@@ -286,13 +286,13 @@ public class RemotePairsTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(10, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	@Test

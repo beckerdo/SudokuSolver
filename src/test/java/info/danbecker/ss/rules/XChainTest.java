@@ -40,7 +40,7 @@ public class XChainTest {
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		// Update to match web site.
 		// candidates.removeCandidates( ROWCOL[7][6], new int[]{3,5,7} );
-		assertEquals( 143, candidates.getAllCandidateCount());
+		assertEquals( 143, candidates.getAllCount());
 		assertArrayEquals( new int[]{7,9}, candidates.getRemainingCandidates(ROWCOL[0][1]) );
 		assertArrayEquals( new int[]{1,6,7,9}, candidates.getRemainingCandidates(ROWCOL[0][8]) );
 		assertArrayEquals( new int[]{1,4,5,7}, candidates.getRemainingCandidates(ROWCOL[1][7]) );
@@ -64,13 +64,13 @@ public class XChainTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, new Board(XCHAIN_1_SOLUTION), candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(1, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 	@Test
 	public void testUpdateDigit6Bug() throws ParseException {
@@ -83,7 +83,7 @@ public class XChainTest {
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		// Update to match web site.
 		// candidates.removeCandidates( ROWCOL[7][6], new int[]{3,5,7} );
-		assertEquals( 143, candidates.getAllCandidateCount());
+		assertEquals( 143, candidates.getAllCount());
 		assertArrayEquals( new int[]{7,9}, candidates.getRemainingCandidates(ROWCOL[0][1]) );
 		assertArrayEquals( new int[]{1,6,7,9}, candidates.getRemainingCandidates(ROWCOL[0][8]) );
 		assertArrayEquals( new int[]{1,4,5,7}, candidates.getRemainingCandidates(ROWCOL[1][7]) );
@@ -102,13 +102,13 @@ public class XChainTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, new Board(XCHAIN_1_SOLUTION), candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(0, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 
@@ -123,7 +123,7 @@ public class XChainTest {
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		// Update to match web site.
 		// candidates.removeCandidates( ROWCOL[7][6], new int[]{3,5,7} );
-		assertEquals( 116, candidates.getAllCandidateCount());
+		assertEquals( 116, candidates.getAllCount());
 		assertArrayEquals( new int[]{3,7}, candidates.getRemainingCandidates(ROWCOL[3][1]) );
 		assertArrayEquals( new int[]{3,7}, candidates.getRemainingCandidates(ROWCOL[3][7]) );
 		assertArrayEquals( new int[]{3,5,9}, candidates.getRemainingCandidates(ROWCOL[7][7]) );
@@ -145,11 +145,11 @@ public class XChainTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, new Board(XCHAIN_2_SOLUTION), candidates, encs);
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(3, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	@Test

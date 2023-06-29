@@ -49,7 +49,7 @@ public class XYWing implements FindUpdateRule {
 			// RowCol yz = ROWCOL[rowCol[0]][rowCol[1]];
 			RowCol[] locs = new RowCol[ enc.length - 6 ];
 			for( int loci = 6; loci < enc.length; loci++) {
-				int[] rowCol = comboToInts( enc[ loci ] ); // converts one-based to zero-based
+				int[] rowCol = onebasedComboToZeroBasedInts( enc[ loci ] ); // converts one-based to zero-based
 				locs[ loci - 6] = ROWCOL[rowCol[0]][rowCol[1]];
 			}
 
@@ -60,8 +60,9 @@ public class XYWing implements FindUpdateRule {
 					if ( null != solution ) {
 						int cellStatus = solution.get(loc);
 						if ( cellStatus == zDigit ) {
-							throw new IllegalArgumentException( format("Rule %s would like to remove solution digit %d at loc %s.",
-								ruleName(), zDigit, loc));
+							System.out.println( "Candidates=\n" + candidates.toStringBoxed() );
+							throw new IllegalArgumentException( format("Rule %s would like to remove solution digit %d at loc %s.%nenc=%s%n",
+								ruleName(), zDigit, loc, encodingToString( enc )));
 						}
 					}
 					// It validates, go ahead
@@ -191,12 +192,12 @@ public class XYWing implements FindUpdateRule {
 		encoded[0] = xyzDigits[0];
 		encoded[1] = xyzDigits[1];
 		encoded[2] = xyzDigits[2];
-		encoded[3] = intsToCombo( new int[]{ xyPivot.row(), xyPivot.col()} );
-		encoded[4] = intsToCombo( new int[]{ xzPincer.row(), xzPincer.col()} );
-		encoded[5] = intsToCombo( new int[]{ yzPincer.row(), yzPincer.col()} );
+		encoded[3] = zerobasedIntsToOnebasedCombo( new int[]{ xyPivot.row(), xyPivot.col()} );
+		encoded[4] = zerobasedIntsToOnebasedCombo( new int[]{ xzPincer.row(), xzPincer.col()} );
+		encoded[5] = zerobasedIntsToOnebasedCombo( new int[]{ yzPincer.row(), yzPincer.col()} );
 		int i = 6;
 		for ( RowCol loc : locs ) {
-			encoded[ i++ ] = intsToCombo( new int[] { loc.row(), loc.col() } );
+			encoded[ i++ ] = zerobasedIntsToOnebasedCombo( new int[] { loc.row(), loc.col() } );
 		}
 		return encoded;
 	}
@@ -213,16 +214,16 @@ public class XYWing implements FindUpdateRule {
 		int xDigit = loc[0];
 		int yDigit = loc[1];
 		int zDigit = loc[2];
-		int [] rowCol = comboToInts(loc[3]);
+		int [] rowCol = onebasedComboToZeroBasedInts(loc[3]);
 		RowCol xy = ROWCOL[rowCol[0]][rowCol[1]];
-		rowCol = comboToInts(loc[4]);
+		rowCol = onebasedComboToZeroBasedInts(loc[4]);
 		RowCol xz = ROWCOL[rowCol[0]][rowCol[1]];
-		rowCol = comboToInts(loc[5]);
+		rowCol = onebasedComboToZeroBasedInts(loc[5]);
 		RowCol yz = ROWCOL[rowCol[0]][rowCol[1]];
 
 		RowCol[] locs = new RowCol[ loc.length - 6 ];
 		for( int loci = 6; loci < loc.length; loci++) {
-			rowCol = comboToInts( loc[ loci ] ); // converts one-based to zero-based
+			rowCol = onebasedComboToZeroBasedInts( loc[ loci ] ); // converts one-based to zero-based
 			locs[ loci - 6] = ROWCOL[rowCol[0]][rowCol[1]];
 		}
 		return format("xyz=%d%d%d, xyLoc=%s, xzLoc=%s, yzLoc=%s, and z locs=%s",

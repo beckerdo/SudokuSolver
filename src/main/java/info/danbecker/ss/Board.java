@@ -17,8 +17,9 @@ import java.text.ParseException;
 public class Board implements Comparable<Board> {
 	public static short ROWS = 9;
 	public static short COLS = 9;
-	public static short BOXES = 9; 	
-	
+	public static short BOXES = 9;
+	public static short DIGITS = 9;
+
 	public static short NOT_OCCUPIED = 0;
 	public static int NOT_FOUND = -1;
 	private int[][] digits;
@@ -256,7 +257,7 @@ public class Board implements Comparable<Board> {
 	}
 
 	/** 
-	 * States if one of the combo digits ahave 9 placements on this board, whether legal or not.
+	 * States if one of the combo digits have 9 placements on this board, whether legal or not.
 	 * Zero-based digits. */
 	public boolean comboCompleted( int [] combo ) {		
 		for ( int combi = 0; combi < combo.length; combi++ ) {

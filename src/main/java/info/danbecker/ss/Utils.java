@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 /**
  * SudokuSolver
@@ -124,15 +124,71 @@ public class Utils {
 	 * @param ints int[] of 0 based integers
 	 * @return single integer of 1 based digits
 	 */
-	public static int intsToCombo(int[] ints) {
-	   if ( ints == null) return -1;
-	   int value = 0;
-	   for( int i = 0; i < ints.length; i++ ) {
-		   value = value * 10 + ints[ i ] + 1;
-	   }
-	   return value;
+	public static int zerobasedIntsToOnebasedCombo(int[] ints) {
+		if ( ints == null) return -1;
+		int value = 0;
+		for( int i = 0; i < ints.length; i++ ) {
+			value = value * 10 + ints[ i ] + 1;
+		}
+		return value;
 	}
-	
+
+	/**
+	 * Zero based to one based ints, in place.
+	 * Updates each location in zbInts by one, in place
+	 * @param zbInts collection of zero based ints
+	 * @return the same location of updated ints
+	 */
+	public static int[] zbToobIntsInPlace(int[] zbInts) {
+		for ( int i = 0; i< zbInts.length; i++ ) {
+			zbInts[i]++;
+		}
+		return zbInts;
+	}
+
+	/**
+	 * Zero based to one based ints, copy.
+	 * Updates each location in zbInts by one, in a new collection.
+	 * @param zbInts collection of zero based ints
+	 * @return a new collection of updated ints
+	 */
+	public static int[] zbToobIntsCopy(int[] zbInts) {
+		int[] obInts = Arrays.copyOf(zbInts,zbInts.length);
+		return zbToobIntsInPlace( obInts );
+	}
+
+	/**
+	 * One based to zero based ints, in place.
+	 * Updates each location in obInts by one, in place
+	 * @param obInts collection of one based ints
+	 * @return the same location of updated ints
+	 */
+	public static int[] obTozbIntsInPlace(int[] obInts) {
+		for ( int i = 0; i< obInts.length; i++ ) {
+			obInts[i]--;
+		}
+		return obInts;
+	}
+
+	/**
+	 * One based to zero based ints, copy.
+	 * Updates each location in obInts by one, in a new collection.
+	 * @param obInts collection of one based ints
+	 * @return a new collection of updated ints
+	 */
+	public static int[] obTozbIntsCopy(int[] obInts) {
+		int[] zbInts = Arrays.copyOf(obInts,obInts.length);
+		return obTozbIntsInPlace( zbInts );
+	}
+
+	public static int[] onebasedIntsToZerobasedInts(int[] zbInts) {
+		int[] obInts = Arrays.copyOf(zbInts,zbInts.length);
+		for ( int i = 0; i< obInts.length; i++ ) {
+			obInts[i]++;
+		}
+		return obInts;
+	}
+
 	/**
 	 * Convert an int combo to an int[] of ints
 	 * <p>
@@ -145,7 +201,7 @@ public class Utils {
 	 * @param combo int of one-based digits
 	 * @return int [] of 0 based integers
 	 */
-	public static int [] comboToInts(int combo ) {
+	public static int [] onebasedComboToZeroBasedInts(int combo ) {
 	   String stringInt = Integer.toString(combo);
 	   int [] ints = new int[ stringInt.length() ];
 	   for( int i = 0; i < ints.length; i++ ) {
@@ -174,12 +230,25 @@ public class Utils {
 	 * @return string representing digits
 	 */
 	public static String digitListToString(List<Integer> digits ) {
-		StringBuilder sb = new StringBuilder("{");
-		for( int i = 0; i < digits.size(); i++ ) {
-			sb.append( digits.get(i));
-		}
-		sb.append("}");
-		return sb.toString();
+		String digitsStr = digits
+				.stream()
+				.map( Object::toString )
+				.collect(Collectors.joining(""));
+		return "{" + digitsStr + "}";
+	}
+
+	/**
+	 * Turns a map of digits->locations into a readable string
+	 * @param digitMap
+	 * @return
+	 */
+	public static String digitMapToString(Map<Integer,List<RowCol>> digitMap ) {
+		String updateString = digitMap
+				.entrySet()
+				.stream()
+				.map( e -> format( "digit %d:%s", e.getKey(), RowCol.toString(e.getValue())) )
+				.collect(Collectors.joining(","));
+		return updateString;
 	}
 
 	/**

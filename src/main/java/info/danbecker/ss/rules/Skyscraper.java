@@ -32,7 +32,7 @@ public class Skyscraper implements FindUpdateRule {
 			int digit = enc[0];
 			RowCol[] rowCols = new RowCol[ enc.length - 1];
 			for( int loci = 1; loci < enc.length; loci++) {
-				int[] rowCol = comboToInts( enc[ loci ] ); // converts 1-based to 0-based
+				int[] rowCol = onebasedComboToZeroBasedInts( enc[ loci ] ); // converts 1-based to 0-based
 				rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]];
 			}
 			// Just correct first item
@@ -81,8 +81,8 @@ public class Skyscraper implements FindUpdateRule {
 		RowCol[] roof = null;
 		// Check for one roof per base
 		if ( Unit.ROW == unit ) {
-			if (2 == candidates.candidateColCount(base[0].col(), digit) &&
-					2 == candidates.candidateColCount(base[1].col(), digit)) {
+			if (2 == candidates.getColCount(base[0].col(), digit) &&
+					2 == candidates.getColCount(base[1].col(), digit)) {
 				// Two bases have one roof each
 				// Put roofs on top of bases.
 				roof = new RowCol[2];
@@ -104,8 +104,8 @@ public class Skyscraper implements FindUpdateRule {
 				}
 			}
 		} else if ( Unit.COL == unit ) {
-			if (2 == candidates.candidateRowCount(base[0].row(), digit) &&
-					2 == candidates.candidateRowCount(base[1].row(), digit)) {
+			if (2 == candidates.getRowCount(base[0].row(), digit) &&
+					2 == candidates.getRowCount(base[1].row(), digit)) {
 				// Two bases have one roof each
 				// Put roofs on top of bases.
 				roof = new RowCol[2];
@@ -215,13 +215,13 @@ public class Skyscraper implements FindUpdateRule {
 
 		int [] encoded = new int[5 + locs.size() ];
 		encoded[0] = digit;
-		encoded[1] = intsToCombo( new int[]{ base[0].row(), base[0].col() } );
-		encoded[2] = intsToCombo( new int[]{ base[1].row(), base[1].col() } );
-		encoded[3] = intsToCombo( new int[]{ roof[0].row(), roof[0].col() } );
-		encoded[4] = intsToCombo( new int[]{ roof[1].row(), roof[1].col() } );
+		encoded[1] = zerobasedIntsToOnebasedCombo( new int[]{ base[0].row(), base[0].col() } );
+		encoded[2] = zerobasedIntsToOnebasedCombo( new int[]{ base[1].row(), base[1].col() } );
+		encoded[3] = zerobasedIntsToOnebasedCombo( new int[]{ roof[0].row(), roof[0].col() } );
+		encoded[4] = zerobasedIntsToOnebasedCombo( new int[]{ roof[1].row(), roof[1].col() } );
 		for( int loci = 0; loci < locs.size(); loci++) {
 			RowCol rowCol = locs.get( loci );
-			encoded[ loci+5 ] = intsToCombo( new int[] { rowCol.row(), rowCol.col() } );
+			encoded[ loci+5 ] = zerobasedIntsToOnebasedCombo( new int[] { rowCol.row(), rowCol.col() } );
 		}
 		return encoded;
 	}
@@ -236,7 +236,7 @@ public class Skyscraper implements FindUpdateRule {
 		int digit = enc[0];
 		RowCol[] rowCols = new RowCol[ enc.length - 1];
 		for( int loci = 1; loci < enc.length; loci++) {
-			int[] rowCol = comboToInts( enc[ loci ] );
+			int[] rowCol = onebasedComboToZeroBasedInts( enc[ loci ] );
 			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]]; // // Converts 1-based int to 0-based int[]
 		}
 		RowCol[] base = new RowCol[]{

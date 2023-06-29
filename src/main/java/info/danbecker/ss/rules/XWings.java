@@ -117,8 +117,8 @@ public class XWings implements FindUpdateRule {
 						}
 
 						// Check for col candidates not in these locations.						
-						if ((candidates.candidateColCount( firstRow[0][1], digi) > 2 ) ||
-							(candidates.candidateColCount( firstRow[1][1], digi) > 2 )) {
+						if ((candidates.getColCount( firstRow[0][1], digi) > 2 ) ||
+							(candidates.getColCount( firstRow[1][1], digi) > 2 )) {
 							int [] encoding = encode(digi, 0, firstRow, secondRow);
 							// System.out.println( "XWings found " + encodingToString(encoding) );
 							matched.add(encoding);
@@ -147,8 +147,8 @@ public class XWings implements FindUpdateRule {
 						}
 						
 						// Check for row candidates not in these locations.						
-						if ((candidates.candidateRowCount( firstCol[0][0], digi) > 2 ) ||
-							(candidates.candidateRowCount( firstCol[1][0], digi) > 2 )) {
+						if ((candidates.getRowCount( firstCol[0][0], digi) > 2 ) ||
+							(candidates.getRowCount( firstCol[1][0], digi) > 2 )) {
 							int [] encoding = encode(digi, 1, firstCol, secondCol);
 							// System.out.println( "XWings found " + encodingToString(encoding) );
 							matched.add(encoding);

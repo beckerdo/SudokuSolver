@@ -35,7 +35,7 @@ public class TwoStringKite implements FindUpdateRule {
 			int digit = enc[0];
 			RowCol[] rowCols = new RowCol[ enc.length - 1];
 			for( int loci = 1; loci < enc.length; loci++) {
-				int[] rowCol = comboToInts( enc[ loci ] ); // converts 1-based to 0-based
+				int[] rowCol = onebasedComboToZeroBasedInts( enc[ loci ] ); // converts 1-based to 0-based
 				rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]];
 			}
 			// Just correct first item
@@ -78,14 +78,14 @@ public class TwoStringKite implements FindUpdateRule {
 				for ( int rowi = 0; rowi < ROWS; rowi++) {
 					if ( 2 == unitCounts[ Unit.ROW.ordinal() ][ rowi ]) {
 						// Check each of two locations for a matching base unit
-						List<RowCol> rowLocs = candidates.getRowDigitLocs( rowi, digit );
+						List<RowCol> rowLocs = candidates.getRowLocs( rowi, digit );
 						RowCol [] hands = new RowCol[2];
 						for ( int rloci = 0; rloci < rowLocs.size(); rloci++ ) {
 							RowCol rowLoc = rowLocs.get( rloci );
 							for ( int coli = 0; coli < COLS; coli++ ) {
 								if ( 2 == unitCounts[ Unit.COL.ordinal() ][ coli ]) {
 									RowCol [] strings = new RowCol[2];
-									List<RowCol> colLocs = candidates.getColDigitLocs( coli, digit );
+									List<RowCol> colLocs = candidates.getColLocs( coli, digit );
 									for ( int cloci = 0; cloci < colLocs.size(); cloci++ ) {
 										RowCol colLoc = colLocs.get( cloci );
 										// Check that the rowLoc and colLoc share a box.
@@ -154,11 +154,11 @@ public class TwoStringKite implements FindUpdateRule {
 
 		int [] encoded = new int[6 ];
 		encoded[0] = digit;
-		encoded[1] = intsToCombo( new int[]{ hands[0].row(), hands[0].col() } );
-		encoded[2] = intsToCombo( new int[]{ hands[1].row(), hands[1].col() } );
-		encoded[3] = intsToCombo( new int[]{ strings[0].row(), strings[0].col() } );
-		encoded[4] = intsToCombo( new int[]{ strings[1].row(), strings[1].col() } );
-		encoded[5] = intsToCombo( new int[]{ loc.row(), loc.col() } );
+		encoded[1] = zerobasedIntsToOnebasedCombo( new int[]{ hands[0].row(), hands[0].col() } );
+		encoded[2] = zerobasedIntsToOnebasedCombo( new int[]{ hands[1].row(), hands[1].col() } );
+		encoded[3] = zerobasedIntsToOnebasedCombo( new int[]{ strings[0].row(), strings[0].col() } );
+		encoded[4] = zerobasedIntsToOnebasedCombo( new int[]{ strings[1].row(), strings[1].col() } );
+		encoded[5] = zerobasedIntsToOnebasedCombo( new int[]{ loc.row(), loc.col() } );
 		return encoded;
 	}
 
@@ -172,7 +172,7 @@ public class TwoStringKite implements FindUpdateRule {
 		int digit = location[0];
 		RowCol[] rowCols = new RowCol[ location.length - 1];
 		for( int loci = 1; loci < location.length; loci++) {
-			int[] rowCol = comboToInts( location[ loci ] ); // converts one-based to zero-based
+			int[] rowCol = onebasedComboToZeroBasedInts( location[ loci ] ); // converts one-based to zero-based
 			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]];
 		}
 		// RowCol[] base = new RowCol[]{

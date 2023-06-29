@@ -33,7 +33,6 @@ public class LegalCandidates implements FindUpdateRule {
 		int count = 0;
 		
 		// Remove candidates from  occupied boxes
-		System.out.println( ruleName() + " will remove illegal candidates" );
 		count += candidates.removeAllOccupiedCandidates();
 		
 		// Remove candidate digits in row/col/box
@@ -66,6 +65,9 @@ public class LegalCandidates implements FindUpdateRule {
 					
 				}
 			}
+		}
+		if ( 0 < count ) {
+			System.out.println(ruleName() + " removed " + count + " illegal candidates.");
 		}
 		return count;
 	}

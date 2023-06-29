@@ -3,83 +3,113 @@ package info.danbecker.ss.rules;
 import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
+import info.danbecker.ss.Utils;
 
 import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static info.danbecker.ss.Utils.ROWS;
-import static info.danbecker.ss.Utils.COLS;
+import static info.danbecker.ss.Utils.Unit;
+import static info.danbecker.ss.Utils.UNITS;
 import static info.danbecker.ss.Utils.DIGITS;
-import static info.danbecker.ss.Utils.BOXES;
-import static info.danbecker.ss.Board.NOT_FOUND;
 
 /**
- * Finds digits that can be placed in just one row/candidate/block
+ * Finds digits that can be placed in just one row/col/block
  *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
 public class SinglePositions implements FindUpdateRule {
 	@Override
 	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
-		if (encs.size() > 0) {
-			int[] location = encs.get(0);
-			int rowi = location[ 0 ];
-			int coli = location[ 1 ];
-			// int boxi = location[ 2 ];
-			int digit = location[ 3 ];
-
-			System.out.println(format("Rule %s places digit %d at rowCol [%d,%d]", ruleName(), digit, rowi, coli));
-			board.set(ROWCOL[rowi][coli], digit); // simply puts a digit in the board
-			candidates.setOccupied(ROWCOL[rowi][coli], digit); // places entry, removes candidates
-			return 1;
+		int updateCount = 0;
+		Map<Integer,List<RowCol>> updates = new HashMap<>();
+		for ( int enci = 0; enci < encs.size(); enci++ ) {
+			int[] enc = encs.get(enci);
+			int digit = enc[0];
+			RowCol loc = ROWCOL[enc[1]][enc[2]];
+			// Validation if available
+			if (null != solution) {
+				int solutionDigit = solution.get(loc);
+				if (solutionDigit != digit) {
+					System.out.println("Candidates=\n" + candidates.toStringBoxed());
+					throw new IllegalArgumentException(format("Rule %s would like to set digit %d at loc %s with solution digit %d",
+							ruleName(), digit, loc, solutionDigit));
+				}
+			}
+			board.set(loc, digit); // put a digit in the board
+			int prevCount = candidates.getAllCount();
+			candidates.setOccupied(loc, digit); // places entry, removes candidates
+			int currCount = candidates.getAllCount();
+			updates.computeIfAbsent(digit, x -> new ArrayList<>()).add(loc);
+			updateCount += prevCount - currCount;
 		}
-		return 0;
+		// Check counts
+		int valueCount = updates.values()
+				.stream()
+				.mapToInt(List::size)
+				.sum();
+		// Pretty output
+		if ( 0 < updateCount ) {
+			System.out.printf( "Rule %s removes %d cands, places: %s%n", ruleName(), updateCount, Utils.digitMapToString( updates ) );
+		}
+		return updateCount;
+//
+//
+//
+//		if (encs.size() > 0) {
+//			int[] location = encs.get(0);
+//			int rowi = location[ 0 ];
+//			int coli = location[ 1 ];
+//			// int boxi = location[ 2 ];
+//			int digit = location[ 3 ];
+//
+//			// Validation if available
+//			if ( null != solution ) {
+//				int solutionDigit = solution.get(ROWCOL[rowi][coli]);
+//				if ( solutionDigit != digit ) {
+//					System.out.println( "Candidates=\n" + candidates.toStringBoxed() );
+//					throw new IllegalArgumentException( format("Rule %s would like to place digit %s at loc %s with solution digit %d.",
+//							ruleName(), digit, ROWCOL[rowi][coli], solutionDigit));
+//				}
+//			}
+//
+//			System.out.println(format("Rule %s places digit %d at rowCol [%d,%d]", ruleName(), digit, rowi, coli));
+//			board.set(ROWCOL[rowi][coli], digit); // simply puts a digit in the board
+//			candidates.setOccupied(ROWCOL[rowi][coli], digit); // places entry, removes candidates
+//			return 1;
+//		}
+//		return 0;
 	}
 
 	@Override
 	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		ArrayList<int[]> locations = new ArrayList<>();
+		ArrayList<int[]> encs = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if (!board.digitCompleted(digi)) {
-				for (int rowi = 0; rowi < ROWS; rowi++) {
-					if (1 == candidates.candidateRowCount(rowi, digi)) {
-						// Add this digit, row
-						locations.add(new int[] { rowi, candidates.candidateRowLocation(rowi, digi), NOT_FOUND, digi });
-					}
-				}
-				for (int coli = 0; coli < COLS; coli++) {
-					if (1 == candidates.candidateColCount(coli, digi)) {
-						// Add this digit, coli
-						locations.add(new int[] { candidates.candidateColLocation(coli, digi), coli, NOT_FOUND, digi });
-					}
-				}
-				// Might not be needed. Row col searches seem to work
-				for (int boxi = 0; boxi < BOXES; boxi++) {
-					if (1 == candidates.candidateBoxCount(boxi, digi)) {
-						// Add this digit, boxi
-						RowCol rowCol = candidates.candidateBoxLocation(boxi, digi);
-						locations.add(new int[] { rowCol.row(), rowCol.col(), boxi, digi });
+				for ( Unit unit : Unit.values() ) {
+					for ( int uniti = 0; uniti < UNITS; uniti++ ) {
+						List<RowCol> locs = candidates.getUnitDigitLocs( unit, uniti, digi );
+						if ( 1 == locs.size() ) {
+							// Only one in this unit
+							Utils.addUnique( encs, new int[]{ digi, locs.get(0).row(), locs.get(0).col() } );
+						}
 					}
 				}
 			}
 		}
-		return locations;
+		return encs;
 	}
 
 	@Override
 	public String encodingToString(int[] enc) {
-		int rowi = enc[ 0 ];
-		int coli = enc[ 1 ];
-		// int boxi = enc[ 2 ];
-		int digit = enc[ 3 ];
-		RowCol rowCol = ROWCOL[rowi][coli];
-
-		return String.format("digit %d at rowCol %s", digit, rowCol);
+		int digit = enc[ 0 ];
+		return String.format("digit %d at %s", digit, ROWCOL[enc[1]][enc[2]]);
 	}
 
 	@Override

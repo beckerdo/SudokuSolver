@@ -48,12 +48,12 @@ public class ForcingChainsTest {
 
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Destination gains entry, loses 2 candidates.
 		// Will likely knock out more same-unit candidates after LegalCandidate update.
 		assertEquals( prevEntries, candidates.getAllOccupiedCount() - updates);
-		assertEquals( prevCandidates,candidates.getAllCandidateCount() + 2);
+		assertEquals( prevCandidates,candidates.getAllCount() + 2);
 	}
 	
 	@Test
@@ -116,12 +116,12 @@ public class ForcingChainsTest {
 
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Destination gains entry, loses 2 candidates.
 		// Will likely knock out more same-unit candidates after LegalCandidate update.
 		assertEquals( prevEntries, candidates.getAllOccupiedCount() - updates);
-		assertEquals( prevCandidates, candidates.getAllCandidateCount() + 2);
+		assertEquals( prevCandidates, candidates.getAllCount() + 2);
 	}
 	
 	public static String P20230103 =

@@ -91,6 +91,14 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		return matching;
 	}
 
+	public int unitIndex( Utils.Unit unit ) {
+		return switch ( unit ) {
+			case ROW -> this.row();
+			case COL -> this.col();
+			case BOX -> this.box();
+		};
+	}
+
 	/** Return first matching unit or null for no match
 	 *
 	 * @param rc1 first rowCol

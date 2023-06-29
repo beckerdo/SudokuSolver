@@ -6,18 +6,12 @@ import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
 
 import static info.danbecker.ss.Board.ROWCOL;
+import static info.danbecker.ss.Utils.*;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static info.danbecker.ss.Utils.ROWS;
-import static info.danbecker.ss.Utils.COLS;
-import static info.danbecker.ss.Utils.BOXES;
-import static info.danbecker.ss.Utils.DIGITS;
-import static info.danbecker.ss.Utils.comboToInts;
-import static info.danbecker.ss.Utils.intsToCombo;
 
 import static info.danbecker.ss.Candidates.NOT_NAKED;
 
@@ -40,12 +34,12 @@ import static info.danbecker.ss.Candidates.NOT_NAKED;
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
 public class HiddenSubsets implements FindUpdateRule {
-	
-	protected int subsetSize; 
-	protected int partialCount; 
-	
+
+	protected int subsetSize;
+	protected int partialCount;
+
 	public HiddenSubsets(int subsetSize) {
-		if ( subsetSize < 2) 
+		if ( subsetSize < 2)
 			throw new IllegalArgumentException(  "Subset size " + subsetSize + " was less than 2.");
 		this.subsetSize = subsetSize;
 		if ( 2 == subsetSize ) {
@@ -59,23 +53,52 @@ public class HiddenSubsets implements FindUpdateRule {
 	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
 		if ( null == encs) return updates;
-		if (encs.size() > 0) {
-			// Just act on first find
-			int [] encoded = encs.get(0);
+		for ( int enci = 0; enci < encs.size(); enci++) {
+			// Act on all finds
+			int [] enc = encs.get(enci);
 			// Decode information
-			int [] combo = comboToInts( encoded[0] ); // converts 1-based to 0-based
-			RowCol[] rowCols = new RowCol[ encoded.length - 1];
-			for( int loci = 1; loci < encoded.length; loci++) {
-				int[] rowCol = comboToInts( encoded[ loci ] ); // converts 1-based to 0-based
-				rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]];
+			int [] zbDigits = onebasedComboToZeroBasedInts( enc[0] ); // converts 1-based to 0-based
+			RowCol[] locs = encToRowCols( enc );
+
+			int[][] digitsNotInCombo = candidates.digitsNotInCombo( zbDigits, locs );
+			System.out.printf( "%s hidden %s pair will remove %s digits %s from %s%n",
+					ruleName(),
+					digitsToString(zbToobIntsInPlace(zbDigits)), // converts 0-based to 1-based
+					RowCol.firstUnitMatch( locs[0], locs[1]),
+					digitListsToString( digitsNotInCombo),
+					RowCol.toString( locs ));
+
+			// Validation if available
+			if (null != solution) {
+				// Test if digit candidate removal, removes a solution digit
+				for (int loci = 0; loci < digitsNotInCombo.length; loci++) {
+					int[] zbRemovalDigits =  digitsNotInCombo[ loci ];
+					RowCol loc = locs[ loci ];
+					for (int digi = 0; digi < zbRemovalDigits.length; digi++) {
+						int digit = zbRemovalDigits[digi] + 1;
+						int cellSolution = solution.get(loc);
+						if (cellSolution == digit) {
+							System.out.println("Candidates=\n" + candidates.toStringBoxed());
+							throw new IllegalArgumentException(format("Rule %s wants to remove solution digit %d at loc %s.%n",
+									ruleName(), cellSolution, loc));
+						}
+					}
+				}
 			}
-			System.out.println( format( "%s will turn hidden combos {%d} to nakeds in locations %s", ruleName(),
-				intsToCombo(combo), // converts 0-based to 1-based
-				RowCol.toString( rowCols )));
-			// Just correct first item
-			updates += candidates.removeCandidatesNotInCombo(combo, rowCols);
+
+			updates += candidates.removeCandidatesNotInCombo(zbDigits, locs);
 		}
 		return updates;
+	}
+
+	public static String digitListsToString( int[][] digitLists ) {
+		StringBuffer sb = new StringBuffer();
+		for ( int listi = 0; listi < digitLists.length; listi++) {
+			if ( 0 < listi ) sb.append("");
+			// Convert zb to ob
+			sb.append( Utils.digitsToString( zbToobIntsCopy(digitLists[listi] )));
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -83,7 +106,7 @@ public class HiddenSubsets implements FindUpdateRule {
 	 * in the same row/col/box: {245}{476}{278} -> {24}{47}{27}
 	 * <p>
 	 * Search for only R same candidates in each block,
-  	 * see if row or col is the same,
+	 * see if row or col is the same,
      * if row match, see if other candidates exist in same rowon same row outside of block
 	 * if col match, see if other candidates exist on same col outside of block
 	 * <p>
@@ -93,116 +116,75 @@ public class HiddenSubsets implements FindUpdateRule {
 	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		ArrayList<int[]> locations = new ArrayList<>();
+		ArrayList<int[]> encs = new ArrayList<>();
 		// Generate combinations of n elements (9 digits), r at a time.
 		// Note that these combos are 0 based
 		List<int[]> combinations = Utils.comboGenerate(DIGITS, subsetSize); // combos are 0 based
 		for( int combi = 0; combi < combinations.size(); combi++) {
-			int [] combo = combinations.get(combi); // combo is 0 based
-			if (!board.comboCompleted(combo)) {
-				// Search row/col/block for this naked candidate
-				for (int rowi = 0; rowi < ROWS; rowi++) {
-					List<RowCol> rowFound = candidates.candidateComboRowLocations(rowi, combo, NOT_NAKED, partialCount);
-					if (rowFound.size() == subsetSize) {
-						// Found this row has exactly N of these combos. For example {127}{12}
-						// Need to ensure location cands are more than just partials (digitCount >
-						// subsetSize)
-						// Need to see if there are other candidates in these locations
-						// (candidateLocCount > comboCount)
-						int candidateLocCount = candidates.candidateRowColCount(rowFound);
-						int comboCount = candidates.candidateComboLocCount(combo, rowFound);
-						if ((candidates.digitLocCount(combo, rowFound) >= subsetSize)
-								&& (candidateLocCount > comboCount)) {
-							// Now check no more stray combo digits outside of locations, same row.
-							int comboRowCount = candidates.candidateComboRowCount(rowi, combo);
-							if (comboRowCount == comboCount) {
-								System.out.println(format(
-										"Row %d, combo %s, has %d locs, %d digits, %d candidates, %d combo candidates",
-										rowi, Arrays.toString(combo), rowFound.size(),
-										candidates.digitLocCount(combo, rowFound), candidateLocCount, comboCount));
-								int[] encoded = encodeLocation(combo, rowFound);
-								locations.add(encoded);
-							}
-						}
-						// System.out.println( this.ruleName() + " " + locationToString( encoded ) );
-					}
-				}
-				for (int coli = 0; coli < COLS; coli++) {
-					List<RowCol> colFound = candidates.candidateComboColLocations(coli, combo, NOT_NAKED, partialCount);
-					if (colFound.size() == subsetSize) {
-						// Found this col has exactly N of these combos. For example {127}{12}
-						// Need to ensure location cands are more than just partials (digitCount >
-						// subsetSize)
-						// Need to see if there are other candidates in these locations
-						// (candidateLocCount > comboCount)
-						int candidateLocCount = candidates.candidateRowColCount(colFound);
-						int comboCount = candidates.candidateComboLocCount(combo, colFound);
-						if ((candidates.digitLocCount(combo, colFound) >= subsetSize)
-								&& (candidateLocCount > comboCount)) {
-							// Now check no more stray combo digits outside of locations, same col.
-							int comboColCount = candidates.candidateComboColCount(coli, combo);
-							if (comboColCount == comboCount) {
-								System.out.println(format(
-										"Col %d, combo %s, has %d locs, %d digits, %d candidates, %d combo candidates",
-										coli, Arrays.toString(combo), colFound.size(),
-										candidates.digitLocCount(combo, colFound), candidateLocCount, comboCount));
-								int[] encoded = encodeLocation(combo, colFound);
-								locations.add(encoded);
-							}
-						}
-						// System.out.println( this.ruleName() + " " + locationToString( encoded ) );
-					}
-				}
-				// Note, it is possible that a naked row or col subset lies in the same box.
-				// Thus, this loop can find locations found above.
-				// However, it is possible that a naked box subset is not in the same row or
-				// col.
-				for (int boxi = 0; boxi < BOXES; boxi++) {
-					List<RowCol> boxFound = candidates.candidateComboBoxLocations(boxi, combo, NOT_NAKED, partialCount);
-					if (boxFound.size() == subsetSize) {
-						// Found this box has exactly N of these combos. For example {127}{12}
-						// Need to ensure location cands are more than just partials (digitCount >
-						// subsetSize)
-						// Need to see if there are other candidates in these locations
-						// (candidateLocCount > comboCount)
-						int candidateLocCount = candidates.candidateRowColCount(boxFound);
-						int comboCount = candidates.candidateComboLocCount(combo, boxFound);
-						if ((candidates.digitLocCount(combo, boxFound) >= subsetSize)
-								&& (candidateLocCount > comboCount)) {
-							// Now check no more stray combo digits outside of locations, same col.
-							int comboBoxCount = candidates.candidateComboBoxCount(boxi, combo);
-							if (comboBoxCount == comboCount) {
-								System.out.println(format(
-									"Box %d, combo %s, has %d locs, %d digits, %d candidates, %d combo candidates",
-									boxi, Arrays.toString(combo), boxFound.size(),
-									candidates.digitLocCount(combo, boxFound), candidateLocCount, comboCount));
-								int[] encoded = encodeLocation(combo, boxFound);
-								locations.add(encoded);
-							}
-						}
-						// System.out.println( this.ruleName() + " " + locationToString( encoded ) );
-					}
-				}
-			}
-		}
-		return locations;
+			int [] zbCombo = combinations.get(combi); // combo is 0 based
+			if (!board.comboCompleted(zbCombo)) {
+				// Search row/col/block for this combo
+				for (Unit unit : Unit.values()) {
+					for (int uniti = 0; uniti < UNITS; uniti++) {
+						List<RowCol> foundLocs = candidates.candidateComboUnitLocations(unit, uniti, zbCombo, NOT_NAKED, partialCount);
+						if (foundLocs.size() == subsetSize) {
+							// Found this unit has exactly N of these combos. For example {127}{12}
+							// Need to ensure location cands are more than just partials (digitCount > subsetSize)
+							// Need to see if there are other candidates in these locations
+							// (candidateLocCount > comboCount)
+							int candidateLocCount = candidates.candidateRowColCount(foundLocs);
+							int comboCount = candidates.candidateComboLocCount(zbCombo, foundLocs);
+							if ((candidates.digitLocCount(zbCombo, foundLocs) >= subsetSize)
+									&& (candidateLocCount > comboCount)) {
+								// Now check no more stray combo digits outside of locations, same row.
+								int comboUnitCount = candidates.candidateComboUnitCount(unit, uniti, zbCombo);
+								if (comboUnitCount == comboCount) {
+									// System.out.println(format(
+									// 		"%s %d digits %s have %d locs, %d digits, %d candidates, %d combo candidates",
+									// 		unit, uniti,
+									// 		Utils.digitsToString(zbToobIntsCopy(zbCombo)), foundLocs.size(),
+									// 		candidates.digitLocCount(zbCombo, foundLocs), candidateLocCount, comboCount));
+									int[] enc = encode(zbCombo, foundLocs);
+									// Note that boxes SOMETIMES duplicates row or col
+									// Yes: [1,1][1,2] [1,1][2,1]   No: [1,1][2,2]
+									addUnique( encs, enc );
+								}
+							} // more candidates in unit
+						} // location count == subset size
+					} // each unit row/col/box
+				} // each unit
+			} // combo incomplete
+		} // for each combo
+		return encs;
 	}
 
-	/** Given 0-based combo and 0-based locations, return 1-base combo,locations array
+	/**
+	 * Given 0-based combo and 0-based locations, return 1-base combo,locations array
 	 * <p>
-	 * For example combo [0,3] and locations [1,0] and [8,0] is converted to
+	 * For example combo [0,3] and locations [1,0] and [8,0]
+	 * is converted to
 	 * int[] {14,21,91}
-	 * </p>*/
-	public int [] encodeLocation( int [] combo, List<RowCol> locations) {
+	 */
+	public static int [] encode(int [] combo, List<RowCol> locations) {
 		int [] encoded = new int[1 + locations.size() ];
-		encoded[0] = intsToCombo( combo ); // Converts 0-based digits to 1-based int
+		encoded[0] = zerobasedIntsToOnebasedCombo( combo ); // Converts 0-based digits to 1-based int
 		for( int loci = 0; loci < locations.size(); loci++) {
 			RowCol rowCol = locations.get( loci );
-			encoded[ loci+1 ] = intsToCombo( new int[] { rowCol.row(), rowCol.col() } ); // Converts 0-based int[] to 1-based int
+			encoded[ loci+1 ] = zerobasedIntsToOnebasedCombo( new int[] { rowCol.row(), rowCol.col() } ); // Converts 0-based int[] to 1-based int
 		}
 		return encoded;
 	}
-	
+
+	/** Decode just the locations part */
+	public static RowCol[] encToRowCols( int[] enc ) {
+		RowCol[] rowCols = new RowCol[ enc.length - 1];
+		for( int loci = 1; loci < enc.length; loci++) {
+			int[] rowCol = onebasedComboToZeroBasedInts( enc[ loci ] );
+			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]]; // // Converts 1-based int to 0-based int[]
+		}
+		return rowCols;
+	}
+
 	/**
 	 * {15} row candidate at row/col [8,1],[8,6]
 	 * @param enc one-based location
@@ -216,24 +198,24 @@ public class HiddenSubsets implements FindUpdateRule {
 		int combo = enc[0];
 		RowCol[] rowCols = new RowCol[ enc.length - 1];
 		for( int loci = 1; loci < enc.length; loci++) {
-			int[] rowCol = comboToInts( enc[ loci ] );
+			int[] rowCol = onebasedComboToZeroBasedInts( enc[ loci ] );
 			rowCols[ loci - 1] = ROWCOL[rowCol[0]][rowCol[1]]; // // Converts 1-based int to 0-based int[]
 		}
 		// Check if rows/cols
 		if ( RowCol.rowsMatch( rowCols )) {
-			return format("combo {%d} has %d row locs at %s",
+			return format("digits {%d} have %d row locs at %s",
 					combo, subsetSize, RowCol.toString(rowCols));
 		} else if ( RowCol.colsMatch( rowCols )) {
-			return format("combo {%d} has %d col locs at %s",
-				combo, subsetSize, RowCol.toString(rowCols));
+			return format("digits {%d} have %d col locs at %s",
+					combo, subsetSize, RowCol.toString(rowCols));
 		} else if ( RowCol.boxesMatch( rowCols )) {
-			return format("combo {%d} has %d box locs at %s",
+			return format("digits {%d} have %d box locs at %s",
 					combo, subsetSize, RowCol.toString(rowCols));
 		}
 		return format("combo {%d} has %d locs with no matching units at %s",
 				combo, subsetSize, RowCol.toString(rowCols));
 	}
-	
+
 	@Override
 	public String ruleName() {
 		return this.getClass().getSimpleName() + subsetSize;

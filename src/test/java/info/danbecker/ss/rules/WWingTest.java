@@ -34,7 +34,7 @@ public class WWingTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-		assertEquals( 46, candidates.getAllCandidateCount());
+		assertEquals( 46, candidates.getAllCount());
 		int[] pair59 = new int[]{5,9}; // one-based
 		assertArrayEquals( pair59, candidates.getRemainingCandidates(ROWCOL[3][3]) );
 		assertArrayEquals( pair59, candidates.getRemainingCandidates(ROWCOL[5][3]) );
@@ -52,11 +52,11 @@ public class WWingTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, new Board( WWING_1_SOLUTION ), candidates, encs);
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(3, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	// This puzzle from https://hodoku.sourceforge.net/en/tech_wings.php#w
@@ -74,7 +74,7 @@ public class WWingTest {
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-		assertEquals( 94, candidates.getAllCandidateCount());
+		assertEquals( 94, candidates.getAllCount());
 		int[] pair14 = new int[]{1,4}; // one-based
 		assertArrayEquals( pair14, candidates.getRemainingCandidates(ROWCOL[0][8]) );
 		assertArrayEquals( pair14, candidates.getRemainingCandidates(ROWCOL[7][6]) );
@@ -95,11 +95,11 @@ public class WWingTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, new Board( WWING_2_SOLUTION ), candidates, encs);
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(5, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	// This example from https://www.sudopedia.org/wiki/W-Wing
@@ -118,7 +118,7 @@ public class WWingTest {
 		(new LegalCandidates()).update(board, null, candidates, null);
 		candidates.removeCandidates(ROWCOL[5][2], new int[]{9} );
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-		assertEquals( 137, candidates.getAllCandidateCount());
+		assertEquals( 137, candidates.getAllCount());
 		int[] pair27 = new int[]{2,7}; // one-based
 		assertArrayEquals( pair27, candidates.getRemainingCandidates(ROWCOL[4][4]) );
 		assertArrayEquals( pair27, candidates.getRemainingCandidates(ROWCOL[5][2]) );
@@ -138,11 +138,11 @@ public class WWingTest {
 
 		// Test update
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, new Board( WWING_3_SOLUTION ), candidates, encs);
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(4, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	@Test

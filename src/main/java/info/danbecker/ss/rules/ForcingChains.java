@@ -182,7 +182,7 @@ public class ForcingChains implements FindUpdateRule {
 		if ( null != nodeData ) {
 			// Bring node info into scope.
 			Candidates candidates = nodeData.candidates;
-			if ( 0 == candidates.getAllCandidateCount()) return;
+			if ( 0 == candidates.getAllCount()) return;
 			int digit = nodeData.digit;
 			RowCol rowCol = nodeData.rowCol;
 			List<ChangeData> actions = nodeData.actions;

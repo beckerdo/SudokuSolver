@@ -167,13 +167,13 @@ public class SimpleColorsTest {
 
 		// Test
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(3, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	@Test
@@ -223,13 +223,13 @@ public class SimpleColorsTest {
 
 		// Test
 		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCandidateCount();
+		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, null, candidates, encs);
 		// Entries same. Candidate loses 1.
 		// Candidates loses 1.
 		assertEquals(prevEntries, candidates.getAllOccupiedCount());
 		assertEquals(3, updates);
-		assertEquals(prevCandidates, candidates.getAllCandidateCount() + updates);
+		assertEquals(prevCandidates, candidates.getAllCount() + updates);
 	}
 
 	@Test

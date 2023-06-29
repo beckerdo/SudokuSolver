@@ -186,7 +186,7 @@ public class CandidatesTest {
 		
 		// Fresh new board
 		assertEquals( 20, candidates.getAllOccupiedCount() );
-		assertEquals( 549, candidates.getAllCandidateCount() );
+		assertEquals( 549, candidates.getAllCount() );
 		assertEquals( 9, candidates.candidateCellCount( ROWCOL[0][0] ));
 		assertEquals( 9, candidates.candidateCellCount( ROWCOL[8][8] ));
 		assertTrue( Arrays.equals( new int[]{ 1,2,3,4,5,6,7,8,9}, candidates.getRemainingCandidates( ROWCOL[8][8] )));
@@ -199,17 +199,26 @@ public class CandidatesTest {
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// After removing legal moves
-		assertEquals( 307, candidates.getAllCandidateCount() );
+		assertEquals( 307, candidates.getAllCount() );
 		assertEquals( 6, candidates.candidateCellCount( ROWCOL[0][0] ));
 		assertEquals( 2, candidates.candidateCellCount( ROWCOL[8][8] ));
-		
+
+		int oneByOneCount = 0;
+		int digit = 5;
+		for ( int rowi = 0; rowi < Board.ROWS; rowi++ ) {
+			for ( int coli = 0; coli < Board.COLS; coli++ ) {
+				oneByOneCount += candidates.isCandidate( ROWCOL[rowi][coli], digit ) ? 1 : 0;
+			}
+		}
+		assertEquals( oneByOneCount, candidates.digitCount( digit ));
+
 		// int [] locations
 		int[] rowLocations = candidates.candidateRowLocations(0, 1);
 		assertEquals( 0, rowLocations.length );
 		rowLocations = candidates.candidateRowLocations(1, 1);
 		assertEquals( 3, rowLocations.length );
 		assertTrue( Arrays.equals( new int[]{3,4,5}, rowLocations) );
-		List<RowCol> rowLocs = candidates.getRowDigitLocs( 1, 1 );
+		List<RowCol> rowLocs = candidates.getRowLocs( 1, 1 );
 		assertEquals( 3, rowLocs.size() );
 		for ( int i = 0; i < rowLocations.length; i++ ) {
 			assertEquals( ROWCOL[1][ rowLocations[i] ], rowLocs.get(i));
@@ -221,7 +230,7 @@ public class CandidatesTest {
 		assertEquals( 5, colLocations.length );
 		// System.out.println( "Col locations=" + Arrays.toString(colLocations) );
 		assertTrue( Arrays.equals( new int[]{0,1,3,4,5}, colLocations) );
-		List<RowCol> colLocs = candidates.getColDigitLocs( 2, 3 );
+		List<RowCol> colLocs = candidates.getColLocs( 2, 3 );
 		assertEquals( 5, colLocs.size() );
 		for ( int i = 0; i < colLocations.length; i++ ) {
 			assertEquals( ROWCOL[ colLocations[i] ][2], colLocs.get(i));
@@ -232,7 +241,7 @@ public class CandidatesTest {
 		assertEquals( ROWCOL[7][6], boxLocation );
 		boxLocation = candidates.candidateBoxLocation(8, 8);
 		assertEquals( 6, boxLocation.row() );
-		List<RowCol> boxLocations = candidates.getBoxDigitLocs(8, 8);
+		List<RowCol> boxLocations = candidates.getBoxLocs(8, 8);
 		assertEquals( 3, boxLocations.size() );
 		// System.out.println( RowCol.toString(boxLocations));
 		assertEquals( ROWCOL[6][6], boxLocations.get(0) );
@@ -261,9 +270,9 @@ public class CandidatesTest {
 		assertEquals( 2, candidates.candidateColLocCount( 8, new int[]{7,8}));
 		assertEquals( 0, candidates.emptyLocations().size());
 
-		assertEquals( 307, candidates.getAllCandidateCount() );
+		assertEquals( 307, candidates.getAllCount() );
 		candidates.removeAllCandidates();
-		assertEquals( 0, candidates.getAllCandidateCount() );
+		assertEquals( 0, candidates.getAllCount() );
 	}
 
 	@Test
@@ -276,8 +285,8 @@ public class CandidatesTest {
 		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		// Digits 1 and 2 in blocks 0 and 1
-		assertEquals( 0, candidates.getBoxDigitLocs(0, 1).size());
-		assertEquals( 3, candidates.getBoxDigitLocs(1, 2).size());
+		assertEquals( 0, candidates.getBoxLocs(0, 1).size());
+		assertEquals( 3, candidates.getBoxLocs(1, 2).size());
 
 		// Test alternate way of counting by block locations
 		assertEquals( 0, candidates.candidateDigitRowColCount( 1, Board.getBoxRowCols(0)));

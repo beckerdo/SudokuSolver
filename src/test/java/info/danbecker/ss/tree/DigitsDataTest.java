@@ -32,9 +32,11 @@ public class DigitsDataTest {
 		assertEquals(  ROWCOL[1][1], dData1.rowCol );
 		assertEquals(  0, dData1.color );
 
-		assertTrue( dData4.toString().contains( "Digits={123}" ));
-		assertTrue( dData4.toString().contains( "rowCol=[7,7]" ));
-		assertTrue( dData4.toString().contains( "color=0" ));
+		String dataStr = dData4.toString();
+		System.out.println("Data=" + dataStr);
+		assertTrue( dataStr.contains( "Digits={123}" ));
+		assertTrue( dataStr.contains( "rowCol=[7,7]" ));
+		assertTrue( dataStr.contains( "color=0" ));
 
 		assertEquals( 0, new DigitsData.RowColMatch( dData5 ).compareTo( dData1 ));
 	}

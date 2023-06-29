@@ -2,18 +2,15 @@ package info.danbecker.ss.tree;
 
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
-import info.danbecker.ss.Utils;
 
-import static info.danbecker.ss.Candidates.FULL_COMBI_MATCH;
-import static info.danbecker.ss.Candidates.NAKED;
-import static java.lang.String.format;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import static info.danbecker.ss.Candidates.FULL_COMBI_MATCH;
+import static info.danbecker.ss.Candidates.NAKED;
+import static java.lang.String.format;
 
 /**
  * TreeNode - an implementation of a tree.
@@ -80,15 +77,16 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 		try {
 			// Will do NoSuchMethodException for String
 			// Will call clone for classes that implement that.
-			Method clone = Object.class.getMethod("clone");
-			cData = (T) clone.invoke( this.data );
-		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+			// Method clone = Object.class.getMethod("clone");
+			// cData = (T) clone.invoke( this.data );
+			super.clone();
+		} catch (CloneNotSupportedException e) {
 			System.out.println( "Clone exception=" + e );
 		}
 		if ( 0 == nAry )
-			return new TreeNode<T>( cData, this.nAry, new LinkedList<>( this.children ) );
+			return new TreeNode<>( cData, this.nAry, new LinkedList<>( this.children ) );
 		else
-			return new TreeNode<T>( cData, this.nAry, new ArrayList<>( this.children ) );
+			return new TreeNode<>( cData, this.nAry, new ArrayList<>( this.children ) );
 		// TODO Recurse and make deep copy.
 	}
 
@@ -157,10 +155,14 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 			int nodeLevel = node.getLevel();
 			String indent = "   ".repeat(Math.max(0, nodeLevel - startLevel));
 			// String nodeInfo = (null == node.data ) ? "no " + Utils.Unit.values()[i].toString().toLowerCase(): node.data.toString();
-			System.out.println(format("%s%d-%d-%s", indent, nodeLevel, nodeCount++, node.data));
+			System.out.printf("%s%d-%d-%s%n", indent, nodeLevel, nodeCount++, node.data);
 		}
 	}
 
+	/**
+	 * A node is a leaf when ALL children are null or null data.
+	 * @return
+	 */
 	public boolean isLeaf() {
 		if ( 0 == nAry )
 			return 0 == children.size();
@@ -172,6 +174,10 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 		return true;
 	}
 
+	/** A node level is 0 for the root, or
+	 * the number of hops to get to the root.
+	 * @return
+	 */
 	public int getLevel() {
 		if (this.isRoot())
 			return 0;
@@ -249,6 +255,11 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 				// this.registerChildForSearch(childNode);
 			}
 		}
+		// Remove previous node from tree (set parent null)
+		TreeNode<T> prevChildNode = children.get( i );
+		prevChildNode.parent = null;
+
+		// Add childNode to children
 		TreeNode<T> childNode = new TreeNode<>(childData, nAry);
 		childNode.parent = this;
 		if ( !children.contains(childNode) ) {

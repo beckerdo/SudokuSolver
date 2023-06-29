@@ -12,24 +12,16 @@ import java.text.ParseException;
 import java.util.List;
 
 public class MultipleLinesTest {
-	// This board and candidates equals the example at 
-	// https://www.sudokuoftheday.com/techniques/multiple-lines
-	public static String MULTIPLELINES = """
-..9.3.6..
-.36.14.89
-1..869.35
-.9....8..
-.1.....9.
-.68.9.17.
-6.19.3..2
-97264.3..
-..3.2.9..
-""";
-
-
 	@BeforeEach
 	public void setup() {
 	}
+
+	// This board and candidates equals the example at
+	// https://www.sudokuoftheday.com/techniques/multiple-lines
+	public static String MULTIPLELINES =
+			"..9.3.6...36.14.891..869.35.9....8...1.....9..68.9.17.6.19.3..297264.3....3.2.9..";
+	public static String MULTIPLELINES_SOLUTION =
+			"849532617536714289127869435395471826714286593268395174681953742972648351453127968";
 
 	@Test
 	public void testBasics() throws ParseException {
@@ -37,7 +29,7 @@ public class MultipleLinesTest {
 		assertTrue(board.legal());	
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
-		System.out.println( "Candidates=" + candidates.toStringCompact());
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		FindUpdateRule rule = new MultipleLines();
 		assertEquals(rule.ruleName(), rule.getClass().getSimpleName());
@@ -131,17 +123,11 @@ public class MultipleLinesTest {
 		assertEquals( 2, encoding[ 7 ]); // keeper row
 		
 		// Assure candidates are updated
-		int prevCandCount = candidates.getAllCandidateCount();
-		int updates = rule.update(board, null, candidates, locations); // remove digi 5, block 3
+		int prevEntries = candidates.getAllOccupiedCount();
+		int prevCandCount = candidates.getAllCount();
+		int updates = rule.update(board, new Board(MULTIPLELINES_SOLUTION ), candidates, locations); // remove digi 5, block 3
 		assertEquals( 3, updates );
-		assertEquals( prevCandCount, updates + candidates.getAllCandidateCount());
-
-		// Assure rule does not report updated locations
-		locations = rule.find(board, candidates);
-		prevCandCount = candidates.getAllCandidateCount();
-		updates = rule.update(board, null, candidates, locations); // remove digi 5, block 4
-		assertEquals( 6, updates);
-		assertEquals( prevCandCount, updates + candidates.getAllCandidateCount());
-		// System.out.println( "Candidates=" + candidates.toStringCompact());
+		assertEquals( prevEntries, candidates.getAllOccupiedCount());
+		assertEquals( prevCandCount, updates + candidates.getAllCount());
 	}
 }

@@ -59,6 +59,11 @@ import static java.lang.String.format;
  *    LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
  * Move json resources from main to test
  * Replace glut of comparators with Comparator lambdas based on compareTo.
+ * Remove unused methods/comparators. Consolidate little used methods to more general use methods.
+ * Implement one of the logic notations (https://hodoku.sourceforge.net/en/tech_chains.php#in5) to check candidates, etc.
+ *    - Forcing chain notation (= <> =>) r2c7<>4 => r2c7=5 => r2c2<>5 => r2c2=4 => r3c1<>4 => r3c1=5 => r6c1<>5 => r6c1=4
+ *    - AIC/Eureka notation https://www.sudopedia.org/wiki/Eureka (= -) (5=1)r3c3-(1=6)r7c3-(6=1)r8c1-(1=5)r8c5
+ * Simplify find and remove candidates. find = good, remove = bad
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
@@ -176,17 +181,18 @@ public class SudokuSolver {
 			// Fish
 			new XWings(), // XWing is a 2 set fish and not a wing
 			new Swordfish(), // Swordfish is a 3 set fish
-			// Chains
+			// Single Digit Patterns
 			new Skyscraper(),
 			new TwoStringKite(),
 			// Wings
-			new XYWing(),
+			new XYWing(), // error on th642-veryhard.json "Rule XYWing would like to remove solution digit 4 at loc [3,6]."
 			new WWing(),
 			// Colors
 			new SimpleColors(),
 			// Chains
 			new RemotePairs(),
 			new XChain(),
+			// new XYChain(),
 			// new ForcingChains(),		// bugs
 		};
 		
@@ -200,27 +206,24 @@ public class SudokuSolver {
 		long cumStartTime = System.currentTimeMillis();
 		boolean updated;
 		int startingEntries = candidates.getAllOccupiedCount();
-		int startingCandidates = candidates.getAllCandidateCount();
+		int startingCandidates = candidates.getAllCount();
 		do {
 			updated = false;
 			// Go through each rule.
 			for ( int rulei = 0; rulei < rules.length; rulei++ ) {
 			   System.out.printf("i%d.%d Board entries=%d, candidates=%d\n", iterations, rulei,
-				  candidates.getAllOccupiedCount(), candidates.getAllCandidateCount());
+				  candidates.getAllOccupiedCount(), candidates.getAllCount());
 			   // System.out.println( "Board=\n" + board );		
                // System.out.println( "Candidates=\n" + candidates.toStringCompact() );
 			   FindUpdateRule rule = rules[ rulei ];
 			   long startTime = System.nanoTime();
 			   List<int[]> encs = rule.find( board, candidates );
-			   // Cannot assume value of each location since each rule reports it separately
 			   if ( 0 != rulei ) {
 				   // Rule 0 (ValidateLegalCandidates) never reports a location, only updates
-				   System.out.printf("Rule %s reports %d possibles", rule.ruleName(), encs.size());
 				   if ( encs.size() > 0  ) {
+					   System.out.printf("Rule %s reports %d possibles%n",
+							   rule.ruleName(), encs.size());
 					   possibles[ rulei ] += encs.size();
-	   				   System.out.println( ": " + rule.encodingToString(encs.get(0)));
-				   } else {
-					   System.out.println();
 				   }
 			   }
 		       // System.out.println("Candidates=" + candidates.toString());
@@ -251,7 +254,7 @@ public class SudokuSolver {
 				   // No need to iterate through rules.
 				   break;
 			   }		   
-			   if ( 0 == candidates.getAllCandidateCount()) {
+			   if ( 0 == candidates.getAllCount()) {
 				   if ( !board.completed() )
 					   System.out.println( "***Warning unsolved board, no candidates, rule=" + rule.ruleName());
 				   // No need to iterate through rules.
@@ -270,7 +273,7 @@ public class SudokuSolver {
 		System.out.printf( "Solving %s successful after %d rules, %d iterations, %dmS\n",
 			solvedText, rulesRun, iterations, (System.currentTimeMillis() - cumStartTime) );
 		System.out.printf( "Entry count went from %d to %d. Candidate count went from %d to %d.\n",
-			startingEntries, candidates.getAllOccupiedCount(), startingCandidates, candidates.getAllCandidateCount());
+			startingEntries, candidates.getAllOccupiedCount(), startingCandidates, candidates.getAllCount());
 		System.out.println("Board=" + board.toSudokuString("-"));
 		if (!solved) {
 			System.out.println("Remaining candidates=\n" + candidates.toStringBoxed());

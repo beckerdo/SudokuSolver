@@ -16,6 +16,7 @@ import static info.danbecker.ss.Board.ROWCOL;
 import static info.danbecker.ss.Candidates.ALL_COUNTS;
 import static info.danbecker.ss.Utils.DIGITS;
 import static info.danbecker.ss.Utils.Unit;
+import static info.danbecker.ss.Utils.addUniques;
 import static java.lang.String.format;
 
 /**
@@ -148,24 +149,6 @@ public class XChain implements FindUpdateRule {
 		addUniques( problemLocs, foundLocs );
 
 		return problemLocs;
-	}
-
-	/** Add non-duplicate encodings from potentials to the bigList
-	 *
-	 * @param bigList
-	 * @param potentials
-	 * @return number of new potentials added.
-	 */
-	public static int addUniques( List<int[]> bigList, List<int[]> potentials ) {
-		int added = 0;
-		for (int loci = 0; loci < potentials.size(); loci++) {
-			int [] enc = potentials.get(loci);
-			if (!bigList.contains( enc)) {
-				bigList.add(enc);
-				added++;
-			}
-		}
-		return added;
 	}
 
 	public List<int[]> buildXChain(Candidates candidates, int digit, TreeNode<DigitData> pNode,

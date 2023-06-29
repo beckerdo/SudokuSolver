@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static info.danbecker.ss.Utils.Unit;
 import static info.danbecker.ss.Utils.DIGITS;
 import static info.danbecker.ss.Utils.BOXES;
+import static java.lang.String.format;
 
 /**
  * MultipleLines - like CandidateLines but requires 2 lines 
@@ -24,36 +26,59 @@ public class MultipleLines implements FindUpdateRule {
 	public int update(Board board, Board solution, Candidates candidates, List<int[]> encs) {
 		int updates = 0;
 		if ( null == encs) return updates;
-		if (encs.size() > 0) {
-			int [] enc = encs.get(0);
-			// Just correct item 1.
+		for ( int enci = 0; enci < encs.size(); enci++ ) {
+			int[] enc = encs.get(enci);
 			// Encoding [] = digit, row 0|col 1, boxML0, boxML1, savebox, ml0, ml1, keepline
-			int digi = enc[0];
-			boolean rowEncoding = (enc[1] == 0);
-			int keepRowCol = enc[7];
-			int candBox = enc[4];			
-			if ( rowEncoding ) {
-				updates += candidates.removeBoxCandidatesNotInRow(digi, candBox, keepRowCol );
+			int digit = enc[0];
+			Unit unit = ( 0 == enc[1] ) ? Unit.ROW : Unit.COL;
+			int boxi = enc[4];
+			int keepUniti = enc[7];
+
+			// Validate if available
+			List<RowCol> locs = (unit == Unit.ROW) ?
+				candidates.findBoxCandidatesNotInRow(digit, boxi, keepUniti ) :
+				candidates.findBoxCandidatesNotInCol(digit, boxi, keepUniti );
+			if ( null != solution ) {
+				for (int loci = 0; loci < locs.size(); loci++) {
+					RowCol loc = locs.get(loci);
+					int cellSolution = solution.get(loc);
+					if (cellSolution == digit) {
+						System.out.println("Candidates=\n" + candidates.toStringBoxed());
+						throw new IllegalArgumentException(format(
+							"%s digit %d %s lines in %d,%d in boxes %d,%d, keeper candidates %s %d in box %d, would remove solution in %s",
+							ruleName(), digit, unit,
+							enc[5], enc[6], enc[2], enc[3],
+							unit, enc[7], enc[4], loc ));
+					}
+				}
+			}
+
+			System.out.printf( "%s digit %d, %s lines %d,%d in boxes %d,%d, keepers %s %d in box %d, removes from %s.%n",
+				ruleName(), digit, unit,
+				enc[5], enc[6], enc[2], enc[3],
+				unit, enc[7], enc[4], RowCol.toString(locs) );
+			if ( unit == Unit.ROW ) {
+				updates += candidates.removeBoxCandidatesNotInRow(digit, boxi, keepUniti );
 			} else {
-				updates += candidates.removeBoxCandidatesNotInCol(digi, candBox, keepRowCol );				
+				updates += candidates.removeBoxCandidatesNotInCol(digit, boxi, keepUniti );
 			}
 		}
 		return updates;
 	}
 
-	@Override
-	/** 
+	/**
 	 * MultipleLines - Two lines of digits in boxes 0,1 can remove candidates in box 2
-	 * 
+	 * <p>
 	 * Search for only two same candidates in each block,
-  	 * see if row or col is the same, 
+	 * see if row or col is the same,
      * if row match, see if other candidates exist on same row outside of block
 	 * if col match, see if other candidates exist on same col outside of block
 	 */
+	@Override
 	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;
-		ArrayList<int[]> locations = new ArrayList<>();
+		ArrayList<int[]> found = new ArrayList<>();
 		for (int digi = 1; digi <= DIGITS; digi++) {
 			if (!board.digitCompleted(digi)) {
 				for (final boolean rowOrientation : new boolean [] { true, false } ){
@@ -123,13 +148,13 @@ public class MultipleLines implements FindUpdateRule {
 							    int multLine0 = rowOrientation ? startBoxi + match[ 3 ] : startBoxi * 3 + match[ 3 ];
 							    int multLine1 = rowOrientation ? startBoxi + match[ 4 ] : startBoxi * 3 + match[ 4 ];
 							    int keepLine = rowOrientation ? startBoxi + match[ 5 ] : startBoxi * 3 + match[ 5 ];
-								int [] encoding = new int [] {
+								int [] enc = new int [] {
 									digi, rowOrientation?0:1, 
 									boxi0ML, boxi1ML, boxi2ML,
 									multLine0, multLine1, keepLine,
 								};
-								locations.add(encoding);
-								System.out.println(encodingToString(encoding));
+								Utils.addUnique( found, enc );
+								// System.out.println(encodingToString(encoding));
 							}
 						}
 					} // tuple index
@@ -137,11 +162,11 @@ public class MultipleLines implements FindUpdateRule {
 				} // rowCol orientation
 			} // digi
 		}
-		return locations;
+		return found;
 	}
 
 	/** 
-	 * Given a two dimensional array with 3 box counts of 3 segments each, 
+	 * Given a two-dimensional array with 3 box counts of 3 segments each,
 	 * returns the box and segment indexes which have multiple lines,
 	 * and which may be cleared, lastly candidate index and location 
 	 * which should be saved.

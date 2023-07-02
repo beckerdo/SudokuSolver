@@ -17,8 +17,9 @@ import static java.lang.String.format;
 /**
  * SudokuSolver
  * <p>
- * Sudoku is a popular number puzzle in which the board is a 9 by 9 square
- * of 81 cells (or blocks). There are 9 rows, 9 columns, and 9 boxes of 9 cells.
+ * Sudoku is a popular number puzzle in which the board is a 9 by 9 array
+ * of 81 cells (or blocks).
+ * There are 9 rows, 9 columns, and 9 boxes (or squares) of 9 cells.
  * You must put the digits 1 through 9 in each cell so that
  * no row, column, or box has a duplicate digit.
  * <p>
@@ -42,9 +43,9 @@ import static java.lang.String.format;
  * Comments are lines beginning with #   
  * <p>
  * TODOs:
- * Verbose command line option for all the logging printlns, perhaps specify rule, rowCol, digit in command line.
+ * Verbose command line option for all the logging printlns, perhaps specify rule, rowCol, digit in command line,
+ *    or specify find logging or update logging.
  * Command line option for solving rules or groups: -r "Basic,Subsets,Coloring,Chains"
- * Consider RowCol String and list output used on websites such as r1c5, r345c8, r4c89
  * Update digits/rows/cols/boxes to be 0-based everywhere internally and 1-based externally (input parsing and output strings).
  * FindUpdateRule changes
  *    All rule updates should report occupy and candidate location changes to aid in debugging.
@@ -55,11 +56,10 @@ import static java.lang.String.format;
  * Consider matchers for use with lists of locations. Match by candidate count, combo, etc.
  *    This might cut down on the number of candidate row col box methods.
  *    Consider matchers for chains/coloring. Single digit, group 2,...
- * BUGS (disable until fixed)
- *    LegalCandidates empties at [6,5] with 20230103-diabolical-24250.json. Possibly ForcingChains rule.
  * Move json resources from main to test
  * Replace glut of comparators with Comparator lambdas based on compareTo.
  * Remove unused methods/comparators. Consolidate little used methods to more general use methods.
+ * Consider RowCol String and list output used on websites such as r1c5, r345c8, r4c89
  * Implement one of the logic notations (https://hodoku.sourceforge.net/en/tech_chains.php#in5) to check candidates, etc.
  *    - Forcing chain notation (= <> =>) r2c7<>4 => r2c7=5 => r2c2<>5 => r2c2=4 => r3c1<>4 => r3c1=5 => r6c1<>5 => r6c1=4
  *    - AIC/Eureka notation https://www.sudopedia.org/wiki/Eureka (= -) (5=1)r3c3-(1=6)r7c3-(6=1)r8c1-(1=5)r8c5
@@ -308,7 +308,8 @@ public class SudokuSolver {
         List<int []> locations = rule.find( board, candidates );
 		results[ 0 ] = locations.size();
         System.out.printf("Rule %s reports %d possible locations\n", rule.ruleName(), locations.size());
-   	    int changes = rule.update( board, new Board(solution), candidates, locations);
+		Board solutionBoard = (null != solution) ? new Board( solution ) : null;
+   	    int changes = rule.update( board, solutionBoard, candidates, locations);
 		results[ 1 ] = changes;
         System.out.printf("Rule %s made %d changes\n", rule.ruleName(), changes);
 		(new LegalCandidates()).update(board, null, candidates, null);

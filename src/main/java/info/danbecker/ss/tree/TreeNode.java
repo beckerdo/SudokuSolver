@@ -10,7 +10,6 @@ import java.util.List;
 
 import static info.danbecker.ss.Candidates.FULL_COMBI_MATCH;
 import static info.danbecker.ss.Candidates.NAKED;
-import static java.lang.String.format;
 
 /**
  * TreeNode - an implementation of a tree.
@@ -169,9 +168,46 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 		for (int childi = 0; childi < nAry; childi++) {
 			TreeNode<T> child = getChild(childi);
 			if ( null != child && null != child.data )
-			   return false;
+				return false;
 		}
 		return true;
+	}
+
+	/**
+	 * This searches the given node and below,
+	 * and returns a list of ALL leaf nodes visible from this node.
+	 */
+	public List<TreeNode<T>> findLeafNodes() {
+		List<TreeNode<T>> list = new ArrayList<>();
+		if ( isLeaf() ) {
+			list.add(this);
+			return list;
+		}
+		for ( int childi = 0; childi < children.size(); childi++ ) {
+			TreeNode<T> child = this.getChild(childi);
+			if ( null != child && null != child.data) {
+				child.findLeafNodes( list );
+			}
+		}
+		return list;
+	}
+
+	/**
+	 * This searches the given node and below,
+	 * and returns a list of ALL leaf nodes visible from this node.
+	 */
+	protected void findLeafNodes( List<TreeNode<T>> list ) {
+		if ( isLeaf() ) {
+			list.add(this);
+			return;
+		}
+		// Recurse children
+		for ( int childi = 0; childi < children.size(); childi++ ) {
+			TreeNode<T> child = this.getChild(childi);
+			if ( null != child && null != child.data) {
+				child.findLeafNodes( list);
+			}
+		}
 	}
 
 	/** A node level is 0 for the root, or
@@ -298,7 +334,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 	 * and returns a list of ALL non-null nodes with matching data.
 	 */ 
 	public List<TreeNode<T>> findTreeNodes(Comparable<T> cmp) {
-		List<TreeNode<T>> list = new LinkedList<> ();
+		List<TreeNode<T>> list = new LinkedList<>();
 		if (cmp.compareTo(this.data) == 0) {
 			list.add(this);
 		}
@@ -312,6 +348,45 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 
 		}
 		return list;
+	}
+
+	/**
+	 * Report a unique set of path ids from root to here
+	 * @return
+	 */
+	public int[] getPath() {
+		if ( this.isRoot() ) {
+			return new int[]{ 0 };
+		} else {
+			int level = getLevel();
+			// Create path based on my level
+			int[] pathIds = new int[level + 1];
+			pathIds[ level ] = getParent().getChildPath( this );
+			getParent().getPath( pathIds );
+			return pathIds;
+		}
+	}
+
+	protected void getPath( int [] pathIds ) {
+		if (null == parent) {
+			pathIds[0] = 0;
+		} else {
+			// Fill in my level.
+			int level = getLevel();
+			pathIds[ level ] = getParent().getChildPath( this );
+			// Have parent fill in their level.
+			getParent().getPath( pathIds );
+		}
+	}
+
+	public int getChildPath( TreeNode<T> child ) {
+		for ( int childi = 0; childi < children.size(); childi++ ) {
+			TreeNode<T> potential = this.getChild(childi);
+			if ( child.equals( potential )) {
+				return childi;
+			}
+		}
+		return -1;
 	}
 
 	public String toString( List<TreeNode<T>> tree ) {
@@ -384,4 +459,19 @@ public class TreeNode<T> implements Iterable<TreeNode<T>>, Cloneable {
 		return -1;
 	}
 
+	/** A String comparator for trees of String data. */
+	public static class StringContains implements Comparable<String> {
+		String searchStr;
+
+		public StringContains( String searchStr ) {
+			this.searchStr = searchStr;
+		}
+
+		@Override
+		public int compareTo(String treeData) {
+			if (treeData == null)
+				return 1;
+			return treeData.contains(searchStr) ? 0 : 1;
+		}
+	}
 }

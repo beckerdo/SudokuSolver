@@ -1,8 +1,7 @@
 package info.danbecker.ss.tree;
 
-import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -74,6 +73,14 @@ public class TreeNodeTest {
 		assertEquals( treeRoot, treeRoot.getChild(0).getRoot() );
 		assertTrue( treeRoot.toString().contains("root") );
 
+		List<TreeNode<String>> leaves = treeRoot.findLeafNodes();
+		assertNotNull( leaves );
+		assertEquals( 6, leaves.size());
+		for ( TreeNode<String> leaf: leaves ) assertTrue( leaf.isLeaf() );
+		// System.out.print( "Leaf nodes:" );
+        // for ( TreeNode<String> leaf: leaves ) System.out.print( " " + leaf );
+		// System.out.println();
+
 		treeRoot = getNaryTree();
 		// treeRoot.printTree();
 
@@ -86,6 +93,11 @@ public class TreeNodeTest {
 		assertTrue( treeRoot.toString().contains("root") );
 		assertEquals( 3, treeRoot.getChildren().size() );
 		assertEquals( 3, treeRoot.getChild(0).getChildren().size() ); // 3 nodes with null data
+
+		leaves = treeRoot.findLeafNodes();
+		assertNotNull( leaves );
+		assertEquals( 4, leaves.size());
+		for ( TreeNode<String> leaf: leaves ) assertTrue( leaf.isLeaf() );
 	}
 
 	@Test
@@ -145,17 +157,10 @@ public class TreeNodeTest {
 		assertEquals( 4, treeRoot.deepestLevel() );
 	}
 
+
 	@Test
 	public void testSearch() {
-		Comparable<String> searchCriteria = new Comparable<>() {
-			@Override
-			public int compareTo(String treeData) {
-				if (treeData == null)
-					return 1;
-				boolean nodeOk = treeData.contains("210");
-				return nodeOk ? 0 : 1;
-			}
-		};
+		Comparable<String> searchCriteria = new TreeNode.StringContains( "210");
 
 		TreeNode<String> treeRoot = getGeneralTree();
 		// treeRoot.printTree();
@@ -208,6 +213,37 @@ public class TreeNodeTest {
 	}
 
 	@Test
+	public void testPath() {
+		TreeNode<String> treeRoot = getGeneralTree();
+		// treeRoot.printTree();
+
+		TreeNode<String> found = treeRoot.findTreeNode(new TreeNode.StringContains("210"));
+		int[] path = found.getPath();
+		// System.out.println( "Path=" + Utils.digitsToString( path ));
+		assertArrayEquals(new int[]{0, 2, 1, 0}, path);
+
+		List<TreeNode<String>> leaves = treeRoot.findLeafNodes();
+		assertEquals(6, leaves.size());
+		// for (TreeNode<String> leaf : leaves) {
+		// 	System.out.println( "Leaf " + leaf + ", path=" + Utils.digitsToString( leaf.getPath() ));
+		// }
+
+		treeRoot = getNaryTree();
+		treeRoot.printTree();
+
+		found = treeRoot.findTreeNode(new TreeNode.StringContains( "2100" ));
+		path = found.getPath();
+		// System.out.println( "Path=" + Utils.digitsToString( path ));
+		assertArrayEquals( new int[]{0,2,1,1,1}, path);
+
+		leaves = treeRoot.findLeafNodes();
+		assertEquals(4, leaves.size());
+		// for (TreeNode<String> leaf : leaves) {
+		// 	System.out.println( "Leaf " + leaf + ", path=" + Utils.digitsToString( leaf.getPath() ));
+		// }
+	}
+
+	@Test
 	public void testEditing() {
 		TreeNode<String> r0 = new TreeNode<>("0", 3);
 		TreeNode<String> c10 = r0.setChild( "1-0", 0);
@@ -251,7 +287,7 @@ public class TreeNodeTest {
 	}
 
 	/** Finds all nodes in the tree, even if they contain null data. */
-	static class MatchAll implements Comparable<String> {
+	public static class MatchAll implements Comparable<String> {
 		@Override
 		public int compareTo(String that) {
 			return 0;
@@ -259,7 +295,7 @@ public class TreeNodeTest {
 	}
 
 	/** Finds all nodes in the tree that are nulls. */
-	static class MatchNullNode implements Comparable<String> {
+	public static class MatchNullNode implements Comparable<String> {
 		@Override
 		public int compareTo(String that) {
 			//System.out.println( "compareTo");
@@ -269,7 +305,7 @@ public class TreeNodeTest {
 	}
 
 	/** Finds all nodes in the tree that are nulls. */
-	static class MatchNonZeroLength implements Comparable<String> {
+	public static class MatchNonZeroLength implements Comparable<String> {
 		@Override
 		public int compareTo(String that) {
 			//System.out.println( "compareTo");
@@ -277,4 +313,5 @@ public class TreeNodeTest {
 			return 1;
 		}
 	}
+
 }

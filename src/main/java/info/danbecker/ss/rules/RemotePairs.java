@@ -68,11 +68,11 @@ public class RemotePairs implements FindUpdateRule {
 				}
 			}
 
-			String prev = candidates.getCandidatesStringCompact( cLoc );
+			String prev = candidates.getCompactStr( cLoc );
 			for ( int digi = 0; digi < 2; digi++) {
 				if (candidates.removeCandidate(cLoc, digits[digi])) {
 					updates++;
-					String cStr = candidates.getCandidatesStringCompact(cLoc);
+					String cStr = candidates.getCompactStr(cLoc);
 					System.out.println(format("%s %s removed digit %d from %s, remaining candidates %s",
 							ruleName(), typeString, digits[digi], cLoc, cStr));
 				}
@@ -81,7 +81,6 @@ public class RemotePairs implements FindUpdateRule {
 		return updates;
 	}
 
-	@Override
 	/**
 	 * Strategy.
 	 * -For each pair of digits on the board,
@@ -91,6 +90,7 @@ public class RemotePairs implements FindUpdateRule {
 	 * Note that the list may have duplicate candidates when it  can see 3 other locs in chain
 	 * @return a list of all locations that can see two colors.
 	 */
+	@Override
 	public List<int[]> find(Board board, Candidates candidates) {
 		if (null == candidates)
 			return null;

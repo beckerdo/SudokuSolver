@@ -57,10 +57,10 @@ public class WWing implements FindUpdateRule {
 					}
 				}
 
-				String prev = candidates.getCandidatesStringCompact( loc );
+				String prev = candidates.getCompactStr( loc );
 				if (candidates.removeCandidate(loc, nslDigit)) {
 					updates++;
-					String cStr = candidates.getCandidatesStringCompact(loc);
+					String cStr = candidates.getCompactStr(loc);
 					System.out.printf("%s removed digit %d from %s, remaining candidates %s\n",
 							ruleName(), nslDigit, loc, cStr);
 				}

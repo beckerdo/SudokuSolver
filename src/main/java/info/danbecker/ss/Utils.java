@@ -226,15 +226,33 @@ public class Utils {
 
 	/**
 	 * Renders the List<Integer> of digits as a String.
+	 * The list is not sorted.
 	 * @param digits list of ints
 	 * @return string representing digits
 	 */
 	public static String digitListToString(List<Integer> digits ) {
 		String digitsStr = digits
 				.stream()
-				.map( Object::toString )
-				.collect(Collectors.joining(""));
+				.map(iStr -> Integer.toString(iStr))
+				.collect(Collectors.joining());
 		return "{" + digitsStr + "}";
+	}
+
+	/**
+	 * Renders the String of digits as a List<Integer>.
+	 * The String digits are not sorted.
+	 * @param digitStr String of ints (can have {} or whitespace)
+	 * @return string representing digits
+	 */
+	public static List<Integer> digitStringToList(String digitStr ) {
+		List<Integer> ints = digitStr.chars()
+				.mapToObj(code -> (char) code)
+				.filter(c -> !Character.isWhitespace( c ))
+				.filter(c -> -1 == "{}".indexOf( c ))
+				.map(dChar -> Integer.parseInt(String.valueOf(dChar)))
+				.toList();
+		// Collections.sort( ints );
+		return ints;
 	}
 
 	/**
@@ -293,7 +311,7 @@ public class Utils {
 		return digits;
 	}
 
-	public static boolean deepEquals( int[] i1, int[] i2 ) {
+	public static boolean deepEquals(int[] i1, int[] i2) {
 		if (i1 == i2) return true;
 		if ((null == i1) || (null == i2)) return false;
 		if (i1.length != i2.length) return false;
@@ -306,7 +324,7 @@ public class Utils {
 	public static int findFirst( List<int[]> list, int[] item ) {
 		for ( int listi = 0; listi < list.size(); listi++ ) {
 			int[] test = list.get(listi);
-			if (Utils.deepEquals( test, item)) {
+			if (Utils.deepEquals(test,item)) {
 				return listi;
 			}
 		}
@@ -345,6 +363,16 @@ public class Utils {
 		}
 		return added;
 	}
+
+	public static int addUniques( List<int[]> bigList, List<int[]> potentials, Comparator<int[]> comp ) {
+		int added = 0;
+		for (int loci = 0; loci < potentials.size(); loci++) {
+			int [] enc = potentials.get(loci);
+			added += addUnique( bigList, enc, comp );
+		}
+		return added;
+	}
+
 	public static int addUnique( List<int[]> bigList, int[] enc ) {
 		int added = 0;
 		// if (!bigList.contains( enc )) { // bad, equals of two arrays (addresses)
@@ -353,6 +381,46 @@ public class Utils {
 			added++;
 		}
 		return added;
+	}
+
+	/** Only add enc if it is not in the list
+	 * as decided by the given comparator.
+	 * @param bigList
+	 * @param enc
+	 * @param comp
+	 * @return
+	 */
+	public static int addUnique( List<int[]> bigList, int[] enc, Comparator<int[]> comp) {
+		int added = 0;
+		if (bigList.stream().noneMatch(ele -> 0 == comp.compare(ele, enc))) { // good, tests all array members
+			bigList.add(enc);
+			added++;
+		}
+		return added;
+	}
+
+	/**
+	 * Compares an encoding just by a subset of elements.
+	 * Useful for when you have an encoding,
+	 * but you only want to test a subset of elements
+	 * such as digit and rowCol
+	 */
+	public static class SubsetComparator implements Comparator<int[]> {
+		List<Integer> subset;
+		public SubsetComparator( List<Integer> subset ) {
+			this.subset = subset;
+		}
+
+		@Override
+		public int compare(int[] first, int[] second) {
+			if (null == first && null == second) return 0;
+			if (null == second) return 1;
+			if (null == first) return -1;
+			for ( int element : subset ) {
+				if (first[element] != second[element]) return first[element] - second[element];
+			}
+			return 0;
+		}
 	}
 
 	public static int compareTo( List<Integer> list1, List<Integer> list2) {

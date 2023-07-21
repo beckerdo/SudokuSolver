@@ -62,7 +62,7 @@ public class XYChain implements FindUpdateRule {
 			    // String prev = candidates.getCandidatesStringCompact( sLoc );
 				if (candidates.removeCandidate(sLoc, endDigit)) {
 					updates++;
-					String cStr = candidates.getCandidatesStringCompact(sLoc);
+					String cStr = candidates.getCompactStr(sLoc);
 					System.out.printf("%s removed digit %d from %s, remaining candidates %s%n",
 							ruleName(), endDigit, sLoc, cStr );
 				}

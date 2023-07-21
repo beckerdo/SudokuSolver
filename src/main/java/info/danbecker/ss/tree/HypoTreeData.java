@@ -96,7 +96,7 @@ public class HypoTreeData implements Comparable<HypoTreeData>, Cloneable {
 	public String toString() {
 		return java.lang.String.format( "Digit=%d,rowCol=%s,cands=%s,actions=%d,afterCands=%s",
 			digit, rowCol,
-			beforeCandidates.getCandidatesStringCompact(rowCol), actions.size(),
-			candidates.getCandidatesStringCompact(rowCol));
+			beforeCandidates.getCompactStr(rowCol), actions.size(),
+			candidates.getCompactStr(rowCol));
 	}
 }

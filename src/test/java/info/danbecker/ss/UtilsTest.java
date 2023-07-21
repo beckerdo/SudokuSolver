@@ -3,10 +3,12 @@ package info.danbecker.ss;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
-import static info.danbecker.ss.Utils.DIGITS;
+import static info.danbecker.ss.Utils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilsTest {
@@ -79,7 +81,41 @@ public class UtilsTest {
 		assertEquals( 1, Utils.compareTo( two, one));
 		assertEquals( 0, Utils.compareTo( two, two2));
 	}
+	@Test
+	public void strings() {
+		List<Integer> digits = Arrays.asList( 1, 2, 3 );
+		String digitsStr = Utils.digitListToString( digits );
+		assertEquals( "{123}", digitsStr );
+		assertEquals( Arrays.asList( 1, 2, 3 ), Utils.digitStringToList( digitsStr ));
+		assertEquals( digits, Utils.digitStringToList( "123"));
+		assertEquals( digits, Utils.digitStringToList( " {1 23 } "));
+		// Does not sort
+		// assertEquals( digits, Utils.digitStringToList( "321"));
+	}
 
+	public static final Comparator<int[]> TestComparator =
+			new Utils.SubsetComparator(Arrays.asList( 1, 3 ));
+	@Test
+	public void testUniques() {
+		// public static int addUnique( List<int[]> bigList, int[] enc, Comparator<int[]> comp) {
+		// public static int addUniques( List<int[]> bigList, List<int[]> potentials, Comparator<int[]> comp ) {
+
+		final Comparator<int[]> TestComparator = new Utils.SubsetComparator(Arrays.asList( 1, 3 ));
+		List<int[]> encs = new ArrayList<>(Arrays.asList(
+				new int[] { 0, 1, 2, 3 }
+		));
+
+		assertEquals( 0, addUnique( encs, new int[] { 1, 1, 3, 3 }, TestComparator ));
+		assertEquals( 1, addUnique( encs, new int[] { 0, 0, 2, 2 }, TestComparator ));
+
+		List<int[]> potentials = new ArrayList<>(Arrays.asList(
+				new int[] { 0, 1, 2, 3 },
+				new int[] { 1, 1, 3, 3 }
+		));
+		assertEquals( 0, addUniques( encs, potentials, TestComparator ));
+		potentials.add( new int[]{ 3, 3, 3, 3 });
+		assertEquals( 1, addUniques( encs, potentials, TestComparator ));
+	}
 	@Test
 	public void testMisc() {
 		assertEquals( "         ", Utils.indent(3));

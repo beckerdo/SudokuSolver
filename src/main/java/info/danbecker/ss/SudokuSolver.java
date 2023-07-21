@@ -50,9 +50,11 @@ import static java.lang.String.format;
  * FindUpdateRule changes
  *    All rule updates should report occupy and candidate location changes to aid in debugging.
  *    Change int updateCandidates to something that encodes actions occupy/add/remove, digit, and location.
- *    Should rule perform validation, or the solver (seems like less code to put it in SudokuSolver than X Rules).
+ *    Should rule perform validation, or the solver (Some rules add occupies, some rules delete canndidates).
  *    Add solution checking to all rules.
+ * Consider undo/redo (by saving previous Board Candidate state and/or deltas between changes).
  * Refactor APIs to use Units and remove APIs that have Row/Col/Box in name.
+ * Regularize Candidate APIs so they are short and consistent.
  * Consider matchers for use with lists of locations. Match by candidate count, combo, etc.
  *    This might cut down on the number of candidate row col box methods.
  *    Consider matchers for chains/coloring. Single digit, group 2,...
@@ -64,6 +66,7 @@ import static java.lang.String.format;
  *    - Forcing chain notation (= <> =>) r2c7<>4 => r2c7=5 => r2c2<>5 => r2c2=4 => r3c1<>4 => r3c1=5 => r6c1<>5 => r6c1=4
  *    - AIC/Eureka notation https://www.sudopedia.org/wiki/Eureka (= -) (5=1)r3c3-(1=6)r7c3-(6=1)r8c1-(1=5)r8c5
  * Simplify find and remove candidates. find = good, remove = bad
+ * Replace repeated test pattern with a test runner. See ForcingChainsTest
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
@@ -185,15 +188,15 @@ public class SudokuSolver {
 			new Skyscraper(),
 			new TwoStringKite(),
 			// Wings
-			new XYWing(), // error on th642-veryhard.json "Rule XYWing would like to remove solution digit 4 at loc [3,6]."
+			new XYWing(),
 			new WWing(),
 			// Colors
 			new SimpleColors(),
 			// Chains
 			new RemotePairs(),
 			new XChain(),
-			// new XYChain(),
-			// new ForcingChains(),		// bugs
+			new XYChain(),
+			// new ForcingChains(), // exception in P20230103_TH
 		};
 		
 		// Number of possibles/updates/timings reported

@@ -77,10 +77,10 @@ public class SimpleColors implements FindUpdateRule {
 				}
 			}
 
-			String prev = candidates.getCandidatesStringCompact( cLoc );
+			String prev = candidates.getCompactStr( cLoc );
 			if ( candidates.removeCandidate( cLoc, digit )) {
 				updates++;
-				String cStr = candidates.getCandidatesStringCompact( cLoc );
+				String cStr = candidates.getCompactStr( cLoc );
 				System.out.printf( "%s %s removed digit %d from %s, remaining candidates %s\n",
 						this.ruleName(), typeString, digit, cLoc, cStr );
 			}

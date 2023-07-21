@@ -3,6 +3,8 @@ package info.danbecker.ss;
 import org.junit.jupiter.api.Test;
 
 import info.danbecker.ss.Board.Direction;
+
+import static info.danbecker.ss.Board.DIGITS;
 import static info.danbecker.ss.Board.ROWCOL;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -62,12 +64,14 @@ public class BoardTest {
 
 		assertFalse( board.digitCompleted( 1 ));
 		assertFalse( board.digitCompleted( 9 ));
-		
+		assertEquals( 24, board.getOccupiedCount());
+
 		assertFalse( board.comboCompleted( new int[] {0,8} ));
 		
 		board = new Board( COMPLETE );
 		assertTrue( board.digitCompleted( 1 ));
 		assertTrue( board.digitCompleted( 9 ));
+		assertEquals( ROWS * COLS, board.getOccupiedCount());
 		
 		assertTrue( board.comboCompleted( new int[] {0,8} ));
 }

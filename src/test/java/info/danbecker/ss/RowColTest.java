@@ -46,6 +46,9 @@ public class RowColTest {
 
 		assertEquals( "[1,1]", b0.toString());
 		assertEquals( "[5,5,4]", b4.toStringWithBox());
+		assertEquals( b0, RowCol.parse( "[1,1]") );
+		assertEquals( b0, RowCol.parse( " [1,1] ") );
+		assertEquals( b0, RowCol.parse( "[ 1 , 1 ]") );
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package info.danbecker.ss;
 
+import static info.danbecker.ss.Board.ROWCOL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,6 +58,11 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 
 	public String toStringWithBox() {
 		return format( "[%d,%d,%d]", row, col, box);
+	}
+
+	public static RowCol parse( String rowColStr ) {
+		Scanner s = new Scanner(rowColStr).useDelimiter("\\s*[\\[,\\]]\\s*");
+		return ROWCOL[s.nextInt()][s.nextInt()];
 	}
 
 	/**
@@ -402,7 +408,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * @param rowCols the starting pool of rowCols
 	 * @return the subset of rowCols (not including this) that rowCol can see
 	 */
-	public List<RowCol> sameUnit(  List<RowCol> rowCols ) {
+	public List<RowCol> sameUnit( List<RowCol> rowCols ) {
 		List<RowCol> canSee = rowCols.stream()
 				.filter( item -> new AnyUnitMatch( item ).compareTo( this ) == 0 )
 				.collect(Collectors.toList());

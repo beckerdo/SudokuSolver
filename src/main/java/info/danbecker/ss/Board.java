@@ -283,17 +283,31 @@ public class Board implements Comparable<Board> {
 		}
 		return true;
 	}
-	
+
+	/** Determines how many cells are completed.
+	 * All positions filled. Could be illegal, perhaps duplicated digits.
+	 * @return number of completed board entries.
+	 */
+	public int getOccupiedCount() {
+		int count = 0;
+		for( int rowi = 0; rowi < ROWS; rowi++  ) {
+			for( int coli = 0; coli < COLS; coli++  ) {
+				if ( digits[ rowi ][ coli ] > 0 ) count++;
+			}
+		}
+		return count;
+	}
+
 	/** Determines if board state is completed.
 	 * All positions filled. Could be illegal, perhaps duplicated digits.
 	 * @return whether or not this board is completed
 	 */
 	public boolean completed() {
-   	   for( int rowi = 0; rowi < ROWS; rowi++  ) {
-   		   for( int coli = 0; coli < COLS; coli++  ) {
-   			   if ( digits[ rowi ][ coli ] == 0 ) return false; 
-   		   }
-   		}
+		for( int rowi = 0; rowi < ROWS; rowi++  ) {
+			for( int coli = 0; coli < COLS; coli++  ) {
+				if ( digits[ rowi ][ coli ] == 0 ) return false;
+			}
+		}
 		return true;
 	}
 

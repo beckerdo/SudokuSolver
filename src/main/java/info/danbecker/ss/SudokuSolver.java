@@ -62,7 +62,7 @@ import static java.lang.String.format;
  * Replace glut of comparators with Comparator lambdas based on compareTo.
  * Remove unused methods/comparators. Consolidate little used methods to more general use methods.
  * Consider RowCol String and list output used on websites such as r1c5, r345c8, r4c89
- * Implement one of the logic notations (https://hodoku.sourceforge.net/en/tech_chains.php#in5) to check candidates, etc.
+ * Implement one of the logic notations (<a href="https://hodoku.sourceforge.net/en/tech_chains.php#in5"></a>) to check candidates, etc.
  *    - Forcing chain notation (= <> =>) r2c7<>4 => r2c7=5 => r2c2<>5 => r2c2=4 => r3c1<>4 => r3c1=5 => r6c1<>5 => r6c1=4
  *    - AIC/Eureka notation https://www.sudopedia.org/wiki/Eureka (= -) (5=1)r3c3-(1=6)r7c3-(6=1)r8c1-(1=5)r8c5
  * Simplify find and remove candidates. find = good, remove = bad
@@ -154,7 +154,7 @@ public class SudokuSolver {
 	/** A loop to apply rules and enter plays until a fail or
 	 * zero more fixes.
 	 * @return puzzle solved
-	 * @throws java.text.ParseException 
+	 * @throws java.text.ParseException with malformed or mis-numbered text
 	 */
 	public static boolean solve( String puzzleText, String puzzleSolution ) throws java.text.ParseException {
 		Board board = new Board( puzzleText );
@@ -196,7 +196,7 @@ public class SudokuSolver {
 			new RemotePairs(),
 			new XChain(),
 			new XYChain(),
-			// new ForcingChains(), // exception in P20230103_TH
+			new ForcingChains(),
 		};
 		
 		// Number of possibles/updates/timings reported
@@ -301,7 +301,6 @@ public class SudokuSolver {
 			    totals[ 2 ] += timings[ rulei ];
 		}
 		System.out.printf("%-18s, %10d, %10d, %10d\n", "Total", totals[0], totals[1], totals[2] );
-
 		return solved;
 	}
 

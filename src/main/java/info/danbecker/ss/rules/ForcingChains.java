@@ -109,8 +109,8 @@ public class ForcingChains implements FindUpdateRule {
 	 * This corresponds to the Repetitive Cycle Rule in 3.3 in Eppstein "Non Repetitive Paths and Cycles"
 	 * Do not use this rule for multi-digit labels (ignore those edges).
 	 * Target location must have 2 candidates (strong link), not 3 or more (weak link).
-	 * @param gp
-	 * @return
+	 * @param gp GraphPath with a cycle
+	 * @return list of encodings
 	 */
 	public static List<int[]> findRepetitiveCycle33( final Candidates candidates, int pathId, final GraphPath<RowCol,LabelEdge> gp ) {
 		List<int []> encs = new ArrayList<>();
@@ -122,7 +122,6 @@ public class ForcingChains implements FindUpdateRule {
 		// Preset elements from last edge (in case wraparound)
 		List<LabelEdge> edges = gp.getEdgeList();
 		LabelEdge prevEdge = edges.get( edges.size() - 1);
-		// RowCol prevLoc = g.getEdgeSource(prevEdge);
 		RowCol prevLoc = g.getEdgeTarget(prevEdge);
 		String prevLabel = prevEdge.getLabel();
 		if ( 1 == prevLabel.length() ) {
@@ -136,43 +135,63 @@ public class ForcingChains implements FindUpdateRule {
 			RowCol nextLoc = viterator.next();
 			LabelEdge edge = g.getEdge(loc, nextLoc);
 			String label = edge.getLabel();
+			boolean lastVertex = nextLoc.equals( gp.getEndVertex());
 
 			// Just count single digit edges. Multi digits end counts
 			Set<Integer> labelInts = LabelEdge.labelToInts( label );
 			for (int digi = 0; digi < DIGITS; digi++) {
 				if (1 == labelInts.size() && labelInts.contains(digi + 1)) {
-					// Increment digit count
+					// Continue counting
 					digitCounts[digi]++;
 				} else {
 					// Multi digit labels always end counting.
+					// Last vertex always ends counting
 					// Check if we have a repeat count of 2.
-					if (2 == digitCounts[digi] && 3 > candidates.candidateCellCount(prevLoc)) {
+					// if (2 == digitCounts[digi] && 3 > candidates.candidateCellCount(prevLoc)) {
+					// Test without cand count
+					if (2 == digitCounts[digi] ) {
 						// Check candidate count <= 2.
 						// Encode and add
 						// System.out.printf("   Label %s at %s-%s ends run of digit %d at %s-%s-%s. Adding enc.%n",
 						//    label, loc, nextLoc, digi + 1, prevprevLoc, prevLoc, loc);
 						int [] enc;
 						if ( null == prevprevLoc )
-							// Wraparound case (count from end edge list)
+							// Beginning wraparound case (count from end edge list)
 							enc = encode(0, pathId, digi + 1, loc, prevLoc, nextLoc);
 						else
-							// Non Wraparound case (count begin edge list)
+							// Non wraparound case (count begin edge list)
 						    enc = encode(0, pathId, digi + 1, prevLoc, prevprevLoc, loc);
-						if ( 0 < Utils.addUnique(encs, enc, DigitRowColComparator) ) {
-
-						}
+						// Be aware if a different path caught this digit/loc as a single repeated edge.
+						// This path must be discounted if it causes a double repeated edge
+						// Utils.addUnique(encs, enc, DigitRowColComparator) )
+						encs.add( enc );
 					}
 					digitCounts[digi] = 0;
+				}
+				// Check for last vertex
+				if ( lastVertex && 2 == digitCounts[digi]) {
+					int[] enc = encode(0, pathId, digi + 1, loc, prevLoc, nextLoc);
+					// Utils.addUnique(encs, enc, DigitRowColComparator) )
+					encs.add( enc );
 				}
 			} // for each digit
 
 			prevprevLoc = prevLoc;
 			prevLoc = loc;
 			loc = nextLoc;
-			prevEdge = edge;
-			prevLabel = label;
+		} // for each vertex in path
+		// If a pathId has repeats of more than one digit, it must be removed.
+		List<int []> singleRepeats = new ArrayList<>();
+		for ( int[] enc : encs) {
+			List<int[]> pathIdEncs = encs.stream().filter(ele -> 0 == PathIdComparator.compare(ele, enc) ).toList();
+			// System.out.printf( "Found enc=%s with count=%d%n", toString( enc ), pathIdEncs.size() );
+			if ( 1 == pathIdEncs.size() ) {
+				singleRepeats.add( Arrays.copyOf(enc, enc.length));
+			}
 		}
-		return encs;
+		// System.out.printf( "Encs found=%d, encs returned=%d%n", encs.size(), singleRepeats.size());
+		encs.clear();
+		return singleRepeats;
 	}
 
 
@@ -213,6 +232,11 @@ public class ForcingChains implements FindUpdateRule {
 	 */
 	public static final Comparator<int[]> DigitRowColComparator =
 			new Utils.SubsetComparator(Arrays.asList( 2, 3, 4 ));
+	/**
+	 * Compares an encoding just by pathId.
+	 */
+	public static final Comparator<int[]> PathIdComparator =
+			new Utils.SubsetComparator(Arrays.asList( 1 ));
 
 	@Override
 	public String ruleName() {

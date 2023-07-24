@@ -48,10 +48,11 @@ import static java.lang.String.format;
  * Command line option for solving rules or groups: -r "Basic,Subsets,Coloring,Chains"
  * Update digits/rows/cols/boxes to be 0-based everywhere internally and 1-based externally (input parsing and output strings).
  * FindUpdateRule changes
- *    All rule updates should report occupy and candidate location changes to aid in debugging.
- *    Change int updateCandidates to something that encodes actions occupy/add/remove, digit, and location.
- *    Should rule perform validation, or the solver (Some rules add occupies, some rules delete canndidates).
  *    Add solution checking to all rules.
+ *    All rule updates should report occupy and candidate location changes to aid in debugging.
+ *    Change int update to something that encodes actions occupy/add/remove, digit, and location.
+ *       "play digit 5 at [2,3], remove cands {35} at [2,6][8,3]"
+ *    Change setOccupied, removeCandidates to support reporting
  * Consider undo/redo (by saving previous Board Candidate state and/or deltas between changes).
  * Refactor APIs to use Units and remove APIs that have Row/Col/Box in name.
  * Regularize Candidate APIs so they are short and consistent.
@@ -66,7 +67,6 @@ import static java.lang.String.format;
  *    - Forcing chain notation (= <> =>) r2c7<>4 => r2c7=5 => r2c2<>5 => r2c2=4 => r3c1<>4 => r3c1=5 => r6c1<>5 => r6c1=4
  *    - AIC/Eureka notation https://www.sudopedia.org/wiki/Eureka (= -) (5=1)r3c3-(1=6)r7c3-(6=1)r8c1-(1=5)r8c5
  * Simplify find and remove candidates. find = good, remove = bad
- * Replace repeated test pattern with a test runner. See ForcingChainsTest
  * <p>
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */

@@ -1,9 +1,6 @@
 package info.danbecker.ss.rules;
 
-import info.danbecker.ss.Board;
-import info.danbecker.ss.Candidates;
-import info.danbecker.ss.RowCol;
-import info.danbecker.ss.graph.GraphDisplay;
+import info.danbecker.ss.*;
 import info.danbecker.ss.graph.GraphUtils;
 import info.danbecker.ss.graph.LabelEdge;
 import org.jgrapht.Graph;
@@ -16,8 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static info.danbecker.ss.Board.ROWCOL;
-import static info.danbecker.ss.graph.GraphUtilsTest.EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION;
-import static info.danbecker.ss.graph.GraphUtilsTest.EPP_BILOCCYCLE_REPEAT_FIG7;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -32,42 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ForcingChainsTest {
 	@BeforeEach
 	public void setup() {
-	}
-
-	@Test
-	public void testBiLocFig7() throws ParseException {
-		Board board = new Board(EPP_BILOCCYCLE_REPEAT_FIG7);
-		assertTrue(board.legal());
-		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).update(board, null, candidates, null);
-		// System.out.println( "Candidates=\n" + candidates.toStringFocus( false, ALL_DIGITS, ALL_COUNTS ));
-
-		ForcingChains rule = new ForcingChains();
-		List<int[]> encs = rule.find(board, candidates);
-		assertNotNull(encs);
-		assertEquals(2, encs.size());
-		for( int enci = 0; enci < encs.size(); enci++ ){
-			int [] enc = encs.get( enci );
-			// Repeats from same digit, same loc, different pathId
-			System.out.printf( "%s found %s%n", rule.ruleName(),  rule.encodingToString( enc ) );
-			switch( enci ) {
-				case 0: {
-					assertEquals( 9, enc[2]);
-					assertEquals( ROWCOL[5][6], ROWCOL[enc[3]][enc[4]]);
-					break; }
-				case 1: {
-					assertEquals( 4, enc[2]);
-					assertEquals( ROWCOL[6][1], ROWCOL[enc[3]][enc[4]]);
-					break; }
-			}
-		}
-
-        // Update test
-        int prevEntries = board.getOccupiedCount();
-		int prevCandidates = candidates.getAllCount();
-		final int[] updates = {0};
-		assertDoesNotThrow( ()-> updates[0] = rule.update(board, new Board(EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION), candidates, encs));
-		assertEquals( updates[0], board.getOccupiedCount() - prevEntries + prevCandidates - candidates.getAllCount());
 	}
 
 	@Test
@@ -104,6 +63,140 @@ public class ForcingChainsTest {
 		assertTrue(encStr.contains( prev.toString() ));
 		assertTrue(encStr.contains( next.toString() ));
 	}
+
+	// From David Eppstein "Nonrepetetive Paths..." https://arxiv.org/abs/cs/0507053
+	public static String EPP_BILOCCYCLE_REPEAT_FIG7 =
+			"..318679559647231818795364297.321.64.1.86..3736.5.7.216.17.528.7..61845.85.23.176";
+	public static String EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION =
+			"423186795-596472318-187953642-975321864-214869537-368547921-641795283-732618459-859234176";
+
+	@Test
+	public void testBiLocFig7() throws ParseException {
+		Board board = new Board(EPP_BILOCCYCLE_REPEAT_FIG7);
+		assertTrue(board.legal());
+		Candidates candidates = new Candidates(board);
+		(new LegalCandidates()).update(board, null, candidates, null);
+		// System.out.println( "Candidates=\n" + candidates.toStringFocus( false, ALL_DIGITS, ALL_COUNTS ));
+
+		ForcingChains rule = new ForcingChains();
+		List<int[]> encs = rule.find(board, candidates);
+		assertNotNull(encs);
+		assertEquals(2, encs.size());
+		for( int enci = 0; enci < encs.size(); enci++ ){
+			int [] enc = encs.get( enci );
+			// Repeats from same digit, same loc, different pathId
+			System.out.printf( "%s found %s%n", rule.ruleName(),  rule.encodingToString( enc ) );
+			switch( enci ) {
+				case 0: {
+					assertEquals( 9, enc[2]);
+					assertEquals( ROWCOL[5][6], ROWCOL[enc[3]][enc[4]]);
+					break; }
+				case 1: {
+					assertEquals( 4, enc[2]);
+					assertEquals( ROWCOL[6][1], ROWCOL[enc[3]][enc[4]]);
+					break; }
+			}
+		}
+
+		// Update test
+		int prevEntries = board.getOccupiedCount();
+		int prevCandidates = candidates.getAllCount();
+		final int[] updates = {0};
+		assertDoesNotThrow( ()-> updates[0] = rule.update(board, new Board(EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION), candidates, encs));
+		assertEquals( updates[0], board.getOccupiedCount() - prevEntries + prevCandidates - candidates.getAllCount());
+	}
+
+	@Test
+	public void testBiLocFig7Runner() throws ParseException {
+		assertTrue( TestUtils.testRunner(
+			new ForcingChains(),
+			EPP_BILOCCYCLE_REPEAT_FIG7,
+			EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION,
+			null, // candStr
+			false, // displayCands
+		    2, // expectedFinds,
+			true, // displayEncs
+			Arrays.asList(
+				new int[] { 0, 0, 9, 5, 6 },
+				new int[] { 0, 0, 4, 6, 1 }
+			),
+			new Utils.SubsetComparator(Arrays.asList( 2, 3, 4 )), // encComparator
+			2, // expectedOccs,
+		    4, // expectedCands,
+		    6 // expectedUpdates
+		));
+	}
+
+	public static String EPP_BILOC_FIG5=
+		"53..76.2912639.57..7952..63263.5.9477..2.93569457632813.4685792697432..5.5291763.";
+	public static String EPP_BILOC_FIG5_SOLUTION =
+		"538176429126394578479528163263851947781249356945763281314685792697432815852917634";
+	@Test
+	public void testBiLocFig5() throws ParseException, InterruptedException {
+		// Set up test board and candidates
+		// FIG5 is not a good puzzle. It can be solved with 4 SingleCandidates calls.
+		// The graph paths do not equal what is shown in figure 5.
+		Board board = new Board(EPP_BILOC_FIG5);
+		assertTrue(board.legal());
+		Candidates candidates = new Candidates(board);
+		(new LegalCandidates()).update(board, null, candidates, null);
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringFocus( false, ALL_DIGITS, ALL_COUNTS ));
+
+		Graph<RowCol,LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
+		// DisplayGraph will cause test case to not exit. Use only for debugging.
+		// new GraphDisplay( "BiLoc Graph ", 0, bilocGraph );
+		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphPaths( bilocGraph);
+		for( int gpi = 0; gpi < gpl.size(); gpi++ ) {
+			GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
+			// String label = "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false );
+			// System.out.println( label );
+			// new GraphDisplay( label, gpi, gp );
+		}
+		// This thread will not exit when launching DisplayGraph. Use ExecutorService
+		// Thread.currentThread().join(); // Wait for threads to exit
+	}
+
+	public static String EPP_BILOCCYCLE_NONREPEAT_FIG6 =
+			".9..5342..134928...4..67.39..1524...92.318..4.5.9763121.924576...573.2...7.68....";
+	public static String EPP_BILOCCYCLE_NONREPEAT_FIG6_SOLUTION =
+			"796853421513492876248167539631524987927318654854976312189245763465731298372689145";
+	@Test
+	public void testBiLocFig6() throws ParseException, InterruptedException {
+		// Set up test board and candidates
+		Board board = new Board(EPP_BILOCCYCLE_NONREPEAT_FIG6);
+		assertTrue(board.legal());
+		Candidates candidates = new Candidates(board);
+		(new LegalCandidates()).update(board, null, candidates, null);
+		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		// System.out.println( "Candidates=\n" + candidates.toStringFocus( false, ALL_DIGITS, ALL_COUNTS ));
+
+		Graph<RowCol,LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
+		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphPaths( bilocGraph);
+		for( int gpi = 0; gpi < gpl.size(); gpi++ ) {
+			GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
+			// String label = "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false );
+			// System.out.println( label );
+		}
+	}
+
+	public static String EPP_BILOCCYCLE_ENDPOINTS_FIG8 =
+			"53..76.2912639.57..7952..63263.5.9477..2.93569457632813.4685792697432..5.5291763.";
+
+	public static String EPP_BILOCCYCLE_ENDPOINTS_FIG8_SOLUTION =
+			"538176429-126394578-479528163-263851947-781249356-945763281-314685792-697432815-852917634";
+
+	public static String EPP_BIVALUE_FIG9 =
+			"53..76.2912639.57..7952..63263.5.9477..2.93569457632813.4685792697432..5.5291763.";
+
+	public static String EPP_BIVALUE_FIG9_SOLUTION =
+			"538176429-126394578-479528163-263851947-781249356-945763281-314685792-697432815-852917634";
+
+	public static String EPP_DIFFICULT_FIG11 =
+			"5....1..8......6......6257..9.2.51....4.1.3....83.9.2..7698......5......8..1....3";
+	public static String EPP_DIFFICULT_FIG11_SOLUTION =
+			"562731948741598632983462571397245186254816397618379425176983254435627819829154763";
+
 
 	// Issue taken from 20230103-diabolical-24250.json
 	public static String P20230103_TH_ORIG =
@@ -152,9 +245,10 @@ public class ForcingChainsTest {
 
 		ForcingChains rule = new ForcingChains();
 		// Locations test
+		int expectedEncs = 0;
 		List<int[]> encs = rule.find(board, candidates);
 		assertNotNull(encs);
-		assertEquals(0, encs.size());
+		assertEquals(expectedEncs, encs.size());
 		for( int enci = 0; enci < encs.size(); enci++ ){
 			int [] enc = encs.get( enci );
 			System.out.printf( "%s found %s%n", rule.ruleName(),  rule.encodingToString( enc ) );
@@ -164,11 +258,15 @@ public class ForcingChainsTest {
 		// Thread.currentThread().join(); // Wait for threads to exit
 
 		// Update test
-		int prevEntries = board.getOccupiedCount();
-		int prevCandidates = candidates.getAllCount();
-		final int[] updates = {0};
+		int prevOccs = board.getOccupiedCount();
+		int prevCands = candidates.getAllCount();
+		int expectedOccs = 0;
+		int expectedCands = 0;
+		int expectedUpdates = 0;
+		final int[] updates = { 0 };
 		assertDoesNotThrow( ()-> updates[0] = rule.update(board, new Board(P20230103_TH_SOLUTION), candidates, encs));
-		assertEquals( updates[0], board.getOccupiedCount() - prevEntries + prevCandidates - candidates.getAllCount());
+		assertEquals( expectedOccs, board.getOccupiedCount() - prevOccs );
+		assertEquals( expectedCands, prevCands - candidates.getAllCount());
 
 		// Thread will not exit when launching DisplayGraph. Use ExecutorService
 		// Thread.currentThread().join(); // Wait for threads to exit
@@ -184,6 +282,7 @@ public class ForcingChainsTest {
 
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
+		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 		// Need to update candidates to get it into the proper state
 		candidates.removeCandidates( ROWCOL[0][4], new int[]{1,6});
 		candidates.removeCandidates( ROWCOL[0][5], new int[]{6});
@@ -198,13 +297,13 @@ public class ForcingChainsTest {
 		candidates.removeCandidates( ROWCOL[5][1], new int[]{2});
 		candidates.removeCandidates( ROWCOL[8][4], new int[]{1,6});
 		(new LegalCandidates()).update(board, null, candidates, null);
-		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
+		System.out.println( "Candidates=\n" + candidates.toStringBoxed());
 
 		ForcingChains rule = new ForcingChains();
 		// Locations test
 		List<int[]> encs = rule.find(board, candidates);
 		assertNotNull(encs);
-		assertEquals(6, encs.size());
+		assertEquals(7, encs.size());
 
         // Update test
         int prevEntries = candidates.getAllOccupiedCount();
@@ -214,48 +313,5 @@ public class ForcingChainsTest {
 		// Will likely knock out more same-unit candidates after LegalCandidate update.
 		assertEquals( prevEntries, candidates.getAllOccupiedCount() - updates);
 		assertEquals( prevCandidates, candidates.getAllCount() + 2);
-	}
-
-	public static String P20230103 =
-			"...2..6.3-...37.85.-..6.1..4.-..89.....-21.....69-.....12..-.9..8.1..-.51.32...-6.3..5...";
-	public static String P20230103_PARTIAL_INVALID =
-			".8.2496.3-...37685.-3.651894.-.689235..-21.85.369-.3..6128.-.9268.135-851.32.96-6.3195.28"; // invalid (first row)
-	public static String P20230103_PARTIAL =
-			"1872..693924376851536.1..42768923514215..83693.95612874926871358514329.6673195428";
-	public static String P20230103_SOLUTION =
-			"187254693924376851536819742768923514215748369349561287492687135851432976673195428";
-
-	// @Test
-	public void testBug20230103() throws ParseException {
-		Board board = new Board(P20230103_PARTIAL);
-		assertTrue(board.legal());
-		Board solution = new Board(P20230103_SOLUTION);
-		assertTrue(solution.legal());
-
-		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).update(board, null, candidates, null);
-		// System.out.println( "Candidates=\n" + candidates.toStringBoxed());
-
-		// Need to run a few other rules to get to the test place
-//		i38.12 Board entries=57, candidates=49
-//		ForcingChains rowCol [0,0] both candidates {15} lead to digit 7 at [6,0], tree depths=11,18
-//		Rule ForcingChains reports 1 possible locations: [0,0]
-//		Exception in thread "main" java.lang.IllegalArgumentException: Rule ForcingChains would like set digit 7 (solution=4) at loc [6,0].
-//			at info.danbecker.ss.rules.ForcingChains.updateCandidates(ForcingChains.java:75)
-//			at info.danbecker.ss.SudokuSolver.solve(SudokuSolver.java:238)
-//			at info.danbecker.ss.SudokuSolver.main(SudokuSolver.java:131)
-
-		ForcingChains rule = new ForcingChains();
-		// Locations test
-		List<int[]> encs = rule.find(board, candidates);
-		assertNotNull(encs);
-		assertEquals(6, encs.size());
-
-		// Update test
-		int prevEntries = candidates.getAllOccupiedCount();
-		int prevCandidates = candidates.getAllCount();
-		final int[] updates = {0};
-		assertDoesNotThrow( ()-> updates[0] = rule.update(board, new Board(P20230103_SOLUTION), candidates, encs));
-		assertEquals( updates[0], board.getOccupiedCount() - prevEntries + prevCandidates - candidates.getAllCount());
 	}
 }

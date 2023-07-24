@@ -72,12 +72,12 @@ public class ForcingChains implements FindUpdateRule {
 			int prevCand = candidates.getAllCount();
 			candidates.setOccupied(loc, digit); // places entry, removes candidates
 			int currCand = candidates.getAllCount();
-			if ( 0 < prevCand - currCand ) {
+			updates += currPlay - prevPlay + prevCand - currCand;
+			if ( 0 < updates ) {
 				// Repeats from same digit, same loc, different pathId
 				System.out.printf("%s update %s played digit %d and removed %d candidates at loc %s%n",
 						ruleName(), typeStr, digit, prevCand - currCand, loc);
 			}
-			updates += currPlay - prevPlay + prevCand - currCand;
 		}
 		return updates;
 	}

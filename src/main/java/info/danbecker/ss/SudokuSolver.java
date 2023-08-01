@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
@@ -196,8 +198,9 @@ public class SudokuSolver {
 			new RemotePairs(),
 			new XChain(),
 			new XYChain(),
-			new ForcingChains(),
+			new BiLocCycleDigitRepeat(),
 		};
+		Set<String> rulesUsed = new TreeSet<>();
 		
 		// Number of possibles/updates/timings reported
 		int [] possibles = new int[ rules.length ];
@@ -230,7 +233,17 @@ public class SudokuSolver {
 				   }
 			   }
 		       // System.out.println("Candidates=" + candidates.toString());
-			   int changes = rule.update( board, solution, candidates, encs);
+			   int changes = 0;
+			   try {
+				   changes = rule.update(board, solution, candidates, encs);
+			   } catch ( IllegalArgumentException e ) {
+				   System.out.print( "Rules used: ");
+				   for( String used : rulesUsed) {
+					   System.out.print( used + ",");
+				   }
+				   System.out.println();
+					throw e;
+			   }
 
 			   // Update metrics
 			   long endTime = System.nanoTime();
@@ -240,6 +253,7 @@ public class SudokuSolver {
 			   if ( changes > 0) {
 				   updated = true;
 				   updates[ rulei ] += changes;
+				   rulesUsed.add( rule.ruleName() );
 				   if ( 0 != rulei ) {
 					   // Don't count validator as a rule. Don't break loop on validator.
 					   rulesRun++;

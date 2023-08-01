@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.text.ParseException;
 import java.util.List;
 
-import static info.danbecker.ss.rules.ForcingChainsTest.EPP_BILOCCYCLE_REPEAT_FIG7;
+import static info.danbecker.ss.rules.BiLocCycleDigitRepeatTest.EPP_BILOCCYCLE_REPEAT_FIG7;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

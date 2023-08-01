@@ -1,13 +1,14 @@
 package info.danbecker.ss.graph;
 
+import com.mxgraph.util.mxConstants;
+import com.mxgraph.view.mxStylesheet;
 import info.danbecker.ss.RowCol;
-import info.danbecker.ss.rules.ForcingChains;
-import info.danbecker.ss.graph.LabelEdge;
 
 import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.jgrapht.*;
 import org.jgrapht.ext.*;
@@ -72,10 +73,14 @@ public class GraphDisplay {
         // create a JGraphT graph
         JGraphXAdapter<RowCol,LabelEdge> jgxAdapter = new JGraphXAdapter<>(graph);
         //  ListenableGraph<String, DefaultEdge> g = createGraph();
-        // Graph<RowCol,ForcingChains.LabelEdge> g = createBiLocGraph();
+        // Graph<RowCol,BiLocCycleDigitRepeat.LabelEdge> g = createBiLocGraph();
         mxGraphComponent component = new mxGraphComponent(jgxAdapter);
         component.setConnectable(false);
         component.getGraph().setAllowDanglingEdges(false);
+        // Muck with edge style
+        mxStylesheet styleSheet = component.getGraph().getStylesheet();
+        Map<String,Object> edgeStyle = styleSheet.getDefaultEdgeStyle();
+        edgeStyle.put( mxConstants.STYLE_ROUNDED, "true" );
 
         mxGraphLayout layout = new GridLayout(jgxAdapter);
         layout.execute(jgxAdapter.getDefaultParent());

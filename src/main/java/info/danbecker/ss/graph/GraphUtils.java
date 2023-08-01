@@ -24,7 +24,7 @@ import java.util.*;
  * These graphs are used to implement the research paper
  * "Nonrepetitive Paths and Cycles in Graphs
  * with Application to Sudoku" by David Eppstein.
- * See the ForcingChains rule.
+ * See the BiLocCycleDigitRepeat rule.
  * <p>
  * That paper has a number of methods based on
  * bilocation (3.2) and bivalue (3.5)
@@ -156,10 +156,10 @@ public class GraphUtils {
 	 * Very compact compared to Graph toString
 	 * Uses DepthFirstIterator
 	 * @param graph graph to print
-	 * @param startLoc starting location
+	 * @param startLoc starting location, can be null
 	 */
-	public static void printGraph(final Graph<RowCol,LabelEdge> graph, final RowCol startLoc ) {
-		System.out.println( "DepthFirst, start=" + startLoc );
+	public static String graphToString(final Graph<RowCol,LabelEdge> graph, final RowCol startLoc, final String delim ) {
+		StringBuffer sb = new StringBuffer( "depth first, start=" + startLoc + ": " );
 		Iterator<RowCol> iterator = (null == startLoc) ? new DepthFirstIterator<>(graph) :
 				new DepthFirstIterator<>(graph, startLoc);
 		RowCol lastLoc = null;
@@ -169,13 +169,13 @@ public class GraphUtils {
 				// System.out.print(loc);
 				LabelEdge edge = graph.getEdge( lastLoc, loc );
 				if ( null != edge )
-					System.out.println( edge.toStringVerbose());
+					sb.append( edge.toStringVerbose() + delim);
 				else
-					System.out.println( lastLoc + "-null-" + loc);
+					sb.append( lastLoc + "-null-" + loc + delim);
 			}
 			lastLoc = loc;
 		}
-		System.out.println();
+		return sb.toString();
 	}
 
 	/**

@@ -533,6 +533,18 @@ public class CandidatesTest {
 		{47}{-9}{-2}       {-6}{-8}{47}     {-1}{-3}{-5}
 		{478}{-5}{-1}      {47}{-3}{-2}     {479}{789}{-6}
 		{-6}{478}{-3}      {-1}{-9}{-5}     {47}{-2}{78}""";
+
+	public static final String CANDSPACES = """
+		-1 25 -6 -7 845 -3 -8 45 -9
+		-3 -4 278 -9 856 128 167 1567 167
+		-9 57 78 145 456 18 1367 -2 13467
+		76 -1 -3 -2 -9 46 5 467 -8
+		26 -8 -5 -3 -7 46 126 -9 146
+		-4 267 -9 -8 -1 -5 2367 67 367
+		-8 -3 47 145 245 12 -9 167 167
+		267 267 247 14 -3 -9 17 -8 -5
+		-5-9 -1 -6 -8 -7 -4 -3 -2			
+	""";
 	@Test
 	public void testParse() throws ParseException {
 		Candidates cand = new Candidates( CANDSTR );
@@ -540,5 +552,11 @@ public class CandidatesTest {
 		assertEquals("{1578}", cand.getCompactStr( ROWCOL[0][0]));
 		assertEquals("{-6}", cand.getCompactStr( ROWCOL[5][4]));
 		assertEquals("{78}", cand.getCompactStr( ROWCOL[8][8]));
+
+		cand = new Candidates( CANDSPACES );
+		// System.out.println( "Candidates=\n" + cand.toStringBoxed());
+		assertEquals("{167}", cand.getCompactStr( ROWCOL[1][8]));
+		assertEquals("{126}", cand.getCompactStr( ROWCOL[4][6]));
+		assertEquals("{267}", cand.getCompactStr( ROWCOL[7][1]));
 	}
 }

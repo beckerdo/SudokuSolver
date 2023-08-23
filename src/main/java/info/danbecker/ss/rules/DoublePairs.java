@@ -53,7 +53,7 @@ public class DoublePairs implements FindUpdateRule {
 			// System.out.println( ruleName() + " update enc=" + encodingToString( enc ));
 
 			switch( unit ) {
-				case ROW: {
+				case ROW -> {
 					List<RowCol> rowCol1OtherLocs = candidates.findUnitDigitsNotInLocs( otherUnit, ul.col(), zbDigit, Arrays.asList( ul, ll ));
 					checkRemove( ruleName(), solution, candidates, zbDigit, rowCol1OtherLocs );
 					List<RowCol> rowCol2OtherLocs = candidates.findUnitDigitsNotInLocs( otherUnit, lr.col(), zbDigit, Arrays.asList( ur, lr ));
@@ -66,9 +66,8 @@ public class DoublePairs implements FindUpdateRule {
 					System.out.printf( "%s removed digit %d of double pair %s,%s,%s,%s in %ss at %s%s, count %d%n",
 							ruleName(), digit, ul, ur, ll, lr, otherUnit,
 							RowCol.toString(rowCol1OtherLocs), RowCol.toString(rowCol2OtherLocs), count);
-					break;
 				}
-				case COL: {
+				case COL -> {
 					// Strange naming of ul,ur,ll,lr for columns
 					List<RowCol> colRow1OtherLocs = candidates.findUnitDigitsNotInLocs( otherUnit, ul.row(), zbDigit, Arrays.asList( ul, ll ));
 					checkRemove( ruleName(), solution, candidates, zbDigit, colRow1OtherLocs );
@@ -82,7 +81,6 @@ public class DoublePairs implements FindUpdateRule {
 					System.out.printf( "%s removed digit %d of double pair %s,%s,%s,%s in %ss at %s%s, count %d%n",
 							ruleName(), digit, ul, ur, ll, lr, otherUnit,
 							RowCol.toString(colRow1OtherLocs), RowCol.toString(colRow2OtherLocs), count);
-					break;
 				}
 			}
 		}
@@ -108,9 +106,9 @@ public class DoublePairs implements FindUpdateRule {
 	}
 
 	/**
-     * a candidate digit twice in a rowCol and that rowCol is repeated on a different rowCol.
+     * A candidate digit twice in a rowCol and that rowCol is repeated on a different rowCol.
 	 * can knock out candidates in other boxes in the same row/col
-	 * 
+	 * <p>
 	 * Search for only two same candidates in each box,
   	 * see if row or col is the same, 
      * if row match, see if other candidates exist on same row outside of box
@@ -224,21 +222,19 @@ public class DoublePairs implements FindUpdateRule {
 		RowCol lr = ROWCOL[enc[8]][enc[9]];
 		// Validate
 		switch ( unit ) {
-			case ROW: {
+			case ROW -> {
 				if ( ul.row() != ur.row() ) error += " upper row mismatch";
 				if ( ll.row() != lr.row() ) error += " lower row mismatch";
 				if ( ul.col() != ll.col() ) error += " left col mismatch";
 				if ( ur.col() != lr.col() ) error += " right col mismatch";
-				break;
 			}
-			case COL: {
+			case COL -> {
 				if ( ul.col() != ur.col() ) error += " upper col mismatch";
 				if ( ll.col() != lr.col() ) error += " lower col mismatch";
 				if ( ul.row() != ll.row() ) error += " left row mismatch";
 				if ( ur.row() != lr.row() ) error += " right row mismatch";
-				break;
 			}
-			default: throw new IllegalArgumentException( "provided unit value index of " + enc[1]);
+			default -> throw new IllegalArgumentException( "provided unit value index of " + enc[1] );
 		}
 
 		return format( "digit %d %s pairs at [%d,%d],[%d,%d] and [%d,%d],[%d,%d]%s" ,

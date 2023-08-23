@@ -49,13 +49,14 @@ public class TestUtils {
 		// Locations test
 		List<int[]> encs = rule.find(board, candidates);
 		assertNotNull(encs);
-		assertEquals(expectedFinds, encs.size());
-		// Display encs
-		if ( displayEncs) {
+		if ( expectedFinds != encs.size() || displayEncs ) {
 			for( int enci = 0; enci < encs.size(); enci++ ) {
 				int[] enc = encs.get(enci);
 				System.out.printf("%s found %s%n", rule.ruleName(), rule.encodingToString(enc));
-		}}
+			}
+		}
+		assertEquals(expectedFinds, encs.size());
+
 		// Test encs
 		for( int enci = 0; enci < expectedEncs.size(); enci++ ){
 			int [] enc = encs.get( enci );

@@ -14,7 +14,6 @@ import java.util.List;
 
 import static info.danbecker.ss.rules.BiLocCycleDigitRepeatTest.EPP_BILOCCYCLE_REPEAT_FIG7;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This test suite tests the generic graph abilities of JGraphT.
@@ -24,6 +23,28 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class GraphUtilsTest {
 	@BeforeEach
 	public void setup() {
+	}
+
+	@Test
+	public void testGraphUtils() {
+		String graphInp = "[1,0]-6-[1,8]-5-[8,8]-37-[8,0]-2-[2,0]-5-[1,0]";
+		// Cycle 0=[1,8]-5-[8,8]-37-[8,0]-2-[2,0]-5-[1,0]-6-[1,8]
+		System.out.println( "GraphInp="+ graphInp );
+		Graph<RowCol, LabelEdge> bilocGraph = GraphUtils.getBilocGraph(graphInp);
+
+		String graphStr = GraphUtils.graphToStringE(bilocGraph, ",");
+		// System.out.println("GraphStr=" + graphStr);
+		assertEquals( graphInp, graphStr);
+
+		List<GraphPath<RowCol, LabelEdge>> gpl = GraphUtils.getGraphCycles(bilocGraph);
+		for (int gpi = 0; gpi < gpl.size(); gpi++) {
+			GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
+			String path = GraphUtils.pathToString(gp, "-", false);
+			// System.out.println("Cycle " + gpi + "=" + path);
+			switch( gpi) {
+				case 0 -> assertEquals( "[1,8]-5-[8,8]-37-[8,0]-2-[2,0]-5-[1,0]-6-[1,8]", path );
+			}
+		}
 	}
 
 	@Test
@@ -39,22 +60,20 @@ public class GraphUtilsTest {
 		Graph<RowCol, LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
 		// DisplayGraph will cause test case to not exit. Use only for debugging.
 		// new GraphDisplay( "BiLoc Graph ", 0, bilocGraph );
-		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphPaths( bilocGraph);
+		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphCycles( bilocGraph);
 		for( int gpi = 0; gpi < gpl.size(); gpi++ ) {
 			GraphPath<RowCol,LabelEdge> gp = gpl.get(gpi);
 			// String label = "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false );
 			// System.out.println( label );
 			// new GraphDisplay( label, gpi, gp );
-			switch ( gpi ) {
-				case 0: {
-					assertEquals( 4, gp.getVertexList().size());
-					assertEquals( 3, gp.getEdgeList().size());
-					break;
+			switch (gpi) {
+				case 0 -> {
+					assertEquals(4, gp.getVertexList().size());
+					assertEquals(3, gp.getEdgeList().size());
 				}
-				case 1: {
-					assertEquals(  gp.getStartVertex(), gp.getEndVertex());
-					assertEquals( 4, gp.getLength());
-					break;
+				case 1 -> {
+					assertEquals(gp.getStartVertex(), gp.getEndVertex());
+					assertEquals(4, gp.getLength());
 				}
 			}
 		}

@@ -54,9 +54,9 @@ public class Skyscraper implements FindUpdateRule {
 					}
 				}
 			}
-			System.out.println( format( "%s removed digit %d from %d locations %s",
+			System.out.printf( "%s removed digit %d from %d locations %s%n",
 					ruleName(), digit, updates,
-					RowCol.toString( rowCols )));
+					RowCol.toString( rowCols ));
 		}
 		return updates;
 	}
@@ -163,27 +163,25 @@ public class Skyscraper implements FindUpdateRule {
 									!roof[0].equals(rowCol) && !roof[1].equals(rowCol)) {
 								// Not part of the skyscraper
 								switch ( unit ) {
-									case ROW: {
+									case ROW -> {
 										if ((rowCol.row() == roof[0].row() && rowCol.box() == roof[1].box()) ||
 												(rowCol.box() == roof[0].box() && rowCol.row() == roof[1].row())) {
 											removeMe.add( rowCol );
 										}
-										break;
 									}
-									case COL: {
+									case COL -> {
 										if ((rowCol.col() == roof[0].col() && rowCol.box() == roof[1].box()) ||
 												(rowCol.box() == roof[0].box() && rowCol.col() == roof[1].col())) {
 											removeMe.add( rowCol );
 										}
-										break;
 									}
 								}
 							}
 						}
 						if ( 0 < removeMe.size() ) {
-							System.out.println(format("%s found a digit %d %s base at %s and roof at %s. These locs see both: %s",
+							System.out.printf("%s found a digit %d %s base at %s and roof at %s. These locs see both: %s%n",
 								ruleName(), digit, unit,
-								RowCol.toString(base), RowCol.toString(roof), RowCol.toString( removeMe )));
+								RowCol.toString(base), RowCol.toString(roof), RowCol.toString( removeMe ));
 							locs.add( encodeLocation( digit, base, roof, removeMe ));
 						}
 					}

@@ -82,8 +82,8 @@ public class Swordfish implements FindUpdateRule {
 			  if (candidates.removeCandidate(loc, digit))
 				updates += 1;
 		   }
-		   System.out.println( format("Swordfish removed digit %d times from %d locations %s", 
-				digit, exLocs.size(), RowCol.toString(exLocs)));
+		   System.out.printf("Swordfish removed digit %d times from %d locations %s%n",
+				digit, exLocs.size(), RowCol.toString(exLocs));
 		}
 		return updates;
 	}
@@ -154,9 +154,9 @@ public class Swordfish implements FindUpdateRule {
 										// Check that we have exactly three cols
 										int [] unitLocCounts = unitLocCounts( otherUnit, unit1Locs, unit2Locs, unit3Locs);
 										if (unitAlignment(otherUnit, unitLocCounts)) {
-											System.out.println(format("Rule %s digit %d has %s alignment on %ss %s, %s, %s",
+											System.out.printf("Rule %s digit %d has %s alignment on %ss %s, %s, %s%n",
 												ruleName(), digi, otherUnit.name(), unit.name(),
-												RowCol.toString(unit1Locs), RowCol.toString(unit2Locs), RowCol.toString(unit3Locs)));
+												RowCol.toString(unit1Locs), RowCol.toString(unit2Locs), RowCol.toString(unit3Locs));
 											// Now check for extra candidates
 											List<RowCol> locs = mergeLists(unit1Locs, unit2Locs, unit3Locs);
 											List<RowCol> extraCandidates = extraCandidates( candidates, otherUnit, digi, unitLocCounts, locs );
@@ -203,17 +203,15 @@ public class Swordfish implements FindUpdateRule {
 		for ( RowCol loc1 : locs1 ) {
 			for ( RowCol loc2 : locs2 ) {
 				switch (unit) {
-					case ROW: {
+					case ROW -> {
 					if ( loc1.row() == loc2.row() )
 						count++;
-					break;
 					}
-					case COL: {
+					case COL -> {
 					if ( loc1.col() == loc2.col() )
 						count++;
-					break;
 					}
-					case BOX: {	}				
+					case BOX ->  {}
 				}
 			}
 		}
@@ -276,23 +274,20 @@ public class Swordfish implements FindUpdateRule {
 		int [] unitCounts = new int [] {0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		for ( RowCol loc: locs1 ) {
 			switch (unit) {
-			case ROW: { unitCounts[loc.row()]++; break; }
-			case COL: { unitCounts[loc.col()]++; break; }
-			case BOX: {	}				
+				case ROW -> unitCounts[loc.row()]++;
+				case COL -> unitCounts[loc.col()]++;
 			}
 		}
 		for ( RowCol loc: locs2 ) {
 			switch (unit) {
-			case ROW: { unitCounts[loc.row()]++; break;}
-			case COL: { unitCounts[loc.col()]++; break;}
-			case BOX: {	}				
+				case ROW -> unitCounts[loc.row()]++;
+			    case COL -> unitCounts[loc.col()]++;
 			}
 		}
 		for ( RowCol loc: locs3 ) {
 			switch (unit) {
-			case ROW: { unitCounts[loc.row()]++; break;}
-			case COL: { unitCounts[loc.col()]++; break;}
-			case BOX: {	}				
+				case ROW -> unitCounts[loc.row()]++;
+				case COL -> unitCounts[loc.col()]++;
 			}
 		}
 		return unitCounts;		
@@ -442,7 +437,7 @@ public class Swordfish implements FindUpdateRule {
 
 		int digit = enc[0];
 		int rowCol = enc[1];	
-		StringBuffer sb = new StringBuffer(format( "digit %d %s at locs=", digit, (rowCol==0)?"rows":"cols"));
+		StringBuilder sb = new StringBuilder(format( "digit %d %s at locs=", digit, (rowCol==0)?"rows":"cols"));
 		for ( int loci=0; loci < 3; loci++) {
 			String delim = (0==loci)?"":",";
 			int tuple = loci*3;

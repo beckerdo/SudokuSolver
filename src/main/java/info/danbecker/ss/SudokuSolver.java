@@ -198,7 +198,8 @@ public class SudokuSolver {
 			new RemotePairs(),
 			new XChain(),
 			new XYChain(),
-			new BiLocCycleDigitRepeat(),
+			// new BiLocCycleDigitRepeat(), // still some bugs
+			new BiLocCycleNonRepeat(),
 		};
 		Set<String> rulesUsed = new TreeSet<>();
 		
@@ -308,13 +309,13 @@ public class SudokuSolver {
 		System.out.printf( "%-18s, %10s, %10s, %10s", "Rule", "Locations", "Updates", "Time (uS)\n" );
 		int [] totals = new int[]{ 0, 0, 0 };
 		for ( int rulei = 0; rulei < rules.length; rulei++ ) {
-			System.out.printf( "%-18s, %10d, %10d, %10d\n",
+			System.out.printf( "%-21s, %10d, %10d, %10d\n",
 				rules[ rulei ].ruleName(), possibles[ rulei ], updates[ rulei ], timings[ rulei ] );
 			    totals[ 0 ] += possibles[ rulei ];
 				totals[ 1 ] += updates[ rulei ];
 			    totals[ 2 ] += timings[ rulei ];
 		}
-		System.out.printf("%-18s, %10d, %10d, %10d\n", "Total", totals[0], totals[1], totals[2] );
+		System.out.printf("%-21s, %10d, %10d, %10d\n", "Total", totals[0], totals[1], totals[2] );
 		return solved;
 	}
 

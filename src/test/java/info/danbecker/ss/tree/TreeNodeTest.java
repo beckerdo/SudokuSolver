@@ -139,8 +139,8 @@ public class TreeNodeTest {
 		int count = 0;
 		for ( TreeNode treeNode : treeRoot ) {
 			switch ( count ) {
-				case 0: { assertEquals( "root", treeNode.data ); break; }
-				case 11: { assertEquals( "node30", treeNode.data ); break ; }
+				case 0 -> assertEquals( "root", treeNode.data );
+				case 11 -> assertEquals( "node30", treeNode.data );
 			}
 			count++;
 		}

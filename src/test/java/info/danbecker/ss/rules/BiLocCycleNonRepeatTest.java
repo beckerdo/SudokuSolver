@@ -1,6 +1,8 @@
 package info.danbecker.ss.rules;
 
-import info.danbecker.ss.*;
+import info.danbecker.ss.Board;
+import info.danbecker.ss.Candidates;
+import info.danbecker.ss.RowCol;
 import info.danbecker.ss.graph.GraphUtils;
 import info.danbecker.ss.graph.LabelEdge;
 import org.jgrapht.Graph;
@@ -13,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static info.danbecker.ss.Board.ROWCOL;
-import static info.danbecker.ss.rules.BiLocCycleDigitRepeat.BILOCCYCLE_DIGIT_REPEAT;
+import static info.danbecker.ss.rules.BiLocCycleNonRepeat.BILOCCYCLE_NONREPEAT;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -25,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * See GraphUtils for testing the graph algorithms rather than
  * the BiLocCycleDigitRepeat find encode update functions.
  */
-public class BiLocCycleDigitRepeatTest {
+public class BiLocCycleNonRepeatTest {
 	@BeforeEach
 	public void setup() {
 	}
@@ -33,146 +35,99 @@ public class BiLocCycleDigitRepeatTest {
 	@Test
 	public void testEncodeDecode() {
 		// Middle box double pair
-		int digit = 5;
+		int xDigit = 5;
+		int yDigit = 6;
 		int pathId = 13;
-		RowCol loc = ROWCOL[0][1];
-		RowCol prev = ROWCOL[2][2];
-		RowCol next = ROWCOL[8][1];
+		RowCol loc1 = ROWCOL[0][1];
+		RowCol loc2 = ROWCOL[7][8];
 
-		int [] enc = BiLocCycleDigitRepeat.encode(BILOCCYCLE_DIGIT_REPEAT, pathId, digit, loc, prev, next );
-		assertEquals(9, enc.length );
-		assertEquals(BILOCCYCLE_DIGIT_REPEAT, enc[0]);
+		int [] enc = BiLocCycleNonRepeat.encode(BILOCCYCLE_NONREPEAT, pathId, xDigit, yDigit, loc1, loc2 );
+		assertEquals(8, enc.length );
+		assertEquals(BILOCCYCLE_NONREPEAT, enc[0]);
 		assertEquals(13, enc[1]);
-		assertEquals(5, enc[2]);
-		assertEquals( loc.row(), enc[3]);
-		assertEquals( loc.col(), enc[4]);
-		assertEquals( prev.row(), enc[5]);
-		assertEquals( prev.col(), enc[6]);
-		assertEquals( next.row(), enc[7]);
-		assertEquals( next.col(), enc[8]);
+		assertEquals(xDigit, enc[2]);
+		assertEquals(yDigit, enc[3]);
+		assertEquals( loc1.row(), enc[4]);
+		assertEquals( loc1.col(), enc[5]);
+		assertEquals( loc2.row(), enc[6]);
+		assertEquals( loc2.col(), enc[7]);
 
 		// Test the string
-		FindUpdateRule rule = new BiLocCycleDigitRepeat();
+		FindUpdateRule rule = new BiLocCycleNonRepeat();
 		String encStr = rule.encodingToString(enc);
 		// System.out.println( "Enc=" +encString);
 		assertNotNull(encStr);
 		assertTrue(encStr.contains("cycle"));
-		assertTrue(encStr.contains("repeat"));
+		assertTrue(encStr.contains("non repeat"));
 		assertTrue(encStr.contains("pathId " + pathId));
-		assertTrue(encStr.contains("digit " + digit));
-		assertTrue(encStr.contains( loc.toString() ));
-		assertTrue(encStr.contains( prev.toString() ));
-		assertTrue(encStr.contains( next.toString() ));
+		assertTrue(encStr.contains("x digit " + xDigit));
+		assertTrue(encStr.contains("y digit " + yDigit));
+		assertTrue(encStr.contains("loc1 " + loc1.toString() ));
+		assertTrue(encStr.contains("loc2 " + loc2.toString() ));
 	}
 
-	// From David Eppstein "Nonrepetetive Paths..." https://arxiv.org/abs/cs/0507053
-	public static String EPP_BILOCCYCLE_REPEAT_FIG7 =
-			"..318679559647231818795364297.321.64.1.86..3736.5.7.216.17.528.7..61845.85.23.176";
-	public static String EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION =
-			"423186795-596472318-187953642-975321864-214869537-368547921-641795283-732618459-859234176";
-
+		// From David Eppstein "Nonrepetetive Paths..." https://arxiv.org/abs/cs/0507053
+	public static String EPP_BILOCCYCLE_NONREPEAT_FIG6 =
+			".9..5342..134928...4..67.39..1524...92.318..4.5.9763121.924576...573.2...7.68....";
+	public static String EPP_BILOCCYCLE_NONREPEAT_FIG6_SOLUTION =
+			"796853421513492876248167539631524987927318654854976312189245763465731298372689145";
 	@Test
-	public void testBiLocFig7() throws ParseException, InterruptedException {
-		Board board = new Board(EPP_BILOCCYCLE_REPEAT_FIG7);
-		assertTrue(board.legal());
-		Candidates candidates = new Candidates(board);
-		(new LegalCandidates()).update(board, null, candidates, null);
-		// System.out.println( "Candidates=\n" + candidates.toStringBoxed() );
-		// System.out.println( "Candidates=\n" + candidates.toStringFocus( false, ALL_DIGITS, ALL_COUNTS ));
-
-		// Graph<RowCol,LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
-		// System.out.println( "Biloc graph, " + GraphUtils.graphToString( bilocGraph, null, "\n" ) );
-		// DisplayGraph will cause test case to not exit. Use only for debugging.
-		// new GraphDisplay( "BiLoc Graph ", 0, bilocGraph );
-		// List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphCycles( bilocGraph);
-		// for( int gpi = 0; gpi < gpl.size(); gpi++ ) {
-			// GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
-			// String label = "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false );
-			// System.out.println( label );
-			// new GraphDisplay( label, gpi, gp );
-		//}
-		// This thread will not exit when launching DisplayGraph. Use ExecutorService
-		// Thread.currentThread().join(); // Wait for threads to exit
-
-		BiLocCycleDigitRepeat rule = new BiLocCycleDigitRepeat();
-		List<int[]> encs = rule.find(board, candidates);
-		assertNotNull(encs);
-		int expectedEncs = 2;
-		if (expectedEncs != encs.size() ) {
-			for ( int i = 0; i < encs.size(); i++ )
-				System.out.println( "Enc " + i + "=" + rule.encodingToString(encs.get(i)));
-		}
-		assertEquals(expectedEncs, encs.size());
-		for( int enci = 0; enci < encs.size(); enci++ ){
-			int [] enc = encs.get( enci );
-			// Repeats from same digit, same loc, different pathId
-			// System.out.printf( "%s found %s%n", rule.ruleName(),  rule.encodingToString( enc ) );
-			switch( enci ) {
-				case 0 -> {
-					assertEquals( 9, enc[2]);
-					assertEquals( ROWCOL[5][6], ROWCOL[enc[3]][enc[4]]);
-					}
-				case 1 -> {
-					assertEquals( 4, enc[2]);
-					assertEquals( ROWCOL[6][1], ROWCOL[enc[3]][enc[4]]);
-					}
-			}
-		}
-
-		// Update test
-		int prevEntries = board.getOccupiedCount();
-		int prevCandidates = candidates.getAllCount();
-		final int[] updates = {0};
-		assertDoesNotThrow( ()-> updates[0] = rule.update(board, new Board(EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION), candidates, encs));
-		assertEquals( updates[0], board.getOccupiedCount() - prevEntries + prevCandidates - candidates.getAllCount());
-	}
-
-	@Test
-	public void testBiLocFig7Runner() throws ParseException {
-		assertTrue( TestUtils.testRunner(
-			new BiLocCycleDigitRepeat(),
-			EPP_BILOCCYCLE_REPEAT_FIG7,
-			EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION,
-			null, // candStr
-			false, // displayCands
-		    2, // expectedFinds,
-			false, // displayEncs
-			Arrays.asList(
-				new int[] { 0, 0, 9, 5, 6 },
-				new int[] { 0, 0, 4, 6, 1 }
-			),
-			new Utils.SubsetComparator(Arrays.asList( 2, 3, 4 )), // encComparator
-			2, // expectedOccs,
-		    4, // expectedCands,
-		    6 // expectedUpdates
-		));
-	}
-
-	public static String EPP_BILOC_FIG5=
-		"53..76.2912639.57..7952..63263.5.9477..2.93569457632813.4685792697432..5.5291763.";
-	public static String EPP_BILOC_FIG5_SOLUTION =
-		"538176429126394578479528163263851947781249356945763281314685792697432815852917634";
-	@Test
-	public void testBiLocFig5() throws ParseException, InterruptedException {
+	public void testBiLocFig6() throws ParseException, InterruptedException {
 		// Set up test board and candidates
-		// FIG5 is not a good puzzle. It can be solved with 4 SingleCandidates calls.
-		// The graph paths do not equal what is shown in figure 5.
-		Board board = new Board(EPP_BILOC_FIG5);
+		Board board = new Board(EPP_BILOCCYCLE_NONREPEAT_FIG6);
 		assertTrue(board.legal());
 		Candidates candidates = new Candidates(board);
 		(new LegalCandidates()).update(board, null, candidates, null);
 		// System.out.println( "Candidates=\n" + candidates.toStringFocus( false, ALL_DIGITS, ALL_COUNTS ));
 
 		Graph<RowCol,LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
+		// String label = "Biloc graph, " + GraphUtils.graphToString( bilocGraph, null, "\n" );
+		// System.out.println( label );
 		// DisplayGraph will cause test case to not exit. Use only for debugging.
 		// new GraphDisplay( "BiLoc Graph ", 0, bilocGraph );
 		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphCycles( bilocGraph);
 		for( int gpi = 0; gpi < gpl.size(); gpi++ ) {
 			GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
-			// System.out.println( "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false ) );
+			// String label = "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false );
+			// System.out.println( label );
 			// new GraphDisplay( label, gpi, gp );
 		}
-		assertEquals(2, gpl.size());
+		// This thread will not exit when launching DisplayGraph. Use ExecutorService
+		// Thread.currentThread().join(); // Wait for threads to exit
+		assertEquals(8, gpl.size());
+
+		// Fig 6 has digits 5,6 at [1,0][1,8] in pathId 4
+		BiLocCycleNonRepeat rule = new BiLocCycleNonRepeat();
+		List<int[]> encs = rule.find(board, candidates);
+		assertNotNull(encs);
+		int expectedSize = 1;
+		if (expectedSize != encs.size() ) {
+			for ( int i = 0; i < encs.size(); i++ )
+				System.out.println( "Enc " + i + "=" + rule.encodingToString(encs.get(i)));
+		}
+		assertEquals(expectedSize, encs.size());
+		for( int enci = 0; enci < encs.size(); enci++ ){
+			int [] enc = encs.get( enci );
+			switch ( enci ) {
+				case 0 -> {
+					assertEquals( 5, enc[2] );
+					assertEquals( 6, enc[3] );
+					assertEquals( ROWCOL[1][0], ROWCOL[enc[4]][enc[5]] );
+					assertEquals( ROWCOL[1][8], ROWCOL[enc[6]][enc[7]] );
+				}
+			}
+		}
+
+		// Update test
+		int prevOccs = board.getOccupiedCount();
+		int prevCands = candidates.getAllCount();
+		// Should remove the 7 candidates from locs [1,0] and [1,8]
+		final int[] updateCount = { -1 };
+		assertDoesNotThrow( ()-> updateCount[0] = rule.update(board,  new Board(EPP_BILOCCYCLE_NONREPEAT_FIG6_SOLUTION) , candidates, encs));
+		assertEquals( 0, board.getOccupiedCount() - prevOccs );
+		assertEquals( 2, prevCands - candidates.getAllCount());
+		assertEquals( 2, updateCount[0]);
+
 		// This thread will not exit when launching DisplayGraph. Use ExecutorService
 		// Thread.currentThread().join(); // Wait for threads to exit
 	}
@@ -234,23 +189,24 @@ public class BiLocCycleDigitRepeatTest {
 			boolean includeAll = true;
 			if (includeAll || Arrays.asList(12).contains(gpi)) { // Interesting or error
 				GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
-				// System.out.println( "Path " + gpi + "=" + GraphUtils.pathToString(gp, "-", false) );
+				// String label = "Path " + gpi + "=" + GraphUtils.pathToString(gp, "-", false);
+				// System.out.println(label);
 				// new GraphDisplay(label, gpi, gp);
 				int finalGpi = gpi;
-				assertDoesNotThrow( ()-> BiLocCycleDigitRepeat.findCycleRepeatDigit33(finalGpi, gp) );
+				assertDoesNotThrow( ()-> BiLocCycleDigitRepeat.findCycleRepeatDigit33( finalGpi, gp) );
 			}
 		}
 
-		BiLocCycleDigitRepeat rule = new BiLocCycleDigitRepeat();
+		BiLocCycleNonRepeat rule = new BiLocCycleNonRepeat();
 		// Locations test
+		int expectedEncs = 0;
 		List<int[]> encs = rule.find(board, candidates);
 		assertNotNull(encs);
-		int expectedEncs = 0;
-		if (expectedEncs != encs.size() ) {
-			for ( int i = 0; i < encs.size(); i++ )
-				System.out.println( "Enc " + i + "=" + rule.encodingToString(encs.get(i)));
-		}
 		assertEquals(expectedEncs, encs.size());
+		for( int enci = 0; enci < encs.size(); enci++ ){
+			int [] enc = encs.get( enci );
+			System.out.printf( "%s found %s%n", rule.ruleName(),  rule.encodingToString( enc ) );
+		}
 
 		// Thread will not exit when launching DisplayGraph. Use ExecutorService
 		// Thread.currentThread().join(); // Wait for threads to exit

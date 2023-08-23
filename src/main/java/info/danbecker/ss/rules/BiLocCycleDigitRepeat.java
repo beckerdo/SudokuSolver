@@ -4,6 +4,7 @@ import info.danbecker.ss.Board;
 import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
+import info.danbecker.ss.graph.EdgePatternFinder;
 import info.danbecker.ss.graph.GraphUtils;
 import info.danbecker.ss.graph.LabelEdge;
 import org.jgrapht.Graph;
@@ -11,12 +12,11 @@ import org.jgrapht.GraphPath;
 
 import java.util.*;
 
-import static info.danbecker.ss.Board.DIGITS;
 import static info.danbecker.ss.Board.ROWCOL;
 import static java.lang.String.format;
 
 /**
- * This BiLovCycleDigitRepeat rule is based on the research paper
+ * This BiLocCycleDigitRepeat rule is based on the research paper
  * "Nonrepetitive Paths and Cycles in Graphs
  * with Application to Sudoku" by David Eppstein.
  * <p>
@@ -28,7 +28,11 @@ import static java.lang.String.format;
  * </ul>
  * <p>
  * Use BiLocCycleDigitRepeat when there are many candidate pairs.
- * 
+ * <p>
+ * Note that Lemma 7 on page 11 states "Let C be a cycle in the bilocation graph,
+ * in which exactly one pair of consecutive edges shares a repeated label."
+ * Therefore cycles with repeats of XX and multiple XX, YY patterns are bad.
+ *
  * @author <a href="mailto://dan@danbecker.info>Dan Becker</a>
  */
 public class BiLocCycleDigitRepeat implements FindUpdateRule {
@@ -92,12 +96,11 @@ public class BiLocCycleDigitRepeat implements FindUpdateRule {
 
 		Graph<RowCol, LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
 		// DisplayGraph will cause test case to not exit. Use only for debugging.
-		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphPaths( bilocGraph);
+		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphCycles( bilocGraph);
 		for( int gpi = 0; gpi < gpl.size(); gpi++ ) {
 			GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
-			// String label = "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false );
-			// System.out.println( label );
-			List<int[]> found = findRepetitiveCycle33( candidates, gpi, gp );
+			// System.out.println( "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false ) );
+			List<int[]> found = findCycleRepeatDigit33( gpi, gp );
 			// Repeats due to same digit, location, different path id
 			Utils.addUniques( matched, found, DigitRowColComparator );
 		}
@@ -107,88 +110,44 @@ public class BiLocCycleDigitRepeat implements FindUpdateRule {
 	/**
 	 * Lists any location that has EXACTLY ONE pair of consecutive edges with a repeated label.
 	 * This corresponds to the Repetitive Cycle Rule in 3.3 in Eppstein "Non Repetitive Paths and Cycles"
+	 * <p>
+	 * Note that Lemma 7 on page 11 states "Let C be a cycle in the bilocation graph,
+	 * in which exactly one pair of consecutive edges shares a repeated label."
+	 * Therefore cycles with repeats of XX, XXX, and multiple XX, YY patterns are bad.
 	 * Do not use this rule for multi-digit labels (ignore those edges).
 	 * Target location must have 2 candidates (strong link), not 3 or more (weak link).
-	 * @param gp GraphPath with a cycle
-	 * @return list of encodings
+	 *
+	 * @param pathId
+	 * @param gp
+	 * @return
 	 */
-	public static List<int[]> findRepetitiveCycle33( final Candidates candidates, int pathId, final GraphPath<RowCol,LabelEdge> gp ) {
+	public static List<int[]> findCycleRepeatDigit33( int pathId, final GraphPath<RowCol,LabelEdge> gp ) {
 		List<int []> encs = new ArrayList<>();
-		Graph<RowCol,LabelEdge> g = gp.getGraph();
-		Iterator<RowCol> viterator = gp.getVertexList().iterator();
+		// For this path, find the single digit pattern XX.
+		EdgePatternFinder patternFinder = new EdgePatternFinder(gp, EdgePatternFinder.XX_NAME);
+		Map<String, List<RowCol>> matches = patternFinder.getMatches();
+		// System.out.println( "Path string=" + patternFinder.pathString() "" match);
 
-		// Count digit sequences as we travel the path
-		int[] digitCounts = new int[]{0,0,0,0,0,0,0,0,0};
-		// Preset elements from last edge (in case wraparound)
-		List<LabelEdge> edges = gp.getEdgeList();
-		LabelEdge prevEdge = edges.get( edges.size() - 1);
-		RowCol prevLoc = g.getEdgeTarget(prevEdge);
-		String prevLabel = prevEdge.getLabel();
-		if ( 1 == prevLabel.length() ) {
-			int digit = Integer.parseInt( prevLabel );
-			digitCounts[digit - 1] = 1;
-		}
-		RowCol prevprevLoc = null;
-		// Ready to iterate from vertex 0.
-		RowCol loc = viterator.next();
-		while (viterator.hasNext()) {
-			RowCol nextLoc = viterator.next();
-			LabelEdge edge = g.getEdge(loc, nextLoc);
-			String label = edge.getLabel();
-			boolean lastVertex = nextLoc.equals( gp.getEndVertex());
-
-			// Just count single digit edges. Multi digits end counts
-			Set<Integer> labelInts = LabelEdge.labelToInts( label );
-			for (int digi = 0; digi < DIGITS; digi++) {
-				if (1 == labelInts.size() && labelInts.contains(digi + 1)) {
-					// Continue counting
-					digitCounts[digi]++;
-				} else {
-					// Multi digit labels always end counting.
-					// Last vertex always ends counting
-					// Check if we have a repeat count of 2.
-					if (2 == digitCounts[digi] ) {
-						// Check candidate count <= 2.
-						// Encode and add
-						int [] enc;
-						if ( null == prevprevLoc )
-							// Beginning wraparound case (count from end edge list)
-							enc = encode(BILOCCYCLE_DIGIT_REPEAT, pathId, digi + 1, loc, prevLoc, nextLoc);
-						else
-							// Non wraparound case (count begin edge list)
-							enc = encode(BILOCCYCLE_DIGIT_REPEAT, pathId, digi + 1, prevLoc, prevprevLoc, loc);
-						// Be aware if a different path caught this digit/loc as a single repeated edge.
-						// This path must be discounted if it causes a double repeated edge
-						// Utils.addUnique(encs, enc, DigitRowColComparator) )
-						encs.add( enc );
+		// Will only take single instances of single locations
+		if (1 == matches.entrySet().size()) {
+			// Encode and add the digit labels and vertices
+			for (Map.Entry<String, List<RowCol>> entry : matches.entrySet()) {
+				String pattern = entry.getKey();
+				List<RowCol> locs = entry.getValue();
+				// Will only take single instances of single locations
+				if (1 == locs.size()) {
+					int digit = Integer.parseInt(pattern.substring(0, 1));
+					// System.out.printf("Pattern=%s, locs=%s%n", pattern, RowCol.toString(locs));
+					for (RowCol loc : locs) {
+						int[] enc = encode(BILOCCYCLE_DIGIT_REPEAT, pathId, digit, loc, loc, loc);
+						int added = Utils.addUnique(encs, enc, DigitRowColComparator);
+						// String addStr = (0 == added) ? "dup of" : "added";
+						// System.out.printf("%s digit=%d. loc=%s%n", addStr, digit, loc);
 					}
-					digitCounts[digi] = 0;
-				}
-				// Check for last vertex
-				if ( lastVertex && 2 == digitCounts[digi]) {
-					int[] enc = encode(BILOCCYCLE_DIGIT_REPEAT, pathId, digi + 1, loc, prevLoc, nextLoc);
-					// Utils.addUnique(encs, enc, DigitRowColComparator) )
-					encs.add( enc );
-				}
-			} // for each digit
-
-			prevprevLoc = prevLoc;
-			prevLoc = loc;
-			loc = nextLoc;
-		} // for each vertex in path
-
-		// If a pathId has repeats of more than one digit, it must be removed.
-		List<int []> singleRepeats = new ArrayList<>();
-		for ( int[] enc : encs) {
-			List<int[]> pathIdEncs = encs.stream().filter(ele -> 0 == PathIdComparator.compare(ele, enc) ).toList();
-			// System.out.printf( "Found enc=%s with count=%d%n", toString( enc ), pathIdEncs.size() );
-			if ( 1 == pathIdEncs.size() ) {
-				singleRepeats.add( Arrays.copyOf(enc, enc.length));
+				} // single location
 			}
-		}
-		// System.out.printf( "Encs found=%d, encs returned=%d%n", encs.size(), singleRepeats.size());
-		encs.clear();
-		return singleRepeats;
+		} // single entry
+		return encs;
 	}
 
 	/** Encode int []

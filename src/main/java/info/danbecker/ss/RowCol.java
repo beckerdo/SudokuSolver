@@ -165,9 +165,9 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 */
 	public static int unitMatch(Utils.Unit unit, RowCol loc1, RowCol loc2) {
 		return switch ( unit ) {
-			case ROW: if ( loc1.row() == loc2.row() ) yield loc1.row(); else yield Board.NOT_FOUND;
-			case COL: if ( loc1.col() == loc2.col() ) yield loc1.col(); else yield Board.NOT_FOUND;
-			case BOX: if ( loc1.box() == loc2.box() ) yield loc1.box(); else yield Board.NOT_FOUND;
+			case ROW -> { if ( loc1.row() == loc2.row() ) yield loc1.row(); else yield Board.NOT_FOUND; }
+			case COL -> { if ( loc1.col() == loc2.col() ) yield loc1.col(); else yield Board.NOT_FOUND; }
+			case BOX -> { if ( loc1.box() == loc2.box() ) yield loc1.box(); else yield Board.NOT_FOUND; }
 			// default: yield Board.NOT_FOUND;
 		};
 	}
@@ -281,6 +281,21 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 				return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Add non-duplicate RowCol to the list
+	 *
+	 * @param list
+	 * @param rowCol
+	 * @return number of new potentials added.
+	 */
+	public static int addUnique(List<RowCol> list, RowCol rowCol) {
+		if (!list.contains(rowCol)) {
+			list.add(rowCol);
+			return 1;
+		}
+		return 0;
 	}
 
 	/** Add non-duplicate RowCols from potentials to the bigList

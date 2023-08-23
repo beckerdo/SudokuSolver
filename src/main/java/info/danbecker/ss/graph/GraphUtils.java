@@ -40,10 +40,32 @@ import java.util.*;
  */
 public class GraphUtils {
 	/**
-	 * Create a bilocation graph as defined in "Nonrepetitive Paths"
-	 * @param candidates digits in board
+	 * Create a bilocation graph from the string that is delimited by
+	 * rowCol end label delimiters, for example:
+	 * [1,0]-6-[1,8]-5-[8,8]-37-[8,0]-2-[2,0]-5-[1,0]
+	 * The edge label delimiters may be - or =.
+	 *
+	 * @param graphStr string  for example [1,0]-6-[1,8]-5-[8,8]-37-[8,0]-2-[2,0]-5-[1,0]
 	 * @return a biloc graph with RowCol vertices and labeled edges
 	 */
+	public static Graph<RowCol,LabelEdge> getBilocGraph(String graphStr ) {
+		// Create bilocGraph with unoccupied vertices
+		Graph<RowCol,LabelEdge> graph = new SimpleGraph<>(LabelEdge.class);
+		Scanner s = new Scanner(graphStr).useDelimiter("\\s*[=-]\\s*");
+		// bilocGraph.addVertex( rowCol );
+		// bilocGraph.addEdge(vertex, seeMe, new LabelEdge(Integer.toString(digit)));
+		RowCol prev = RowCol.parse( s.next() );
+		graph.addVertex( prev );
+		while ( s.hasNext() ) {
+			String label = s.next();
+			RowCol next = RowCol.parse( s.next() );
+			graph.addVertex( next );
+			graph.addEdge(prev, next, new LabelEdge(label));
+			prev = next;
+		}
+		return graph;
+	}
+
 	public static Graph<RowCol,LabelEdge> getBilocGraph(final Candidates candidates ) {
 		List<RowCol> unoccupied = candidates.getUnoccupiedLocs();
 		// System.out.println( "Unoccupied vertices=" + RowCol.toString(unoccupied));
@@ -124,7 +146,7 @@ public class GraphUtils {
 	 * @param graph fully formed biloc or bival graph
 	 * @return list of GraphPath cycles
 	 */
-	public static List<GraphPath<RowCol,LabelEdge>> getGraphPaths( final Graph<RowCol,LabelEdge> graph ) {
+	public static List<GraphPath<RowCol,LabelEdge>> getGraphCycles(final Graph<RowCol,LabelEdge> graph ) {
 		PatonCycleBase<RowCol,LabelEdge> det = new  PatonCycleBase<>( graph );
 		CycleBasisAlgorithm.CycleBasis<RowCol,LabelEdge> cy = det.getCycleBasis();
 		Set<GraphPath<RowCol,LabelEdge>> gps = cy.getCyclesAsGraphPaths();
@@ -159,14 +181,17 @@ public class GraphUtils {
 	 * @param startLoc starting location, can be null
 	 */
 	public static String graphToString(final Graph<RowCol,LabelEdge> graph, final RowCol startLoc, final String delim ) {
-		StringBuffer sb = new StringBuffer( "depth first, start=" + startLoc + ": " );
+		StringBuilder sb = new StringBuilder( "depth first, start=" + startLoc + ": " );
+		// Warning, the vertex set might not show all edges in a cycle.
+		// The last vertex does not show its edge back to the first.
 		Iterator<RowCol> iterator = (null == startLoc) ? new DepthFirstIterator<>(graph) :
-				new DepthFirstIterator<>(graph, startLoc);
+				new DepthFirstIterator<>(graph,startLoc);
 		RowCol lastLoc = null;
 		while (iterator.hasNext()) {
 			RowCol loc = iterator.next();
 			if ( null != lastLoc ) {
 				// System.out.print(loc);
+				// sb.append( "d" + graph.degreeOf( lastLoc ) + graph.degreeOf( loc ));
 				LabelEdge edge = graph.getEdge( lastLoc, loc );
 				if ( null != edge )
 					sb.append( edge.toStringVerbose() + delim);
@@ -174,6 +199,36 @@ public class GraphUtils {
 					sb.append( lastLoc + "-null-" + loc + delim);
 			}
 			lastLoc = loc;
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Shows all edges and vertices in graph.
+	 * Very compact compared to Graph toString
+	 * @param graph graph to print
+	 * @param delim for edges that don't connect to previous vertex
+	 */
+	public static String graphToStringE(final Graph<RowCol,LabelEdge> graph, final String delim ) {
+		StringBuilder sb = new StringBuilder();
+
+		Iterator<LabelEdge> iterator = graph.edgeSet().iterator();
+		Object lastLoc = null;
+		int edgeCount = 0;
+		while (iterator.hasNext()) {
+			LabelEdge edge = iterator.next();
+			if ( null != edge ) {
+				Object target = edge.getTarget();
+				Object source= edge.getSource();
+				if ( source.equals( lastLoc )) {
+					sb.append( "-" + edge.getLabel() + "-" + target);
+				} else {
+					if ( 0 < edgeCount ) sb.append( delim );
+					sb.append( source + "-" + edge.getLabel() + "-" + target);
+				}
+				edgeCount++;
+				lastLoc = target;
+			}
 		}
 		return sb.toString();
 	}
@@ -187,7 +242,7 @@ public class GraphUtils {
 	public static String pathToString( final GraphPath<RowCol,LabelEdge> gp, String edgeLink, boolean unitMatch ) {
 		StringBuilder sb = new StringBuilder();
 		// System.out.println( "Cycle vertices=" + RowCol.toString(gp.getVertexList()));
-		org.jgrapht.Graph<RowCol,LabelEdge> graph = gp.getGraph();
+		Graph<RowCol,LabelEdge> graph = gp.getGraph();
 		RowCol lastLoc = null;
 		Iterator<RowCol> viterator = gp.getVertexList().iterator();
 		while (viterator.hasNext()) {

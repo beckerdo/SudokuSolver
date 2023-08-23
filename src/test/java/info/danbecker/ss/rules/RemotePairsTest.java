@@ -111,8 +111,8 @@ public class RemotePairsTest {
 		int count = 0;
 		for (TreeNode<DigitsData> treeNode : pairRoot ) {
 			switch ( count ) {
-				case 0: { assertEquals( test1, treeNode.data ); break; }
-				case 6: { assertEquals( new DigitsData(pair28List,ROWCOL[3][6],0), treeNode.data ); break ; }
+				case 0 -> { assertEquals( test1, treeNode.data ); }
+				case 6 -> { assertEquals( new DigitsData(pair28List,ROWCOL[3][6],0), treeNode.data ); }
 			}
 			count++;
 		}

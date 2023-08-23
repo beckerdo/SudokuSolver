@@ -1,7 +1,6 @@
 package info.danbecker.ss.graph;
 
 import info.danbecker.ss.RowCol;
-import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import java.util.List;
@@ -51,6 +50,15 @@ public class LabelEdge extends DefaultEdge {
     @Override
     public String toString() {
         return label;
+    }
+
+    @Override
+    public RowCol getSource() {
+        return (RowCol) super.getSource();
+    }
+    @Override
+    public RowCol getTarget() {
+        return (RowCol) super.getTarget();
     }
 
     public String toStringVerbose() {
@@ -106,5 +114,13 @@ public class LabelEdge extends DefaultEdge {
                 .map(iStr -> Integer.toString(iStr))
                 .collect(Collectors.joining());
         return newLabel;
+    }
+
+    public static String listToString( List<LabelEdge> list ) {
+        StringBuilder sb = new StringBuilder();
+        for ( LabelEdge le : list ) {
+            sb.append( le.getLabel());
+        }
+        return sb.toString();
     }
 }

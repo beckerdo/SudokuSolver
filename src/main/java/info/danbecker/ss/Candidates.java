@@ -44,7 +44,7 @@ public class Candidates implements Comparable<Candidates> {
 
 	// 9 rows, 9 cols, 9 digits.
 	// Int is negative digit for filled in, 0 for not candidate, digit for candidate
-	private int [][][] candidates;
+	private final int [][][] candidates;
 
 	/**
 	 * Create an object with no occupies or no candidates
@@ -96,7 +96,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * There should be 81 groups of candidate digits.
 	 * Digits can be negative for board entry or positive for candidate.
 	 * Candidates are delimited by whitespace or {},
-	 * @param candidatesStr
+	 * @param candidatesStr of 81 chars to init candidates
 	 * @throws ParseException
 	 */
 	public void init( String candidatesStr ) throws ParseException {
@@ -649,7 +649,6 @@ public class Candidates implements Comparable<Candidates> {
 			for( int ignorei = 0; ignorei < rowCols.length; ignorei++)
 				ignore[ignorei] = rowCols[ignorei].col();
 			for ( int coli = 0; coli < COLS; coli++ ) {
-				// Ignore cols 1 and 6
 				if ( !containsOneDigit( ignore, coli )) {
 					for ( int digiti = 0; digiti < zbDigits.length; digiti++) {
 						// System.out.println( format("Removing digit %d from row rowCol=%d/%d", combo[ digiti ] + 1, rowi, coli));
@@ -661,17 +660,16 @@ public class Candidates implements Comparable<Candidates> {
 
 		} else if ( colsMatch ) {
 			int coli = rowCols[0].col();
-			// List of cols to ignore
+			// List of rows to ignore
 			int [] ignore = new int[ rowCols.length ];
 			for( int ignorei = 0; ignorei < rowCols.length; ignorei++)
 				ignore[ignorei] = rowCols[ignorei].row();
 			for ( int rowi = 0; rowi < COLS; rowi++ ) {
-				// Ignore rows 3 and 7
 				if ( !containsOneDigit( ignore, rowi )) {
 					for ( int digiti = 0; digiti < zbDigits.length; digiti++) {
-						// System.out.println( format("Removing digit %d from col rowCol=%d/%d", combo[ digiti ] + 1, rowi, coli));
 						if (removeCandidate(ROWCOL[rowi][coli], zbDigits[ digiti ] + 1))
 							count++;
+						// System.out.printf( "Removing digit %d from col rowCol=%d/%d, count=%d%n", zbDigits[ digiti ] + 1, rowi, coli, count);
 					}
 				}
 			}
@@ -1038,7 +1036,7 @@ public class Candidates implements Comparable<Candidates> {
 	/** Returns a 3 unit by 9 cell digit counts.
 	 *
 	 * @param digi on based digit
-	 * @return
+	 * @return 3 unit by 9 cell digit counts
 	 */
 	public int[][] candidateUnitCounts( int digi ) {
 		// Create 3 unit by 9 cell counts.
@@ -1333,9 +1331,7 @@ public class Candidates implements Comparable<Candidates> {
 			if (( FULL_COMBI_MATCH == partialCount) && (matchCount == combi.length)) {
 				return true;
 			}
-			if ( matchCount >= partialCount) {
-				return true;
-			}
+			return matchCount >= partialCount;
 		}
 		return false;
 	}
@@ -1682,7 +1678,8 @@ public class Candidates implements Comparable<Candidates> {
 	}
 
 	public static final Comparator<? super List<Integer>> CandidatesComparator =
-			(List<Integer> l1, List<Integer> l2) -> compareCandidates( l1, l2 );
+			// (List<Integer> l1, List<Integer> l2) -> compareCandidates( l1, l2 );
+			Candidates::compareCandidates;
 
 	@Override
 	public boolean equals(Object obj) {
@@ -1714,7 +1711,7 @@ public class Candidates implements Comparable<Candidates> {
 	 * {  }{15}{35} {  }{  }{39} {  }{  }{58}
 	 * @param includeOccupied displays occupied digits
 	 * @param digit one based digit to focus on, or ALL_DIGITS
-	 * @oaram groupSize group to focus on, or ALL_COUNTS
+	 * @param groupSize group to focus on, or ALL_COUNTS
 	 */
 	public String toStringFocus( boolean includeOccupied, int digit, int groupSize ) {
 		if ( null == candidates) return "null";
@@ -1834,7 +1831,7 @@ public class Candidates implements Comparable<Candidates> {
 			int occDigit = -Integer.parseInt( compactStr );
 			cands[ occDigit - 1 ] = -occDigit;
 		} else {
-			Utils.digitStringToList( compactStr ).stream().
+			Utils.digitStringToList( compactStr ).
 				forEach( i -> cands[ i - 1] = i );
 		}
 		return cands;

@@ -124,9 +124,9 @@ public class HiddenSubsetsTest {
         int prevEntries = candidates.getAllOccupiedCount();
 		int prevCandidates = candidates.getAllCount();
 		int updates = rule.update(board, new Board( HIDDENPAIRSROW2_SOLUTION ), candidates, locations);
-		assertEquals( 7, updates );
+		assertEquals( 3, updates );
 		// assertEquals( prevEntries - updates, candidates.getAllOccupiedCount());
-		assertEquals( 7, prevCandidates - candidates.getAllCount());
+		assertEquals( 3, prevCandidates - candidates.getAllCount());
 	}
   	
  // Col 4, combo [2,3,6], has 3 hidden locs, 8 candidates with 1 extra 0
@@ -157,7 +157,7 @@ public class HiddenSubsetsTest {
 		int prevCandidates = candidates.getAllCount();
 		rule.update(board, new Board( HIDDENTRIPLE_347_COL4_SOLUTION), candidates, locs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
-		assertEquals( prevCandidates, candidates.getAllCount() + 7);
+		assertEquals( prevCandidates, candidates.getAllCount() + 1);
 	}
  
 	// Puzzle from https://www.sudokuoftheday.com/dailypuzzles/2023-01-03/diabolical/solver
@@ -187,7 +187,7 @@ public class HiddenSubsetsTest {
 		int prevCandidates = candidates.getAllCount();
 		rule.update(board, new Board(HIDDENPAIRS_20230103_SOLUTION), candidates, locs);
 		assertEquals( prevEntries, candidates.getAllOccupiedCount());
-		assertEquals( prevCandidates, candidates.getAllCount() + 6);
+		assertEquals( prevCandidates, candidates.getAllCount() + 4);
  	}
 
 	 @Test

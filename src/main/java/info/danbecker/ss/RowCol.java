@@ -2,6 +2,7 @@ package info.danbecker.ss;
 
 import static info.danbecker.ss.Board.ROWCOL;
 import java.util.*;
+import static info.danbecker.ss.Utils.Unit;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -86,18 +87,18 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	/**
 	 * Return 0, 1, 2, or 3 completely matching units of the list
 	 */
-	public static List<Utils.Unit> getMatchingAllUnits( List<RowCol> rowCols ){
-		List<Utils.Unit> matching = new ArrayList<>();
+	public static List<Unit> getMatchingAllUnits( List<RowCol> rowCols ){
+		List<Unit> matching = new ArrayList<>();
 		if ( rowsMatch( rowCols  ))
-			matching.add( Utils.Unit.ROW );
+			matching.add( Unit.ROW );
 		if ( colsMatch( rowCols  ))
-			matching.add( Utils.Unit.COL );
+			matching.add( Unit.COL );
 		if ( boxesMatch( rowCols ))
-			matching.add( Utils.Unit.BOX );
+			matching.add( Unit.BOX );
 		return matching;
 	}
 
-	public int unitIndex( Utils.Unit unit ) {
+	public int unitIndex( Unit unit ) {
 		return switch ( unit ) {
 			case ROW -> this.row();
 			case COL -> this.col();
@@ -111,13 +112,35 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * @param rc2 second rowCol
 	 * @return first matching unit or null for no match
 	 */
-	public static Utils.Unit firstUnitMatch(RowCol rc1, RowCol rc2 ){
+	public static Unit firstUnitMatch(RowCol rc1, RowCol rc2 ){
 		if ( rc1.row() == rc2.row() )
-			return Utils.Unit.ROW;
+			return Unit.ROW;
 		if ( rc1.col() == rc2.col() )
-			return Utils.Unit.COL;
+			return Unit.COL;
 		if ( rc1.box() == rc2.box() )
-			return Utils.Unit.BOX ;
+			return Unit.BOX ;
+		return null;
+	}
+
+	/**
+	 * Return first matching unit or null for no match
+	 * @param locs list of RowCol
+	 * @return first matching unit or null for no match
+	 */
+	public static Unit firstUnitMatch(List<RowCol> locs ){
+		if ( null == locs || 2 > locs.size())
+			return null;
+		boolean[] match = new boolean[]{ true, true, true };
+		RowCol base = locs.get( 0 );
+		for ( int loci = 1; loci < locs.size(); loci++ ) {
+			RowCol loc = locs.get( loci );
+			if ( base.row() != loc.row( )) match[ Unit.ROW.ordinal() ] = false;
+			if ( base.col() != loc.col( )) match[ Unit.COL.ordinal() ] = false;
+			if ( base.box() != loc.box( )) match[ Unit.BOX.ordinal() ] = false;
+		}
+		for ( Unit unit : Unit.values() ) {
+			if ( match[ unit.ordinal() ] ) return unit;
+		}
 		return null;
 	}
 
@@ -144,30 +167,31 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * @param rc2 second rowCol
 	 * @return list of units that match these two locations
 	 */
-	public static List<Utils.Unit> getMatchingUnits(RowCol rc1, RowCol rc2 ){
-		List<Utils.Unit> matching = new LinkedList<>();
+	public static List<Unit> getMatchingUnits(RowCol rc1, RowCol rc2 ){
+		List<Unit> matching = new LinkedList<>();
 		if ( rc1.row() == rc2.row() )
-			matching.add( Utils.Unit.ROW );
+			matching.add( Unit.ROW );
 		if ( rc1.col() == rc2.col() )
-			matching.add( Utils.Unit.COL );
+			matching.add( Unit.COL );
 		if ( rc1.box() == rc2.box() )
-			matching.add( Utils.Unit.BOX );
+			matching.add( Unit.BOX );
 		return matching;
 	}
 
 	/**
 	 * Returns unit index if the given unit matches in the locations.
 	 * Returns NOT_FOUND if there is no unit matchs.
-	 * @param unit
-	 * @param loc1
-	 * @param loc2
+	 * @param unit one of the houses ROW, COL, BOX
+	 * @param loc1 location 1
+	 * @param loc2 location 2
 	 * @return index of unit match or NOT_FOUND
 	 */
-	public static int unitMatch(Utils.Unit unit, RowCol loc1, RowCol loc2) {
+	public static int unitMatch(Unit unit, RowCol loc1, RowCol loc2) {
+		int notFound = Board.NOT_FOUND;
 		return switch ( unit ) {
-			case ROW -> { if ( loc1.row() == loc2.row() ) yield loc1.row(); else yield Board.NOT_FOUND; }
-			case COL -> { if ( loc1.col() == loc2.col() ) yield loc1.col(); else yield Board.NOT_FOUND; }
-			case BOX -> { if ( loc1.box() == loc2.box() ) yield loc1.box(); else yield Board.NOT_FOUND; }
+			case ROW -> loc1.row() == loc2.row() ? loc1.row() : notFound;
+			case COL -> loc1.col() == loc2.col() ? loc1.col() : notFound;
+			case BOX -> loc1.box() == loc2.box() ? loc1.box() : notFound;
 			// default: yield Board.NOT_FOUND;
 		};
 	}
@@ -180,7 +204,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 	 * @return
 	 */
 	public static int [] unitMatch ( RowCol loc1, RowCol loc2 ) {
-		for ( Utils.Unit unit : Utils.Unit.values() ) {
+		for ( Unit unit : Unit.values() ) {
 			int unitMatch = unitMatch( unit, loc1, loc2 );
 			if ( Board.NOT_FOUND != unitMatch ) {
 				return new int [] { unit.ordinal(), unitMatch };
@@ -376,7 +400,7 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		return Board.NOT_FOUND;
 	}
 
-	class AnyUnitMatch implements Comparable<RowCol> {
+	public static class AnyUnitMatch implements Comparable<RowCol> {
 		RowCol rowCol;
 
 		public AnyUnitMatch( RowCol rowCol ) {
@@ -394,11 +418,11 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		}
 	}
 
-	class UnitMatch implements Comparable<RowCol> {
-		Utils.Unit unit;
+	public static class UnitMatch implements Comparable<RowCol> {
+		Unit unit;
 		RowCol rowCol;
 
-		public UnitMatch(Utils.Unit unit, RowCol rowCol ) {
+		public UnitMatch(Unit unit, RowCol rowCol ) {
 			this.unit = unit;
 			this.rowCol = rowCol;
 		}
@@ -407,11 +431,11 @@ public record RowCol ( int row, int col, int box ) implements Comparable<RowCol>
 		public int compareTo(RowCol that) {
 			if (null == that) return 1;
 			if (this.rowCol == that) return 0;
-			if (Utils.Unit.ROW == unit) {
+			if (Unit.ROW == unit) {
 				if ( this.rowCol.row() == that.row()) return 0;
-			} else if (Utils.Unit.COL == unit) {
+			} else if (Unit.COL == unit) {
 				if ( this.rowCol.col() == that.col()) return 0;
-			} else if (Utils.Unit.BOX == unit) {
+			} else if (Unit.BOX == unit) {
 				if ( this.rowCol.box() == that.box()) return 0;
 			}
 			return -1;

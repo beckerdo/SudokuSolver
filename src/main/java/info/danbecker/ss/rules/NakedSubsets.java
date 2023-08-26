@@ -59,8 +59,9 @@ public class NakedSubsets implements FindUpdateRule {
 			RowCol[] rowCols = encToRowCols(enc);
 
 			List<RowCol> found = candidates.findDigitsNotInLocs(zbDigits, Arrays.asList(rowCols));
-			System.out.printf("%s, digits {%d} at %s, will remove at %s%n",
-					ruleName(), enc[0], RowCol.toString(rowCols), RowCol.toString(found));
+			System.out.printf("%s, digits {%d} at %s, will remove {%d} from %s%n",
+					ruleName(), enc[0], RowCol.toString(rowCols), enc[0], RowCol.toString(found));
+			// System.out.println("Candidates=\n" +  candidates.toStringBoxed());
 
 			// Validation if available
 			if (null != solution) {
@@ -78,6 +79,7 @@ public class NakedSubsets implements FindUpdateRule {
 			}
 
 			updates += candidates.removeCandidatesNotInLocations(zbDigits, rowCols);
+			// System.out.println("Candidates=\n" +  candidates.toStringBoxed());
 		}
 		return updates;
 	}
@@ -180,7 +182,6 @@ public class NakedSubsets implements FindUpdateRule {
 		return format("combo {%d} has %d locs with no matching units at %s",
 				combo, subsetSize, RowCol.toString(rowCols));
 	}
-
 
 	@Override
 	public String ruleName() {

@@ -61,12 +61,17 @@ public class HiddenSubsets implements FindUpdateRule {
 			RowCol[] locs = encToRowCols( enc );
 
 			int[][] digitsNotInCombo = candidates.digitsNotInCombo( zbDigits, locs );
-			System.out.printf( "%s hidden %s pair will remove %s digits %s from %s%n",
-					ruleName(),
-					digitsToString(zbToobIntsInPlace(zbDigits)), // converts 0-based to 1-based
-					RowCol.firstUnitMatch( locs[0], locs[1]),
-					digitListsToString( digitsNotInCombo),
-					RowCol.toString( locs ));
+			String setName = switch( subsetSize ) {
+				case 2 -> "double";
+				case 3 -> "triple";
+				default -> subsetSize + " tuple";
+			};
+			System.out.printf( "%s hidden %s %s %s at %s will remove digits %s%n",
+					ruleName(),	setName,
+					RowCol.firstUnitMatch( Arrays.asList( locs )),
+					digitsToString(zbToobIntsCopy(zbDigits)), // converts 0-based to 1-based
+					RowCol.toString(locs),
+					digitListsToString( digitsNotInCombo ));
 
 			// Validation if available
 			if (null != solution) {
@@ -85,16 +90,16 @@ public class HiddenSubsets implements FindUpdateRule {
 					}
 				}
 			}
-
 			updates += candidates.removeCandidatesNotInCombo(zbDigits, locs);
+			// System.out.println("Candidates=\n" +  candidates.toStringBoxed());
 		}
 		return updates;
 	}
 
 	public static String digitListsToString( int[][] digitLists ) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for ( int listi = 0; listi < digitLists.length; listi++) {
-			if ( 0 < listi ) sb.append("");
+			// if ( 0 < listi ) sb.append("");
 			// Convert zb to ob
 			sb.append( Utils.digitsToString( zbToobIntsCopy(digitLists[listi] )));
 		}

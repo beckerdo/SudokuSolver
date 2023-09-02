@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -97,7 +98,7 @@ public class BiLocCycleDigitRepeatTest {
 		BiLocCycleDigitRepeat rule = new BiLocCycleDigitRepeat();
 		List<int[]> encs = rule.find(board, candidates);
 		assertNotNull(encs);
-		int expectedEncs = 2;
+		int expectedEncs = 0; // Disallowed cycle with multiDigit label.
 		if (expectedEncs != encs.size() ) {
 			for ( int i = 0; i < encs.size(); i++ )
 				System.out.println( "Enc " + i + "=" + rule.encodingToString(encs.get(i)));
@@ -135,16 +136,20 @@ public class BiLocCycleDigitRepeatTest {
 			EPP_BILCOCYCLE_REPEAT_FIG7_SOLUTION,
 			null, // candStr
 			false, // displayCands
-		    2, // expectedFinds,
+		    0, // expectedFinds,
 			false, // displayEncs
-			Arrays.asList(
-				new int[] { 0, 0, 9, 5, 6 },
-				new int[] { 0, 0, 4, 6, 1 }
-			),
+//			Arrays.asList(
+//				new int[] { 0, 0, 9, 5, 6 },
+//				new int[] { 0, 0, 4, 6, 1 }
+//			),
+			new ArrayList<>() {},
 			new Utils.SubsetComparator(Arrays.asList( 2, 3, 4 )), // encComparator
-			2, // expectedOccs,
-		    4, // expectedCands,
-		    6 // expectedUpdates
+			0, // expectedOccs,
+		    0, // expectedCands,
+		    0 // expectedUpdates
+//			2, // expectedOccs,
+//			4, // expectedCands,
+//			6 // expectedUpdates
 		));
 	}
 

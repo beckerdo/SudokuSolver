@@ -198,7 +198,7 @@ public class SudokuSolver {
 			new RemotePairs(),
 			new XChain(),
 			new XYChain(),
-			// new BiLocCycleDigitRepeat(), // still some bugs
+			new BiLocCycleDigitRepeat(),
 			new BiLocCycleNonRepeat(),
 		};
 		Set<String> rulesUsed = new TreeSet<>();

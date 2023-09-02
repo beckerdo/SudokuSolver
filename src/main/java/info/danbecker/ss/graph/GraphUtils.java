@@ -209,7 +209,7 @@ public class GraphUtils {
 	 * @param graph graph to print
 	 * @param delim for edges that don't connect to previous vertex
 	 */
-	public static String graphToStringE(final Graph<RowCol,LabelEdge> graph, final String delim ) {
+	public static String graphToStringE(final Graph<RowCol,LabelEdge> graph, final String delim, boolean linked ) {
 		StringBuilder sb = new StringBuilder();
 
 		Iterator<LabelEdge> iterator = graph.edgeSet().iterator();
@@ -220,7 +220,7 @@ public class GraphUtils {
 			if ( null != edge ) {
 				Object target = edge.getTarget();
 				Object source= edge.getSource();
-				if ( source.equals( lastLoc )) {
+				if ( linked && source.equals( lastLoc )) {
 					sb.append( "-" + edge.getLabel() + "-" + target);
 				} else {
 					if ( 0 < edgeCount ) sb.append( delim );

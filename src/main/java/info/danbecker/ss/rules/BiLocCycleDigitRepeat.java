@@ -5,6 +5,7 @@ import info.danbecker.ss.Candidates;
 import info.danbecker.ss.RowCol;
 import info.danbecker.ss.Utils;
 import info.danbecker.ss.graph.EdgePatternFinder;
+import info.danbecker.ss.graph.GraphDisplay;
 import info.danbecker.ss.graph.GraphUtils;
 import info.danbecker.ss.graph.LabelEdge;
 import org.jgrapht.Graph;
@@ -55,7 +56,7 @@ public class BiLocCycleDigitRepeat implements FindUpdateRule {
 			int pathId = enc[1];
 			int digit = enc[2];
 			RowCol loc = ROWCOL[enc[3]][enc[4]];
-			// System.out.printf( "Rule %s, enc %d=%s%n", ruleName(), enci, encodingToString( enc ));
+			System.out.printf( "Rule %s, enc %d=%s%n", ruleName(), enci, encodingToString( enc ));
 
 			// Validation if available
 			if ( null != solution ) {
@@ -65,7 +66,7 @@ public class BiLocCycleDigitRepeat implements FindUpdateRule {
 					System.out.println( "Candidates=\n" + candidates.toStringBoxed() );
 					String msg = format("Rule %s update error pathId %d digit %d at loc %s which has solution %d ***",
 							ruleName(), pathId, digit, loc, solutionDigit);
-					/// System.out.println( msg );
+					// System.out.println( msg );
 					throw new IllegalArgumentException( msg);
 				}
 			}
@@ -94,12 +95,17 @@ public class BiLocCycleDigitRepeat implements FindUpdateRule {
 	public List<int[]> find(final Board board, final Candidates candidates) {
 		List<int[]> matched = new LinkedList<>();
 
-		Graph<RowCol, LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
+		Graph<RowCol,LabelEdge> bilocGraph = GraphUtils.getBilocGraph( candidates );
 		// DisplayGraph will cause test case to not exit. Use only for debugging.
+		// new GraphDisplay( "BiLoc Graph ", 0, bilocGraph );
+
 		List<GraphPath<RowCol,LabelEdge>> gpl = GraphUtils.getGraphCycles( bilocGraph);
 		for( int gpi = 0; gpi < gpl.size(); gpi++ ) {
 			GraphPath<RowCol, LabelEdge> gp = gpl.get(gpi);
-			// System.out.println( "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false ) );
+			// String label = "Path " + gpi + "=" + GraphUtils.pathToString( gp, "-", false );
+			// System.out.println( label );
+			// new GraphDisplay( label, gpi, gp );
+
 			List<int[]> found = findCycleRepeatDigit33( gpi, gp );
 			// Repeats due to same digit, location, different path id
 			Utils.addUniques( matched, found, DigitRowColComparator );
@@ -126,24 +132,30 @@ public class BiLocCycleDigitRepeat implements FindUpdateRule {
 		// For this path, find the single digit pattern XX.
 		EdgePatternFinder patternFinder = new EdgePatternFinder(gp, EdgePatternFinder.XX_NAME);
 		Map<String, List<RowCol>> matches = patternFinder.getMatches();
-		// System.out.println( "Path string=" + patternFinder.pathString() "" match);
 
-		// Will only take single instances of single locations
+		// Only take paths with single pattern
 		if (1 == matches.entrySet().size()) {
 			// Encode and add the digit labels and vertices
 			for (Map.Entry<String, List<RowCol>> entry : matches.entrySet()) {
 				String pattern = entry.getKey();
 				List<RowCol> locs = entry.getValue();
-				// Will only take single instances of single locations
+				// Only take paths with pattern, single location
 				if (1 == locs.size()) {
-					int digit = Integer.parseInt(pattern.substring(0, 1));
-					// System.out.printf("Pattern=%s, locs=%s%n", pattern, RowCol.toString(locs));
-					for (RowCol loc : locs) {
-						int[] enc = encode(BILOCCYCLE_DIGIT_REPEAT, pathId, digit, loc, loc, loc);
-						int added = Utils.addUnique(encs, enc, DigitRowColComparator);
-						// String addStr = (0 == added) ? "dup of" : "added";
-						// System.out.printf("%s digit=%d. loc=%s%n", addStr, digit, loc);
-					}
+					List<String> multiDigits = patternFinder.getMultiDigitLabels();
+					// Only take paths with no multi-digit labels. (Failed 20221221 puzzle)
+					if (0 == multiDigits.size()) {
+						int digit = Integer.parseInt(pattern.substring(0, 1));
+						System.out.printf("Pattern=%s, pathStr=%s, locs=%s%n",
+								pattern, patternFinder.pathString(), RowCol.toString(locs));
+						System.out.printf("Path %d=%s%n",
+								pathId, GraphUtils.pathToString(gp, "-", false));
+						for (RowCol loc : locs) {
+							int[] enc = encode(BILOCCYCLE_DIGIT_REPEAT, pathId, digit, loc, loc, loc);
+							int added = Utils.addUnique(encs, enc, DigitRowColComparator);
+							// String addStr = (0 == added) ? "dup of" : "added";
+							// System.out.printf("%s digit=%d. loc=%s%n", addStr, digit, loc);
+						}
+					} // no multidigits
 				} // single location
 			}
 		} // single entry

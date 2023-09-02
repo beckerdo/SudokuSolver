@@ -29,12 +29,15 @@ public class GraphUtilsTest {
 	public void testGraphUtils() {
 		String graphInp = "[1,0]-6-[1,8]-5-[8,8]-37-[8,0]-2-[2,0]-5-[1,0]";
 		// Cycle 0=[1,8]-5-[8,8]-37-[8,0]-2-[2,0]-5-[1,0]-6-[1,8]
-		System.out.println( "GraphInp="+ graphInp );
+		// System.out.println( "GraphInp="+ graphInp );
 		Graph<RowCol, LabelEdge> bilocGraph = GraphUtils.getBilocGraph(graphInp);
 
-		String graphStr = GraphUtils.graphToStringE(bilocGraph, ",");
+		String graphStr = GraphUtils.graphToStringE(bilocGraph, ",", true ); // linked graph
 		// System.out.println("GraphStr=" + graphStr);
 		assertEquals( graphInp, graphStr);
+		graphStr = GraphUtils.graphToStringE(bilocGraph, ",", false ); // naked edge list
+		// System.out.println("GraphStr=" + graphStr);
+		assertEquals( "[1,0]-6-[1,8],[1,8]-5-[8,8],[8,8]-37-[8,0],[8,0]-2-[2,0],[2,0]-5-[1,0]", graphStr);
 
 		List<GraphPath<RowCol, LabelEdge>> gpl = GraphUtils.getGraphCycles(bilocGraph);
 		for (int gpi = 0; gpi < gpl.size(); gpi++) {

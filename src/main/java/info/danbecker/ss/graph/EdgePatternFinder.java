@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A class to help find edge patterns in graph paths using regular expressions.
@@ -106,8 +107,9 @@ public class EdgePatternFinder {
         return sb.toString();
     }
 
-    public final static String DIGIT1 = "ABCDEFGHI";
-    public final static String DIGITN = "abcdefghi";
+    public final static String LETTER1 = "ABCDEFGHI";
+    public final static String LETTERN = "abcdefghi";
+    public final static String DIGITS = "123456789";
 
     public static String labelEncode(LabelEdge edge) {
         if ( null == edge )
@@ -135,9 +137,9 @@ public class EdgePatternFinder {
             for (int i = 0; i < edgeLabel.length(); i++) {
                 int digit = Integer.parseInt( edgeLabel.substring( i, i+1 ));
                 if (0 == i) {
-                    sb.append(DIGIT1.charAt(digit-1));
+                    sb.append(LETTER1.charAt(digit-1));
                 } else {
-                    sb.append(DIGITN.charAt(digit-1));
+                    sb.append(LETTERN.charAt(digit-1));
                 }
             }
             return sb.toString();
@@ -145,23 +147,56 @@ public class EdgePatternFinder {
     }
 
     /**
-     * Decoding of succinct encoding of LabelEdge text to original multi-digit labels.
-     * @param encodeStr for example "1Bc4
-     * @return decoded string for example 1,23,4
+     * Return list of decoded multi digit labels for given encoded label string.
+     * For example "1Bc4Ad" returns 23,14
+     * @return list of decoded label multi-digit labels for example 23,14
      */
-    public static List<String> labelDecode(String encodeStr) {
+    public List<String> getMultiDigitLabels() {
+        List<String> labels = getLabels( this.pathStr );
+        return labels.stream()
+                .filter( label -> label.length() > 1)
+                .toList();
+    }
+
+    /**
+     * Return list of decoded multi digit labels for given encoded label string.
+     * For example "1Bc4Ad" returns 23,14
+     * @param encodeStr for example "1Bc4Ad"
+     * @return list of decoded label multi-digit labels for example 23,14
+     */
+    public static List<String> getMultiDigitLabels(String encodeStr) {
+        List<String> labels = getLabels( encodeStr );
+        return labels.stream()
+                .filter( label -> label.length() > 1)
+                .toList();
+    }
+
+    /**
+     * Return list of decoded labels for given encoded label string.
+     * @return list of decoded label strings for example 1,23,4
+     */
+    public List<String> getLabels() {
+        return getLabels( this.pathStr);
+    }
+
+    /**
+     * Return list of decoded labels for given encoded label string.
+     * @param encodeStr for example "1Bc4
+     * @return list of decoded label strings for example 1,23,4
+     */
+    public static List<String> getLabels(String encodeStr) {
         List<String> labels = new ArrayList<>();
         if (null == encodeStr || 0 == encodeStr.length()) {
             return labels;
         } else {
             for ( int i = 0; i < encodeStr.length(); i++) {
                 String subStr = encodeStr.substring(i,i+1);
-                if ( "123456789".contains( subStr ) ) {
+                if ( DIGITS.contains( subStr ) ) {
                     labels.add( subStr );
-                } else if ( DIGIT1.contains( subStr )) {
+                } else if ( LETTER1.contains( subStr )) {
                     // Convert letters to numerals
                     String multi = new String( String.valueOf( subStr.charAt(0) - "A".charAt(0) + 1 ));
-                    while (i+1 <  encodeStr.length() && DIGITN.contains( encodeStr.substring(i+1,i+2) ) ) {
+                    while (i+1 <  encodeStr.length() && LETTERN.contains( encodeStr.substring(i+1,i+2) ) ) {
                         subStr = encodeStr.substring(i+1,i+2);
                         multi += String.valueOf(subStr.charAt(0) - "a".charAt(0) + 1 );
                         i++;
@@ -193,9 +228,9 @@ public class EdgePatternFinder {
                 String subStr = encodeStr.substring(posi,posi+1);
                 if ( "123456789".contains( subStr ) ) {
                     vertPos.add( ++verti );
-                } else if ( DIGIT1.contains( subStr )) {
+                } else if ( LETTER1.contains( subStr )) {
                     vertPos.add( ++verti );
-                } else if ( DIGITN.contains( subStr )) {
+                } else if ( LETTERN.contains( subStr )) {
                     vertPos.add( verti );
                 } else {
                     throw new RuntimeException( "Parse exception in string \"" + encodeStr + "\" at position" + posi );

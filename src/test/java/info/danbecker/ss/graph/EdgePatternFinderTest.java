@@ -25,11 +25,12 @@ public class EdgePatternFinderTest {
 		assertEquals( "1", EdgePatternFinder.labelEncode( "1" ));
 		assertEquals( "Abc", EdgePatternFinder.labelEncode( "123" ));
 
-		assertIterableEquals( Collections.singleton( "9" ), EdgePatternFinder.labelDecode( "9" ));
-		assertIterableEquals( Collections.singleton( "1" ), EdgePatternFinder.labelDecode( "A" ));
-		assertIterableEquals( Collections.singleton( "23" ), EdgePatternFinder.labelDecode( "Bc" ));
-		assertIterableEquals( Arrays.asList( "1", "233", "4"), EdgePatternFinder.labelDecode( "1Bcc4" ));
-		assertIterableEquals( Arrays.asList( "12", "3", "4", "5", "677"), EdgePatternFinder.labelDecode( "Ab345Fgg" ));
+		assertIterableEquals( Collections.singleton( "9" ), EdgePatternFinder.getLabels( "9" ));
+		assertIterableEquals( Collections.singleton( "1" ), EdgePatternFinder.getLabels( "A" ));
+		assertIterableEquals( Collections.singleton( "23" ), EdgePatternFinder.getLabels( "Bc" ));
+		assertIterableEquals( Arrays.asList( "1", "233", "4"), EdgePatternFinder.getLabels( "1Bcc4" ));
+		assertIterableEquals( Arrays.asList( "12", "3", "4", "5", "677"), EdgePatternFinder.getLabels( "Ab345Fgg" ));
+		assertIterableEquals( Arrays.asList( "12", "677"), EdgePatternFinder.getMultiDigitLabels( "Ab345Fgg" ));
 
 		assertEquals( 0, Utils.compareTo( Arrays.asList( 0, 1, 2, 3 ), EdgePatternFinder.labelPosToEdgei("1234")));
 		assertEquals( 0, Utils.compareTo( Arrays.asList( 0, 1, 1, 2 ), EdgePatternFinder.labelPosToEdgei("1Bc4")));
